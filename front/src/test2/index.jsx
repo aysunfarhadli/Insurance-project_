@@ -1,87 +1,98 @@
-// src/App.jsx
 import React, { useState } from "react";
 import axios from "axios";
 
-const API_BASE = "http://localhost:5000/api/payments"; // replace with your backend URL
+export default function WebhookTester() {
+  const [orderId, setOrderId] = useState("ORDER123");
+  const [status, setStatus] = useState("success");
+  const [amount, setAmount] = useState("10.50");
+  const [currency, setCurrency] = useState("AZN");
+  const [response, setResponse] = useState(null);
 
-function Appp() {
-  const [orders, setOrders] = useState([]);
-  const [orderId, setOrderId] = useState("");
-  const [order, setOrder] = useState(null);
-  const [error, setError] = useState(null);
-
-  // Get all orders
-  const fetchOrders = async () => {
+  const sendWebhook = async () => {
     try {
-      const res = await axios.get(`${API_BASE}/orders`);
-      setOrders(res.data);
-      setError(null);
+      const testOrders = [
+        {
+          merchant_order_id: orderId,
+          status,
+          amount,
+          currency,
+          pan: "411111******1111",
+          failure_message: null,
+          updated: new Date().toISOString(),
+          id: "tx_" + Math.floor(Math.random() * 10000)
+        }
+      ];
+
+      // Webhook Basic Auth (env-də yazdığın user/pass ilə eyni olmalıdır)
+      const username = "testuser"; // dəyiş: process.env.CIBPAY_WEBHOOK_USER
+      const password = "testpass"; // dəyiş: process.env.CIBPAY_WEBHOOK_PASS
+      const basicAuth = "Basic " + btoa(`${username}:${password}`);
+
+      const res = await axios.post(
+        "http://localhost:5000/api/payments/webhooks/cibpay", // backend endpoint
+        { orders: testOrders },
+        {
+          headers: {
+            "Authorization": basicAuth,
+            "Content-Type": "application/json"
+          }
+        }
+      );
+
+      setResponse(res.data);
     } catch (err) {
-      console.error(err);
-      setError(err.response?.data || err.message);
+      setResponse(err.response?.data || err.message);
     }
   };
-
-  // Get order by ID
-  const fetchOrderById = async () => {
-    if (!orderId) return alert("Please enter Order ID");
-    try {
-      const res = await axios.get(`${API_BASE}/orders/${orderId}`);
-      setOrder(res.data);
-      setError(null);
-    } catch (err) {
-      console.error(err);
-      setOrder(null);
-      setError(err.response?.data || err.message);
-    }
-  };
-console.log(orders.orders);
-let all = orders.orders
 
   return (
-    <div style={{ padding: "20px", fontFamily: "Arial" }}>
-      <h1>CIBPAY Orders GET Test</h1>
+    <div className="p-6 max-w-lg mx-auto">
+      <h1 className="text-xl font-bold mb-4">CIBPay Webhook Tester</h1>
 
-      <section>
-        <h2>All Orders</h2>
-        <button onClick={fetchOrders}>Fetch Orders</button>
-        <ul>
-          {
-             all?.map((o) => (
-                <li key={o.id}>
-                  ID: {o.id}, Amount: {o.amount}, Status: {o.status}
-                </li>
-              ))
-           }
-        </ul>
-      </section>
+      <label className="block mb-2">Merchant Order ID</label>
+      <input
+        type="text"
+        value={orderId}
+        onChange={(e) => setOrderId(e.target.value)}
+        className="border p-2 w-full mb-4 rounded"
+      />
 
-      <section style={{ marginTop: "20px" }}>
-        <h2>Get Order by ID</h2>
-        <input
-          type="text"
-          placeholder="Enter Order ID"
-          value={orderId}
-          onChange={(e) => setOrderId(e.target.value)}
-        />
-        <button onClick={fetchOrderById}>Fetch Order</button>
+      <label className="block mb-2">Status</label>
+      <input
+        type="text"
+        value={status}
+        onChange={(e) => setStatus(e.target.value)}
+        className="border p-2 w-full mb-4 rounded"
+      />
 
-        {order && (
-          <div style={{ marginTop: "10px" }}>
-            <h3>Order Details:</h3>
-            <pre>{JSON.stringify(order, null, 2)}</pre>
-          </div>
-        )}
-      </section>
+      <label className="block mb-2">Amount</label>
+      <input
+        type="number"
+        value={amount}
+        onChange={(e) => setAmount(e.target.value)}
+        className="border p-2 w-full mb-4 rounded"
+      />
 
-      {error && (
-        <div style={{ marginTop: "20px", color: "red" }}>
-          <h3>Error:</h3>
-          <pre>{JSON.stringify(error, null, 2)}</pre>
-        </div>
+      <label className="block mb-2">Currency</label>
+      <input
+        type="text"
+        value={currency}
+        onChange={(e) => setCurrency(e.target.value)}
+        className="border p-2 w-full mb-4 rounded"
+      />
+
+      <button
+        onClick={sendWebhook}
+        className="px-4 py-2 bg-blue-600 text-white rounded"
+      >
+        Send Webhook
+      </button>
+
+      {response && (
+        <pre className="mt-4 bg-gray-100 p-2 rounded">
+          {JSON.stringify(response, null, 2)}
+        </pre>
       )}
     </div>
   );
 }
-
-export default Appp;
