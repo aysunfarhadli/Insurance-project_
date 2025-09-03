@@ -4,6 +4,7 @@ import viteLogo from '/vite.svg'
 import './App.css'
 import PaymentTest from './test'
 import Appp from './test2'
+import AuthTest from './newT/index'
 
 function App() {
   const [count, setCount] = useState(0)
@@ -16,6 +17,8 @@ function App() {
       </PaymentTest> */}
 
       {/* <Appp></Appp> */}
+
+      <AuthTest></AuthTest>
     </>
   )
 }

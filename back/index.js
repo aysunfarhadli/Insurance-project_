@@ -10,11 +10,17 @@ const authRoutes = require("./router/auth");
 const insuranceRoutes = require("./router/index.js");
 const tripRoutes = require("./router/insurer");
 const webhookRoutes = require("./router/webhooks");
+const authRoute = require("./router/authUser.js")
+const cookieParser = require("cookie-parser");
 const app = express();
 
 app.use(express.json());
 app.use(helmet());
-app.use(cors())
+app.use(cors({
+    origin: "http://localhost:5173", // frontend-in origin-i
+    credentials: true                // cookie üçün şərtdir
+}));
+app.use(cookieParser());
 
 
 
@@ -37,6 +43,7 @@ app.use("/auth", authRoutes);
 app.use("/api/forms", insuranceRoutes);
 app.use("/api/trips", tripRoutes);
 app.use("/", webhookRoutes);
+app.use("/authUser", authRoute)
 
 // Start
 const PORT = process.env.PORT || 5000;
