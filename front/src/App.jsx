@@ -1,9 +1,7 @@
 import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+
 import './App.css'
-import PaymentTest from './test'
-import Appp from './test2'
+
 import AuthTest from './newT/index'
 
 function App() {
@@ -11,8 +9,8 @@ function App() {
 
   return (
     <>
-{/*       
-      <PaymentTest>
+      
+      {/* <PaymentTest>
         
       </PaymentTest> */}
 
