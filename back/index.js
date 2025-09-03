@@ -13,6 +13,7 @@ const webhookRoutes = require("./router/webhooks");
 const authRoute = require("./router/authUser.js")
 const cookieParser = require("cookie-parser");
 const app = express();
+const categoryRoutes = require("./router/insCategory");
 
 app.use(express.json());
 app.use(helmet());
@@ -44,6 +45,7 @@ app.use("/api/forms", insuranceRoutes);
 app.use("/api/trips", tripRoutes);
 app.use("/", webhookRoutes);
 app.use("/authUser", authRoute)
+app.use("/api/categories", categoryRoutes);
 
 // Start
 const PORT = process.env.PORT || 5000;
