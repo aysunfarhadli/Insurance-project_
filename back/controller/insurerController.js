@@ -1,78 +1,34 @@
-const { validationResult } = require("express-validator");
-const TripInfo = require("../models/insurer");
+const Order = require("../models/insurer");
+const User = require("../models/authUser");
+const Category = require("../models/insCategory");
 
 // 🔹 Yeni trip əlavə
-exports.createTrip = async (req, res) => {
+exports.createOrder = async (req, res) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
+    const { user_id, category_id, product_id, status, start_date, end_date, currency, total_amount } = req.body;
 
-    const {
-      startDate,
-      endDate,
-      multiEntry,
-      entriesCount,
-      coverageScope,
-      coverageAmount,
+    // validate user & category
+    const user = await User.findById(user_id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    const category = await Category.findById(category_id);
+    if (!category) return res.status(404).json({ message: "Category not found" });
+
+    const order = new Order({
+      user_id,
+      category_id,
+      product_id,
+      status,
+      start_date,
+      end_date,
       currency,
-      covidCoverage,
-      embassy,
-    } = req.body;
+      total_amount,
+    });
 
-    const today = new Date();
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-
-    // ✅ Başlama tarixi ən azı sabah olmalıdır
-    if (start <= today) {
-      return res.status(400).json({ error: "Başlama tarixi ən azı sabah olmalıdır." });
-    }
-
-    // ✅ Bitmə tarixi ≥ başlama tarixi
-    if (end < start) {
-      return res.status(400).json({ error: "Bitmə tarixi başlama tarixindən kiçik ola bilməz." });
-    }
-
-    // ✅ Max 1 illik polis
-    const diffDays = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
-    if (diffDays > 365) {
-      return res.status(400).json({ error: "Sığorta müddəti 1 ildən çox ola bilməz." });
-    }
-
-    // ✅ multiEntry = true → entriesCount = MULTIPLE
-    if (multiEntry && entriesCount !== "MULTIPLE") {
-      return res.status(400).json({ error: "multiEntry = true olduqda entriesCount = MULTIPLE olmalıdır." });
-    }
-
-    // ✅ Schengen üçün minimum coverage = 30,000
-    if (coverageScope === "SCHENGEN" && coverageAmount < 30000) {
-      return res.status(400).json({ error: "Schengen üçün minimum coverage 30,000 olmalıdır." });
-    }
-
-    // ✅ Currency qaydası
-    if (currency === "AZN" && coverageScope !== "REGIONAL_TR") {
-      return res.status(400).json({ error: "AZN yalnız REGIONAL_TR üçün keçərlidir." });
-    }
-
-    // ✅ Worldwide üçün covidCoverage məcburi FULL
-    if (coverageScope === "WORLDWIDE" && covidCoverage !== "FULL") {
-      return res.status(400).json({ error: "WORLDWIDE üçün COVID coverage FULL olmalıdır." });
-    }
-
-    // ✅ Duplicate yoxlama
-    const exists = await TripInfo.findOne({ embassy, startDate, endDate });
-    if (exists) {
-      return res.status(400).json({ error: "Bu tarixlərdə artıq sığorta mövcuddur." });
-    }
-
-    const trip = new TripInfo(req.body);
-    await trip.save();
-
-    res.status(201).json({ message: "Trip info yaradıldı", data: trip });
+    await order.save();
+    res.status(201).json(order);
   } catch (err) {
-    res.status(500).json({ error: "Server xətası", details: err.message });
+    res.status(500).json({ message: err.message });
   }
 };
 
@@ -103,39 +59,55 @@ exports.calculatePrice = (req, res) => {
 };
 
 // 🔹 Bütün trip-ləri al (pagination + filter)
-exports.getTrips = async (req, res) => {
+exports.getOrders = async (req, res) => {
   try {
-    const { page = 1, limit = 10, embassy } = req.query;
-    const filter = embassy ? { embassy } : {};
-
-    const trips = await TripInfo.find(filter)
-      .skip((page - 1) * limit)
-      .limit(parseInt(limit));
-
-    res.json(trips);
+    const orders = await Order.find()
+      .populate("user_id", "first_name last_name email phone")
+      .populate("category_id", "name code")
+      .populate("product_id", "name code");
+    res.json(orders);
   } catch (err) {
-    res.status(500).json({ error: "Server xətası", details: err.message });
+    res.status(500).json({ message: err.message });
+  }
+};
+
+
+exports.getOrderById = async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id)
+      .populate("user_id", "first_name last_name email phone")
+      .populate("category_id", "name code")
+      .populate("product_id", "name code");
+
+    if (!order) return res.status(404).json({ message: "Order not found" });
+    res.json(order);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
 };
 
 // 🔹 Trip update
-exports.updateTrip = async (req, res) => {
+exports.updateOrder = async (req, res) => {
   try {
-    const trip = await TripInfo.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    if (!trip) return res.status(404).json({ error: "Trip tapılmadı" });
-    res.json({ message: "Trip yeniləndi", data: trip });
+    const order = await Order.findByIdAndUpdate(req.params.id, req.body, { new: true })
+      .populate("user_id", "first_name last_name email phone")
+      .populate("category_id", "name code")
+      .populate("product_id", "name code");
+
+    if (!order) return res.status(404).json({ message: "Order not found" });
+    res.json(order);
   } catch (err) {
-    res.status(500).json({ error: "Server xətası", details: err.message });
+    res.status(500).json({ message: err.message });
   }
 };
 
 // 🔹 Trip delete
-exports.deleteTrip = async (req, res) => {
+exports.deleteOrder = async (req, res) => {
   try {
-    const trip = await TripInfo.findByIdAndDelete(req.params.id);
-    if (!trip) return res.status(404).json({ error: "Trip tapılmadı" });
-    res.json({ message: "Trip silindi" });
+    const order = await Order.findByIdAndDelete(req.params.id);
+    if (!order) return res.status(404).json({ message: "Order not found" });
+    res.json({ message: "Order deleted" });
   } catch (err) {
-    res.status(500).json({ error: "Server xətası", details: err.message });
+    res.status(500).json({ message: err.message });
   }
 };

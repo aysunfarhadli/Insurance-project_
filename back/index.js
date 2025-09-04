@@ -12,8 +12,14 @@ const tripRoutes = require("./router/insurer");
 const webhookRoutes = require("./router/webhooks");
 const authRoute = require("./router/authUser.js")
 const cookieParser = require("cookie-parser");
+const companyRoutes = require("./router/companies");
+const companyInsuranceTypeRoutes = require("./router/companyInsType");
+const orderRoutes = require("./router/insurer");
+const orderFormCommonRoutes = require("./routes/orderCommon");
+const orderFormSpecificRoutes = require("./routes/orderSpecific");
 const app = express();
 const categoryRoutes = require("./router/insCategory");
+
 
 app.use(express.json());
 app.use(helmet());
@@ -42,10 +48,16 @@ mongoose
 app.use("/api/payments", paymentRoutes);
 app.use("/auth", authRoutes);
 app.use("/api/forms", insuranceRoutes);
-app.use("/api/trips", tripRoutes);
+// app.use("/api/trips", tripRoutes);
 app.use("/", webhookRoutes);
 app.use("/authUser", authRoute)
 app.use("/api/categories", categoryRoutes);
+app.use("/api/companies", companyRoutes);
+app.use("/api/company-insurance-types", companyInsuranceTypeRoutes);
+
+app.use("/api/orders", orderRoutes);
+app.use("/api/order-form-common", orderFormCommonRoutes);
+app.use("/api/order-form-specific", orderFormSpecificRoutes);
 
 // Start
 const PORT = process.env.PORT || 5000;
