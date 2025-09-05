@@ -23,4 +23,5 @@ const companyInsuranceTypeSchema = new mongoose.Schema(
 // Eyni şirkət + eyni category təkrar olmasın
 companyInsuranceTypeSchema.index({ company_id: 1, category_id: 1 }, { unique: true });
 
-module.exports = mongoose.model("CompanyInsuranceType", companyInsuranceTypeSchema);
+module.exports = mongoose.models.CompanyInsuranceType ||
+  mongoose.model("CompanyInsuranceType", companyInsuranceTypeSchema);

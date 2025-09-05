@@ -1,4 +1,4 @@
-const CompanyInsuranceType = require("../models/companyInsuranceType");
+const CompanyInsuranceType = require("../models/companyInsType");
 const Company = require("../models/companies");
 const Category = require("../models/insCategory");
 

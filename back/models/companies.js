@@ -30,4 +30,4 @@ const companySchema = new mongoose.Schema(
   { timestamps: { createdAt: "created_at", updatedAt: "updated_at" } }
 );
 
-module.exports = mongoose.model("Company", companySchema);
+module.exports = mongoose.models.Company || mongoose.model("Company", companySchema);

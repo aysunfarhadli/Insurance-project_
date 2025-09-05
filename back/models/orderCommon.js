@@ -17,4 +17,5 @@ const orderFormCommonSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-module.exports = mongoose.model("OrderFormCommon", orderFormCommonSchema);
+module.exports = mongoose.models.OrderFormCommon ||
+  mongoose.model("OrderFormCommon", orderFormCommonSchema);

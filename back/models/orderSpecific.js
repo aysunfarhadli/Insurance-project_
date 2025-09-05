@@ -16,4 +16,5 @@ const orderFormSpecificSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-module.exports = mongoose.model("OrderFormSpecific", orderFormSpecificSchema);
+module.exports = mongoose.models.OrderFormSpecific ||
+  mongoose.model("OrderFormSpecific", orderFormSpecificSchema);

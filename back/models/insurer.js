@@ -20,4 +20,4 @@ const orderSchema = new mongoose.Schema(
   { timestamps: { createdAt: "created_at", updatedAt: "updated_at" } }
 );
 
-module.exports = mongoose.model("Order", orderSchema);
+module.exports = mongoose.models.Order || mongoose.model("Order", orderSchema);

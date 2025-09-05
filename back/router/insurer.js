@@ -7,6 +7,6 @@ router.get("/", orderController.getOrders);
 router.get("/:id", orderController.getOrderById);
 router.put("/:id", orderController.updateOrder);
 router.delete("/:id", orderController.deleteOrder);
-router.post("/calculate-price", tripController.calculatePrice);
+router.post("/calculate-price", orderController.calculatePrice);
 
 module.exports = router;

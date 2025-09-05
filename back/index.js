@@ -15,8 +15,9 @@ const cookieParser = require("cookie-parser");
 const companyRoutes = require("./router/companies");
 const companyInsuranceTypeRoutes = require("./router/companyInsType");
 const orderRoutes = require("./router/insurer");
-const orderFormCommonRoutes = require("./routes/orderCommon");
-const orderFormSpecificRoutes = require("./routes/orderSpecific");
+const orderFormCommonRoutes = require("./router/orderCommon");
+const orderFormSpecificRoutes = require("./router/orderSpecific");
+const documentRoutes = require("./router/document");
 const app = express();
 const categoryRoutes = require("./router/insCategory");
 
@@ -54,7 +55,7 @@ app.use("/authUser", authRoute)
 app.use("/api/categories", categoryRoutes);
 app.use("/api/companies", companyRoutes);
 app.use("/api/company-insurance-types", companyInsuranceTypeRoutes);
-
+app.use("/api/documents", documentRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/order-form-common", orderFormCommonRoutes);
 app.use("/api/order-form-specific", orderFormSpecificRoutes);
