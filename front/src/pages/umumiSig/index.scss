@@ -1,0 +1,143 @@
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+//   gap: 10px;
+  margin-right: -15px;
+  margin-left: -15px;
+  
+
+}
+
+[class*="col-"] {
+  padding-left: 15px;
+  padding-right: 15px;
+  box-sizing: border-box;
+}
+
+// Generate columns 1–12
+.col-1  { flex: 0 0 calc(8.333% - 20px);  max-width: calc(8.333% - 20px);  margin: 10px; }
+.col-2  { flex: 0 0 calc(16.666% - 20px); max-width: calc(16.666% - 20px); margin: 10px; }
+.col-3  { flex: 0 0 calc(25% - 20px);     max-width: calc(25% - 20px);     margin: 10px; }
+.col-4  { flex: 0 0 calc(33.333% - 20px); max-width: calc(33.333% - 20px); margin: 10px; }
+.col-5  { flex: 0 0 calc(41.666% - 20px); max-width: calc(41.666% - 20px); margin: 10px; }
+.col-6  { flex: 0 0 calc(50% - 20px);     max-width: calc(50% - 20px);     margin: 10px; }
+.col-7  { flex: 0 0 calc(58.333% - 20px); max-width: calc(58.333% - 20px); margin: 10px; }
+.col-8  { flex: 0 0 calc(66.666% - 20px); max-width: calc(66.666% - 20px); margin: 10px; }
+.col-9  { flex: 0 0 calc(75% - 20px);     max-width: calc(75% - 20px);     margin: 10px; }
+.col-10 { flex: 0 0 calc(83.333% - 20px); max-width: calc(83.333% - 20px); margin: 10px; }
+.col-11 { flex: 0 0 calc(91.666% - 20px); max-width: calc(91.666% - 20px); margin: 10px; }
+.col-12 { flex: 0 0 calc(100% - 20px);    max-width: calc(100% - 20px);    margin: 10px; }
+
+// Small devices (sm: ≥576px)
+@media (min-width: 576px) {
+  .col-sm-1 { flex: 0 0 8.33%;  max-width: 8.33%; }
+  .col-sm-2 { flex: 0 0 16.66%; max-width: 16.66%; }
+  .col-sm-3 { flex: 0 0 25%;    max-width: 25%; }
+  .col-sm-4 { flex: 0 0 33.33%; max-width: 33.33%; }
+  .col-sm-5 { flex: 0 0 41.66%; max-width: 41.66%; }
+  .col-sm-6 { flex: 0 0 50%;    max-width: 50%; }
+  .col-sm-7 { flex: 0 0 58.33%; max-width: 58.33%; }
+  .col-sm-8 { flex: 0 0 66.66%; max-width: 66.66%; }
+  .col-sm-9 { flex: 0 0 75%;    max-width: 75%; }
+  .col-sm-10 { flex: 0 0 83.33%; max-width: 83.33%; }
+  .col-sm-11 { flex: 0 0 91.66%; max-width: 91.66%; }
+  .col-sm-12 { flex: 0 0 100%;  max-width: 100%; }
+}
+
+// Medium devices (md: ≥768px)
+@media (min-width: 768px) {
+  .col-md-1 { flex: 0 0 8.33%;  max-width: 8.33%; }
+  .col-md-2 { flex: 0 0 16.66%; max-width: 16.66%; }
+  .col-md-3 { flex: 0 0 25%;    max-width: 25%; }
+  .col-md-4 { flex: 0 0 33.33%; max-width: 33.33%; }
+  .col-md-5 { flex: 0 0 41.66%; max-width: 41.66%; }
+  .col-md-6 { flex: 0 0 50%;    max-width: 50%; }
+  .col-md-7 { flex: 0 0 58.33%; max-width: 58.33%; }
+  .col-md-8 { flex: 0 0 66.66%; max-width: 66.66%; }
+  .col-md-9 { flex: 0 0 75%;    max-width: 75%; }
+  .col-md-10 { flex: 0 0 83.33%; max-width: 83.33%; }
+  .col-md-11 { flex: 0 0 91.66%; max-width: 91.66%; }
+  .col-md-12 { flex: 0 0 100%;  max-width: 100%; }
+}
+
+.umSigorta{
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    .all{
+        
+        // display: flex;
+        // flex-direction: column;
+        // justify-content: center;
+        .box1{
+            
+
+            .kampaniya{
+                padding: 20px;
+                display: flex;
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .act{
+                display: flex;
+                justify-content: space-between;
+                padding: 10px 0px;
+            }
+
+            .sig{
+                
+            
+                
+                .sam{
+                    display: flex;
+                    gap: 10px;
+                    align-items: center;
+                    padding: 1.5rem;
+                    background-color: gray;
+
+
+                    .par{
+                        display: flex;
+                        flex-direction: column;
+                        gap: 5px;
+                        justify-content: center;
+                    }
+                }
+            }
+        }
+        .box2{
+background-color: gray;
+        }
+    }
+}
+
+.tamam{
+width: 100%;
+    .all{
+        display: flex;
+        justify-content: center;
+        
+    }
+    .ms{
+        .act{
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .cards{
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            .card{
+                display: flex;
+                justify-content: space-between;
+                .ip{
+                    display: flex;
+                }
+            }
+        }
+    }
+}
