@@ -75,28 +75,68 @@
             
 
             .kampaniya{
-                padding: 20px;
+                padding: 25px;
                 display: flex;
                 flex-direction: column;
                 gap: 15px;
+                background: linear-gradient(90deg, #ffe5c4, #FFB6A6);
+                border-radius: 15px;
+
             }
 
             .act{
                 display: flex;
                 justify-content: space-between;
-                padding: 10px 0px;
+                padding: 15px 0px;
+                margin-top: 20px;
+                .aD{
+                    color: black;
+                }
             }
 
             .sig{
                 
             
-                
+                .sey{
+                    background-color: #1976d2; /* təxminən göy-mavi */
+
+                }
+
+                .heyat{
+                    background-color: #2e7d32; /* təxminən tünd yaşıl */
+
+                }
+
+                .tibbi{
+                    background-color: #d32f2f; /* qırmızı ton */
+
+                }
+                .emlak{
+                    background-color: #8e24aa; /* bənövşəyi ton */
+
+                }
+
+                .neqliy{
+                    background-color: #ef6c00; /* tünd narıncı */
+
+                }
                 .sam{
                     display: flex;
                     gap: 10px;
                     align-items: center;
                     padding: 1.5rem;
-                    background-color: gray;
+                    color: white;
+                    .svg{
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        font-size: 1.3rem;
+                        width: 2rem;
+                        background-color:rgba($color: white, $alpha: 0.2) ;
+                        svg{
+
+                        }
+                    }
 
 
                     .par{
@@ -123,6 +163,7 @@ width: 100%;
     }
     .ms{
         .act{
+            padding: 10px 0;
             display: flex;
             justify-content: space-between;
         }
@@ -131,13 +172,40 @@ width: 100%;
             display: flex;
             flex-direction: column;
             gap: 20px;
+            padding: 10px 0;
             .card{
                 display: flex;
                 justify-content: space-between;
                 .ip{
                     display: flex;
+                    gap: 15px;
+                    .par2{
+                        display: flex;
+                        flex-direction: column;
+                        gap: 5px;
+                        justify-content: center;
+                    }
                 }
             }
         }
+
+        
     }
+    .statistika{
+            h4{
+                padding: 10px 0;
+            }
+            .stat{
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+
+                .same{
+                    display: flex;
+                    justify-content: space-between;
+                }
+
+            }
+            
+        }
 }

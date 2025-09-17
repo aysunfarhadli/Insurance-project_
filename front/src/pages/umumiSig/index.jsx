@@ -21,13 +21,15 @@ const UmSig = () => {
                 <p>Səyahət sığortasında 30% endirim. Yeni il tətillərinizi güvənli keçirin</p>
               </div>
               <div className='act'  >
-                <a href='#'>Kateqoriyalar</a>
+                <a href='#' className='aD'>Kateqoriyalar</a>
                 <a href='#'>Hamsini gor</a>
               </div>
               <div className='sig row '>
                 <div className='sey col-4 sam'>
-                  <FaPlane />
+                  <div className='svg'>
+                    <FaPlane />
 
+                  </div>
                   <div className='par'>
                     <h4>Səyahət</h4>
                     <p>Beynəlxalq və daxili səyahət sığortası</p>
@@ -103,16 +105,16 @@ const UmSig = () => {
             <div className='statistika col-3'>
               <h4>Statistika</h4>
               <div className='stat'>
-                <div className='actS'>
+                <div className='actS same'>
                   <p>aktiv sigortalar</p>
                   <span>12</span>
-                  
+
                 </div>
-                <div className='xerc'>
+                <div className='xerc same'>
                   <p>bu ay xercler</p>
                   <span>12</span>
                 </div>
-                <div className='oden'>
+                <div className='oden same'>
                   <p>yaxin odenisler</p>
                   <span>12</span>
                 </div>
