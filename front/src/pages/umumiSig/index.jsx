@@ -36,23 +36,28 @@ const UmSig = () => {
                   </div>
                 </div>
                 <div className='heyat col-4 sam'>
-                  <TbActivityHeartbeat />
-
+                  <div className='svg'>
+                    <TbActivityHeartbeat />
+                  </div>
                   <div className='par'>
                     <h4>Həyat</h4>
                     <p>Həyat və təqaüd sığortası</p>
                   </div>
                 </div>
                 <div className='tibbi col-4 sam'>
-                  <FaHeart />
+                  <div className='svg'>
+                    <FaHeart />
+                  </div>
 
-                  <div>
+                  <div className='par'>
                     <h4>Tibbi</h4>
                     <p>Tibbi xəərclərin ödənilməsi</p>
                   </div>
                 </div>
                 <div className='emlak col-4 sam'>
-                  <FaHouse />
+                  <div className='svg'>
+                    <FaHouse />
+                  </div>
 
                   <div className='par'>
                     <h4>Əmlak</h4>
@@ -60,7 +65,9 @@ const UmSig = () => {
                   </div>
                 </div>
                 <div className='neqliy col-4 sam'>
-                  <FaCar />
+                  <div className='svg'>
+                    <FaCar />
+                  </div>
 
                   <div className='par'>
                     <h4>Nəqliyyat</h4>
@@ -81,13 +88,48 @@ const UmSig = () => {
           <div className='all '>
             <div className='ms col-9'>
               <div className='act row'>
-                <a href='#'>Tamamlanmis sigortalar</a>
+                <a href='#' className='wh'>Tamamlanmis sigortalar</a>
                 <a href='#'>hamisini gor</a>
               </div>
-              <div className='cards'>
+              <div className='cards row '>
                 <div className='card'>
                   <div className='ip'>
-                    <FaShield />
+                    <div className='svg'>
+                      <FaShield />
+                    </div>
+                    <div className='par2'>
+                      <h4>Mega sigorta</h4>
+                      <p> seyahet sigorta</p>
+                      <span>15 oktyabir</span>
+                    </div>
+                  </div>
+                  <div>
+                    <p>980 AZN</p>
+
+                  </div>
+                </div>
+                <div className='card'>
+                  <div className='ip'>
+                    <div className='svg'>
+                      <FaShield />
+                    </div>
+
+                    <div className='par2'>
+                      <h4>Mega sigorta</h4>
+                      <p> seyahet sigorta</p>
+                      <span>15 oktyabir</span>
+                    </div>
+                  </div>
+                  <div>
+                    <p>980 AZN</p>
+
+                  </div>
+                </div>
+                <div className='card'>
+                  <div className='ip'>
+                    <div className='svg'>
+                      <FaShield />
+                    </div>
 
                     <div className='par2'>
                       <h4>Mega sigorta</h4>
