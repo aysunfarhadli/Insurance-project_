@@ -1,4 +1,20 @@
-// Improved Grid system with gap support
+@use "sass:color";
+
+
+// Variables for consistent theming
+$primary-color: #2563eb;
+$primary-hover: #1d4ed8;
+$secondary-color: #64748b;
+$accent-color: #f59e0b;
+$light-bg: #f8fafc;
+$border-color: #e2e8f0;
+$text-color: #334155;
+$text-light: #64748b;
+$shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+$shadow-hover: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+$transition: all 0.3s ease;
+
+// Your original grid system (preserved)
 .container {
   width: 90%;
   padding-right: 15px;
@@ -10,35 +26,33 @@
 .row {
   display: flex;
   flex-wrap: wrap;
-//   margin-right: -15px;
-//   margin-left: -15px;
-  
+
   // Optional gap classes
   &.gap-10 {
     margin-right: -5px;
     margin-left: -5px;
-    
-    > [class*="col-"] {
+
+    >[class*="col-"] {
       padding-left: 5px;
       padding-right: 5px;
     }
   }
-  
+
   &.gap-20 {
     margin-right: -10px;
     margin-left: -10px;
-    
-    > [class*="col-"] {
+
+    >[class*="col-"] {
       padding-left: 10px;
       padding-right: 10px;
     }
   }
-  
+
   &.gap-30 {
     margin-right: -15px;
     margin-left: -15px;
-    
-    > [class*="col-"] {
+
+    >[class*="col-"] {
       padding-left: 15px;
       padding-right: 15px;
     }
@@ -52,53 +66,529 @@
 }
 
 // Generate columns 1–12
-.col-1 { flex: 0 0 8.33%;  max-width: 8.33%; }
-.col-2 { flex: 0 0 16.66%; max-width: 16.66%; }
-.col-3 { flex: 0 0 25%;    max-width: 25%; }
-.col-4 { flex: 0 0 33.33%; max-width: 33.33%; }
-.col-5 { flex: 0 0 41.66%; max-width: 41.66%; }
-.col-6 { flex: 0 0 50%;    max-width: 50%; }
-.col-7 { flex: 0 0 58.33%; max-width: 58.33%; }
-.col-8 { flex: 0 0 66.66%; max-width: 66.66%; }
-.col-9 { flex: 0 0 75%;    max-width: 75%; }
-.col-10 { flex: 0 0 83.33%; max-width: 83.33%; }
-.col-11 { flex: 0 0 91.66%; max-width: 91.66%; }
-.col-12 { flex: 0 0 100%;   max-width: 100%; }
+.col-1 {
+  flex: 0 0 8.33%;
+  max-width: 8.33%;
+}
+
+.col-2 {
+  flex: 0 0 16.66%;
+  max-width: 16.66%;
+}
+
+.col-3 {
+  flex: 0 0 25%;
+  max-width: 25%;
+}
+
+.col-4 {
+  flex: 0 0 33.33%;
+  max-width: 33.33%;
+}
+
+.col-5 {
+  flex: 0 0 41.66%;
+  max-width: 41.66%;
+}
+
+.col-6 {
+  flex: 0 0 50%;
+  max-width: 50%;
+}
+
+.col-7 {
+  flex: 0 0 58.33%;
+  max-width: 58.33%;
+}
+
+.col-8 {
+  flex: 0 0 66.66%;
+  max-width: 66.66%;
+}
+
+.col-9 {
+  flex: 0 0 75%;
+  max-width: 75%;
+}
+
+.col-10 {
+  flex: 0 0 83.33%;
+  max-width: 83.33%;
+}
+
+.col-11 {
+  flex: 0 0 91.66%;
+  max-width: 91.66%;
+}
+
+.col-12 {
+  flex: 0 0 100%;
+  max-width: 100%;
+}
 
 // Small devices (sm: ≥576px)
 @media (min-width: 576px) {
-  .col-sm-1 { flex: 0 0 8.33%;  max-width: 8.33%; }
-  .col-sm-2 { flex: 0 0 16.66%; max-width: 16.66%; }
-  .col-sm-3 { flex: 0 0 25%;    max-width: 25%; }
-  .col-sm-4 { flex: 0 0 33.33%; max-width: 33.33%; }
-  .col-sm-5 { flex: 0 0 41.66%; max-width: 41.66%; }
-  .col-sm-6 { flex: 0 0 50%;    max-width: 50%; }
-  .col-sm-7 { flex: 0 0 58.33%; max-width: 58.33%; }
-  .col-sm-8 { flex: 0 0 66.66%; max-width: 66.66%; }
-  .col-sm-9 { flex: 0 0 75%;    max-width: 75%; }
-  .col-sm-10 { flex: 0 0 83.33%; max-width: 83.33%; }
-  .col-sm-11 { flex: 0 0 91.66%; max-width: 91.66%; }
-  .col-sm-12 { flex: 0 0 100%;  max-width: 100%; }
+  .col-sm-1 {
+    flex: 0 0 8.33%;
+    max-width: 8.33%;
+  }
+
+  .col-sm-2 {
+    flex: 0 0 16.66%;
+    max-width: 16.66%;
+  }
+
+  .col-sm-3 {
+    flex: 0 0 25%;
+    max-width: 25%;
+  }
+
+  .col-sm-4 {
+    flex: 0 0 33.33%;
+    max-width: 33.33%;
+  }
+
+  .col-sm-5 {
+    flex: 0 0 41.66%;
+    max-width: 41.66%;
+  }
+
+  .col-sm-6 {
+    flex: 0 0 50%;
+    max-width: 50%;
+  }
+
+  .col-sm-7 {
+    flex: 0 0 58.33%;
+    max-width: 58.33%;
+  }
+
+  .col-sm-8 {
+    flex: 0 0 66.66%;
+    max-width: 66.66%;
+  }
+
+  .col-sm-9 {
+    flex: 0 0 75%;
+    max-width: 75%;
+  }
+
+  .col-sm-10 {
+    flex: 0 0 83.33%;
+    max-width: 83.33%;
+  }
+
+  .col-sm-11 {
+    flex: 0 0 91.66%;
+    max-width: 91.66%;
+  }
+
+  .col-sm-12 {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
 }
 
 // Medium devices (md: ≥768px)
 @media (min-width: 768px) {
-  .col-md-1 { flex: 0 0 8.33%;  max-width: 8.33%; }
-  .col-md-2 { flex: 0 0 16.66%; max-width: 16.66%; }
-  .col-md-3 { flex: 0 0 25%;    max-width: 25%; }
-  .col-md-4 { flex: 0 0 33.33%; max-width: 33.33%; }
-  .col-md-5 { flex: 0 0 41.66%; max-width: 41.66%; }
-  .col-md-6 { flex: 0 0 50%;    max-width: 50%; }
-  .col-md-7 { flex: 0 0 58.33%; max-width: 58.33%; }
-  .col-md-8 { flex: 0 0 66.66%; max-width: 66.66%; }
-  .col-md-9 { flex: 0 0 75%;    max-width: 75%; }
-  .col-md-10 { flex: 0 0 83.33%; max-width: 83.33%; }
-  .col-md-11 { flex: 0 0 91.66%; max-width: 91.66%; }
-  .col-md-12 { flex: 0 0 100%;  max-width: 100%; }
+  .col-md-1 {
+    flex: 0 0 8.33%;
+    max-width: 8.33%;
+  }
+
+  .col-md-2 {
+    flex: 0 0 16.66%;
+    max-width: 16.66%;
+  }
+
+  .col-md-3 {
+    flex: 0 0 25%;
+    max-width: 25%;
+  }
+
+  .col-md-4 {
+    flex: 0 0 33.33%;
+    max-width: 33.33%;
+  }
+
+  .col-md-5 {
+    flex: 0 0 41.66%;
+    max-width: 41.66%;
+  }
+
+  .col-md-6 {
+    flex: 0 0 50%;
+    max-width: 50%;
+  }
+
+  .col-md-7 {
+    flex: 0 0 58.33%;
+    max-width: 58.33%;
+  }
+
+  .col-md-8 {
+    flex: 0 0 66.66%;
+    max-width: 66.66%;
+  }
+
+  .col-md-9 {
+    flex: 0 0 75%;
+    max-width: 75%;
+  }
+
+  .col-md-10 {
+    flex: 0 0 83.33%;
+    max-width: 83.33%;
+  }
+
+  .col-md-11 {
+    flex: 0 0 91.66%;
+    max-width: 91.66%;
+  }
+
+  .col-md-12 {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
 }
 
+// Enhanced Travel Insurance Section
+.seyahat-sigortasi {
+  font-family: 'Inter', 'Arial', sans-serif;
+  padding: 2rem 0;
+  background: $light-bg;
+  color: $text-color;
+  animation: fadeIn 0.8s ease;
 
-// Profile specific styles
+  .all {
+    background: #fff;
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: $shadow;
+    transition: $transition;
+
+    &:hover {
+      box-shadow: $shadow-hover;
+    }
+  }
+
+  // Header
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+
+    .title-section {
+      display: flex;
+      align-items: center;
+
+      .icon {
+        background: linear-gradient(135deg, $primary-color, #3b82f6);
+        color: white;
+        width: 50px;
+        height: 50px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 1rem;
+        font-size: 1.5rem;
+        box-shadow: $shadow;
+        transition: $transition;
+
+        &:hover {
+          transform: rotate(5deg);
+          box-shadow: $shadow-hover;
+        }
+      }
+
+      .text {
+        h4 {
+          margin: 0;
+          font-size: 1.5rem;
+          font-weight: 700;
+          color: #1e293b;
+        }
+
+        p {
+          margin: 0.25rem 0 0;
+          color: $text-light;
+        }
+      }
+    }
+
+    .filter-button {
+      display: flex;
+      align-items: center;
+      padding: 0.5rem 1rem;
+      background: white;
+      border: 1px solid $border-color;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: $transition;
+      box-shadow: $shadow;
+
+      &:hover {
+        box-shadow: $shadow-hover;
+        transform: translateY(-2px);
+        border-color: $primary-color;
+        color: $primary-color;
+      }
+    }
+  }
+
+  // Tab Navigation
+  .tab-navigation {
+    display: flex;
+    margin-bottom: 2rem;
+    border-bottom: 1px solid $border-color;
+
+    button {
+      padding: 0.75rem 1.5rem;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-weight: 500;
+      color: $text-light;
+      position: relative;
+      transition: $transition;
+
+      &:hover {
+        color: $primary-color;
+      }
+
+      &.active {
+        color: $primary-color;
+        font-weight: 600;
+
+        &::after {
+          content: '';
+          position: absolute;
+          bottom: -1px;
+          left: 0;
+          width: 100%;
+          height: 3px;
+          background: $primary-color;
+          border-radius: 3px 3px 0 0;
+          animation: underline 0.3s ease;
+        }
+      }
+    }
+  }
+
+  // Insurance Cards
+  .insurance-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .insurance-card {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: $shadow;
+    transition: $transition;
+    position: relative;
+
+    &:hover {
+      transform: translateY(-5px);
+      box-shadow: $shadow-hover;
+    }
+
+    .popular-badge {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      background: $accent-color;
+      color: white;
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      z-index: 1;
+      animation: pulse 2s infinite;
+    }
+
+    .card-header {
+      padding: 1.5rem 1.5rem 1rem;
+      border-bottom: 1px solid $border-color;
+
+      .company-info {
+        display: flex;
+        align-items: center;
+
+        .icon {
+          background: $light-bg;
+          color: $primary-color;
+          width: 40px;
+          height: 40px;
+          border-radius: 10px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin-right: 1rem;
+          font-size: 1.25rem;
+          transition: $transition;
+        }
+
+        .text {
+          h4 {
+            margin: 0 0 0.25rem;
+            font-size: 1.1rem;
+          }
+
+          .rating {
+            display: flex;
+            align-items: center;
+            color: $accent-color;
+            font-size: 0.875rem;
+
+            svg {
+              margin-right: 0.25rem;
+            }
+
+            span {
+              color: $text-light;
+            }
+          }
+        }
+      }
+    }
+
+    .card-body {
+      padding: 1.5rem;
+
+      .details-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+
+        .detail-item {
+          h5 {
+            margin: 0 0 0.25rem;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: $text-light;
+            font-weight: 600;
+          }
+
+          p {
+            margin: 0;
+            font-weight: 600;
+          }
+        }
+      }
+
+      .features-section {
+        margin-bottom: 1.5rem;
+
+        h5 {
+          margin: 0 0 0.75rem;
+          font-size: 0.875rem;
+          text-transform: uppercase;
+          color: $text-light;
+          font-weight: 600;
+        }
+
+        .features-list {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 0.5rem;
+
+          .feature-item {
+            display: flex;
+            align-items: center;
+            font-size: 0.875rem;
+            transition: $transition;
+
+            &:hover {
+              transform: translateX(5px);
+            }
+
+            svg {
+              color: #22c55e;
+              margin-right: 0.5rem;
+              flex-shrink: 0;
+            }
+          }
+        }
+      }
+
+      .coverage-section {
+        .coverage-grid {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 0.75rem;
+
+          .coverage-item {
+            display: flex;
+            align-items: center;
+            font-size: 0.875rem;
+            padding: 0.5rem;
+            background: $light-bg;
+            border-radius: 6px;
+            transition: $transition;
+
+            &:hover {
+              background: color.adjust($light-bg, $lightness: -2%);
+              transform: translateX(3px);
+            }
+
+            svg {
+              color: $primary-color;
+              margin-right: 0.5rem;
+              flex-shrink: 0;
+            }
+          }
+        }
+      }
+    }
+
+    .card-footer {
+      padding: 1rem 1.5rem;
+      background: $light-bg;
+      display: flex;
+      justify-content: space-between;
+
+      button {
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: $transition;
+        border: none;
+
+        &.details-btn {
+          background: white;
+          color: $primary-color;
+          border: 1px solid $border-color;
+
+          &:hover {
+            background: $primary-color;
+            color: white;
+            border-color: $primary-color;
+          }
+        }
+
+        &.apply-btn {
+          background: $primary-color;
+          color: white;
+
+          &:hover {
+            background: $primary-hover;
+            transform: translateY(-2px);
+            box-shadow: $shadow;
+          }
+        }
+      }
+    }
+  }
+}
+
+// Profile specific styles (enhanced)
 .profile-section {
   font-family: 'Arial', sans-serif;
   color: #333;
@@ -107,17 +597,21 @@
   justify-content: center;
   width: 100%;
   align-items: center;
-  
+  animation: fadeIn 0.8s ease;
+
   .all {
     background: #fff;
-    border-radius: 8px;
+    border-radius: 12px;
     width: 100%;
-    padding: 24px;
-    // display: flex;
-    // flex-direction: column;
-    // align-items: center;
+    padding: 2rem;
+    box-shadow: $shadow;
+    transition: $transition;
+
+    &:hover {
+      box-shadow: $shadow-hover;
+    }
   }
-  
+
   .head {
     display: flex;
     justify-content: space-between;
@@ -125,97 +619,109 @@
     margin-bottom: 30px;
     padding-bottom: 20px;
     border-bottom: 1px solid #eaeaea;
-    
+
     .prof {
       h2 {
         margin: 0 0 5px 0;
         font-size: 24px;
         font-weight: 600;
       }
-      
+
       p {
         margin: 0;
         color: #666;
         font-size: 14px;
       }
     }
-    
+
     .logout-btn {
       display: flex;
       align-items: center;
       background: #f5f5f5;
       border: 1px solid #ddd;
-      border-radius: 4px;
-      padding: 8px 16px;
+      border-radius: 8px;
+      padding: 10px 16px;
       color: #333;
       cursor: pointer;
-      transition: all 0.3s;
-      
+      transition: $transition;
+
       &:hover {
         background: #e9e9e9;
+        transform: translateY(-2px);
+        box-shadow: $shadow;
       }
-      
+
       svg {
         margin-right: 5px;
       }
     }
   }
-  
+
   .body1 {
     width: 100%;
-    display: flex;  
+    display: flex;
     gap: 20px;
     justify-content: center;
+
     .left {
       padding: 30px;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-      border-radius: 8px;
-      // margin-bottom: 20px;
-      
+      box-shadow: $shadow;
+      border-radius: 12px;
+      transition: $transition;
+
+      &:hover {
+        box-shadow: $shadow-hover;
+      }
+
       .change {
         display: flex;
         justify-content: space-between;
         align-items: center;
         margin-bottom: 20px;
-        
+
         p {
           font-size: 18px;
           font-weight: 600;
           margin: 0;
         }
-        
+
         button {
-          padding: 8px 16px;
-          border-radius: 4px;
+          padding: 10px 16px;
+          border-radius: 8px;
           border: none;
           cursor: pointer;
           font-weight: 500;
+          transition: $transition;
         }
-        
+
         .edit-btn {
           background: #f5f5f5;
           color: #333;
-          
+
           &:hover {
             background: #e9e9e9;
+            transform: translateY(-2px);
+            box-shadow: $shadow;
           }
         }
-        
+
         .save-btn {
           background: #4caf50;
           color: white;
-          
+
           &:hover {
             background: #3d8b40;
+            transform: translateY(-2px);
+            box-shadow: $shadow;
           }
         }
       }
-      
+
       .user {
         display: flex;
         align-items: center;
         margin-bottom: 30px;
-        
+
         .user-avatar {
           width: 64px;
           height: 64px;
@@ -227,19 +733,24 @@
           margin-right: 16px;
           font-weight: bold;
           font-size: 20px;
+          transition: $transition;
+
+          &:hover {
+            transform: scale(1.05);
+          }
         }
-        
+
         .info {
           h3 {
             margin: 0 0 5px 0;
             font-size: 18px;
           }
-          
+
           p {
             margin: 0 0 5px 0;
             color: #666;
           }
-          
+
           .verified {
             color: #4caf50;
             font-size: 12px;
@@ -247,35 +758,43 @@
           }
         }
       }
-      
+
       .details {
         .shexsi {
           margin-bottom: 20px;
-          
+
           .input {
             margin-bottom: 20px;
-            
+
             label {
               display: block;
               margin-bottom: 8px;
               font-weight: 500;
               color: #555;
             }
-            
-            input, .value-display {
+
+            input,
+            .value-display {
               width: 100%;
-              padding: 10px 12px;
+              padding: 12px;
               border: 1px solid #ddd;
-              border-radius: 4px;
+              border-radius: 8px;
               box-sizing: border-box;
+              transition: $transition;
             }
-            
+
+            input:focus {
+              border-color: $primary-color;
+              box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+              outline: none;
+            }
+
             .value-display {
               background: #f9f9f9;
             }
           }
         }
-        
+
         .address-input {
           label {
             display: block;
@@ -283,34 +802,47 @@
             font-weight: 500;
             color: #555;
           }
-          
-          input, .value-display {
+
+          input,
+          .value-display {
             width: 100%;
-            padding: 10px 12px;
+            padding: 12px;
             border: 1px solid #ddd;
-            border-radius: 4px;
+            border-radius: 8px;
             box-sizing: border-box;
+            transition: $transition;
           }
-          
+
+          input:focus {
+            border-color: $primary-color;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+            outline: none;
+          }
+
           .value-display {
             background: #f9f9f9;
           }
         }
       }
     }
-    
+
     .right {
       padding: 30px;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-      border-radius: 8px;
-      
+      box-shadow: $shadow;
+      border-radius: 12px;
+      transition: $transition;
+
+      &:hover {
+        box-shadow: $shadow-hover;
+      }
+
       .stat {
         h3 {
           margin: 0 0 20px 0;
           font-size: 18px;
           font-weight: 600;
         }
-        
+
         .stat-item {
           display: flex;
           justify-content: space-between;
@@ -319,12 +851,19 @@
           margin-bottom: 15px;
           border-radius: 8px;
           background: #f9f9f9;
-          
+          transition: $transition;
+
+          &:hover {
+            transform: translateX(5px);
+            background: color.adjust(#f9f9f9, $lightness: -2%);
+
+          }
+
           p {
             margin: 0;
             color: #555;
           }
-          
+
           span {
             font-weight: 600;
             color: #333;
@@ -332,6 +871,43 @@
         }
       }
     }
+  }
+}
+
+// Animations
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes underline {
+  from {
+    width: 0;
+  }
+
+  to {
+    width: 100%;
+  }
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4);
+  }
+
+  70% {
+    box-shadow: 0 0 0 10px rgba(245, 158, 11, 0);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgba(245, 158, 11, 0);
   }
 }
 
@@ -344,21 +920,38 @@
       }
     }
   }
-  
-  .col-md-6 {
-    flex: 0 0 50%;
-    max-width: 50%;
-  }
-  
-  .col-md-12 {
-    flex: 0 0 100%;
-    max-width: 100%;
-  }
 }
 
 @media (max-width: 768px) {
-  .col-sm-12 {
-    flex: 0 0 100%;
-    max-width: 100%;
+  .seyahat-sigortasi {
+    .insurance-cards {
+      grid-template-columns: 1fr;
+    }
+
+    .insurance-card {
+      .card-body {
+
+        .details-grid,
+        .features-list,
+        .coverage-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .card-footer {
+        flex-direction: column;
+        gap: 0.75rem;
+
+        button {
+          width: 100%;
+        }
+      }
+    }
+  }
+
+  .profile-section {
+    .body1 {
+      flex-direction: column;
+    }
   }
 }

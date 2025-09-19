@@ -394,6 +394,7 @@ $shadow-hover: 0 8px 15px rgba(0, 0, 0, 0.2);
     background-color: gray;
     border-radius: 15px;
     @include hover-lift;
+   
   }
 }
 
@@ -509,7 +510,7 @@ $shadow-hover: 0 8px 15px rgba(0, 0, 0, 0.2);
 
   .statistika {
     background-color: white;
-    height: 200px;
+    height: 300px;
     display: flex;
     flex-direction: column;
     justify-content: space-evenly;
