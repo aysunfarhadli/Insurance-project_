@@ -17,6 +17,8 @@ import HeyatSig from './pages/heyatSig'
 import TibbiSig from './pages/tibbi'
 import EmlakSig from './pages/emlakSig'
 import NeqliySig from './pages/neqliySig'
+import Register from './pages/register'
+import Login from './pages/login'
 
 function App() {
 
@@ -25,19 +27,22 @@ function App() {
     <>
 
       <Routes>
-        <Route path='/' element={<Client/>}>
-          <Route index element={<UmSig/>}/>
-          <Route path='seyahet' element={<SeySigorta/>}/>
-          <Route path='heyat' element={<HeyatSig/>}/>
-          <Route path='tibbi' element={<TibbiSig/>}/>
-          <Route path='emlak' element={<EmlakSig/>}/>
-          <Route path='neqliyyat' element={<NeqliySig/>}/>
-          <Route path='profile' element={<Profile/>}/>
+        <Route path='/' element={<Client />}>
+          <Route index element={<UmSig />} />
+          <Route path='seyahet' element={<SeySigorta />} />
+          <Route path='heyat' element={<HeyatSig />} />
+          <Route path='tibbi' element={<TibbiSig />} />
+          <Route path='emlak' element={<EmlakSig />} />
+          <Route path='neqliyyat' element={<NeqliySig />} />
+          <Route path='profile' element={<Profile />} />
+          <Route path='register' element={<Register />} />
+          <Route path='login' element={<Login />} />
+
 
         </Route>
       </Routes>
-        
-    
+
+
 
     </>
   )
