@@ -1,38 +1,39 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import "./index.scss";
 import { TbActivityHeartbeat, TbStarFilled, TbCheck, TbInfoCircle } from 'react-icons/tb';
 
 const SeyahatSigortasi = () => {
   const [activeTab, setActiveTab] = useState('Hamısı');
-  
-  const insurancePlans = [
-    {
-      name: "Mega Travel Sigorta",
-      rating: 4.9,
-      reviews: 532,
-      dailyPrice: "3-15 AZN",
-      processingTime: "Ø 2-3 saat",
-      coverage: "30K-150K EUR",
-      regions: "Avropa, Asiya...",
-      countries: 180,
-      features: ["Beynəlxalq əhatə", "COVID-19 əhatəsi", "Sürətli ödəniş", "24/7 Dəstək"],
-      coverageItems: ["Tibbi təcil", "Baqaj itkisi", "Səyahət ləğvi", "Uçuş gecikmə"],
-      popular: true
-    },
-    {
-      name: "Pasa Travel Plus",
-      rating: 4.7,
-      reviews: 5937,
-      dailyPrice: "2-12 AZN",
-      processingTime: "Ø 1 saat",
-      coverage: "25K-100K EUR",
-      regions: "Avropa, Asiya...",
-      countries: 150,
-      features: ["Sürətli rəsmiləşdirmə", "Online müraciət", "Çevik şərtlər", "Müştəri xidməti dəstəyi"],
-      coverageItems: ["Tibbi təcil", "Baqaj itkisi", "Səyahət ləğvi", "Uçuş gecikmə"],
-      popular: true
-    }
-  ];
+  const [apiPlans, setApiPlans] = useState([]); // <-- data from API
+
+  // Static fields that are not in API
+  const staticFields = {
+    dailyPrice: "3-15 AZN",
+    processingTime: "Ø 2-3 saat",
+    coverage: "30K-150K EUR",
+    regions: "Avropa, Asiya...",
+    countries: 180,
+    features: ["Beynəlxalq əhatə", "COVID-19 əhatəsi", "Sürətli ödəniş", "24/7 Dəstək"],
+    coverageItems: ["Tibbi təcil", "Baqaj itkisi", "Səyahət ləğvi", "Uçuş gecikmə"],
+    popular: true
+  };
+
+  // Fetch data from API
+  useEffect(() => {
+    fetch("http://localhost:5000/api/categories")
+      .then(res => res.json())
+      .then(data => {
+        // Merge static fields into API data
+        const merged = data.map(item => ({
+          ...item,
+          ...staticFields, // add extra fields
+          rating: 4.8, // you can also add defaults
+          reviews: Math.floor(Math.random() * 5000) + 100, // mock reviews
+        }));
+        setApiPlans(merged);
+      })
+      .catch(err => console.error("API Error:", err));
+  }, []);
 
   const tabs = ['Hamısı', 'Populyar', 'Ən ucuz', 'Ən sürətli', 'Premium'];
 
@@ -57,7 +58,7 @@ const SeyahatSigortasi = () => {
           </div>
           
           {/* Tab Navigation */}
-          <div className='tab-navigation'>
+          <div className='tab-navigationn'>
             {tabs.map(tab => (
               <button 
                 key={tab}
@@ -71,7 +72,7 @@ const SeyahatSigortasi = () => {
           
           {/* Insurance Cards */}
           <div className='insurance-cards'>
-            {insurancePlans.map((plan, index) => (
+            {apiPlans.map((plan, index) => (
               <div key={index} className='insurance-card'>
                 <div className='card-header'>
                   <div className='company-info'>
@@ -79,7 +80,7 @@ const SeyahatSigortasi = () => {
                       <TbActivityHeartbeat />
                     </div>
                     <div className='text'>
-                      <h4>{plan.name}</h4>
+                      <h4>{plan.name}</h4> {/* from API */}
                       <div className='rating'>
                         <TbStarFilled />
                         <span>{plan.rating} ({plan.reviews} rəy)</span>

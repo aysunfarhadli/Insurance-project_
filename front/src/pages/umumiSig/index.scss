@@ -320,7 +320,7 @@ $shadow-hover: 0 8px 15px rgba(0, 0, 0, 0.2);
         overflow: hidden;
         cursor: pointer;
         @include hover-lift;
-        background-color: #9b9b9b;
+        // background-color: #9b9b9b;
 
         &::before {
           content: '';
@@ -372,19 +372,19 @@ $shadow-hover: 0 8px 15px rgba(0, 0, 0, 0.2);
       }
 
       // Category hover colors
-      .sey:hover {
+      .sey {
         background-color: color.scale(#1976d2, $lightness: 5%);
       }
-      .heyat:hover {
+      .heyat {
         background-color: color.scale(#2e7d32, $lightness: 5%);
       }
-      .tibbi:hover {
+      .tibbi{
         background-color: color.scale(#d32f2f, $lightness: 5%);
       }
-      .emlak:hover {
+      .emlak {
         background-color: color.scale(#8e24aa, $lightness: 5%);
       }
-      .neqliy:hover {
+      .neqliy {
         background-color: color.scale(#ef6c00, $lightness: 5%);
       }
     }
@@ -515,7 +515,7 @@ $shadow-hover: 0 8px 15px rgba(0, 0, 0, 0.2);
     flex-direction: column;
     justify-content: space-evenly;
     border-radius: 15px;
-    margin-top: 50px;
+    margin-top: 85px;
     padding: 20px;
     @include hover-lift;
 

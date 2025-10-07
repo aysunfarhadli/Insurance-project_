@@ -282,9 +282,7 @@ body {
     .filter-button {
       span {
         display: inline-block;
-        padding: 8px 16px;
-        background-color: white;
-        border: 1px solid #e5e7eb;
+       
         border-radius: 8px;
         font-weight: 500;
         cursor: pointer;
@@ -297,7 +295,7 @@ body {
     }
   }
   
-  .tab-navigation {
+  .tab-navigationn {
     display: flex;
     gap: 8px;
     margin-bottom: 24px;
@@ -323,6 +321,7 @@ body {
         background-color: #2563eb;
         color: white;
         border-color: #2563eb;
+        
       }
     }
   }

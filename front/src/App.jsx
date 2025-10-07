@@ -19,6 +19,7 @@ import EmlakSig from './pages/emlakSig'
 import NeqliySig from './pages/neqliySig'
 import Register from './pages/register'
 import Login from './pages/login'
+import Order from './pages/orderPage'
 
 function App() {
 
@@ -37,6 +38,7 @@ function App() {
           <Route path='profile' element={<Profile />} />
           <Route path='register' element={<Register />} />
           <Route path='login' element={<Login />} />
+          <Route path='order/:id' element={<Order />} />
 
 
         </Route>
