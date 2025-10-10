@@ -2,26 +2,41 @@ const Order = require("../models/insurer");
 const User = require("../models/authUser");
 const Category = require("../models/insCategory");
 
-// 🔹 Yeni trip əlavə
+// 🔹 Yeni order əlavə
 exports.createOrder = async (req, res) => {
   try {
-    const { user_id, category_id, product_id, status, start_date, end_date, currency, total_amount } = req.body;
+    const {
+      finCode,
+      category_id,
+      status,
+      start_date,
+      end_date,
+      currency,
+      total_amount,
+    } = req.body;
 
-    // validate user & category
-    const user = await User.findById(user_id);
-    if (!user) return res.status(404).json({ message: "User not found" });
-
-    const category = await Category.findById(category_id);
-    if (!category) return res.status(404).json({ message: "Category not found" });
-
-    if (new Date(end_date) <= new Date(start_date)) {
-      return res.status(400).json({ message: "end_date must be later than start_date" });
+    // ✅ FinCode yoxlaması (boş gəlməsin deyə)
+    if (!finCode) {
+      return res.status(400).json({ message: "finCode tələb olunur" });
     }
 
+    // ✅ Kateqoriya yoxlaması
+    const category = await Category.findById(category_id);
+    if (!category) {
+      return res.status(404).json({ message: "Kateqoriya tapılmadı" });
+    }
+
+    // ✅ Tarix yoxlaması
+    if (new Date(end_date) <= new Date(start_date)) {
+      return res
+        .status(400)
+        .json({ message: "Bitmə tarixi başlanğıc tarixindən sonra olmalıdır" });
+    }
+
+    // ✅ Yeni order yarat
     const order = new Order({
-      user_id,
+      finCode, // finCode saxlayırıq (user deyil)
       category_id,
-      product_id,
       status,
       start_date,
       end_date,
@@ -30,30 +45,34 @@ exports.createOrder = async (req, res) => {
     });
 
     await order.save();
-    res.status(201).json(order);
+
+    res.status(201).json({
+      message: "Sifariş uğurla yaradıldı ✅",
+      data: order,
+    });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    console.error("createOrder error:", err);
+    res.status(500).json({ message: "Server xətası", error: err.message });
   }
 };
 
-// 🔹 Qiymət hesablaması (yalnız preview üçün)
+
+// 🔹 Qiymət hesablaması
 exports.calculatePrice = (req, res) => {
   try {
     const { startDate, endDate, coverageAmount } = req.body;
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-
     if (!startDate || !endDate || !coverageAmount) {
       return res.status(400).json({ error: "startDate, endDate və coverageAmount vacibdir" });
     }
 
+    const start = new Date(startDate);
+    const end = new Date(endDate);
     const days = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
     if (days <= 0) {
-      return res.status(400).json({ error: "Bitmə tarixi başlama tarixindən sonra olmalıdır." });
+      return res.status(400).json({ error: "Bitmə tarixi başlanğıc tarixindən sonra olmalıdır." });
     }
 
-    // Sadə hesablamaya misal (sonradan dəyişilə bilər)
-    const dailyRate = coverageAmount / 1000 * 0.5;
+    const dailyRate = (coverageAmount / 1000) * 0.5;
     const price = dailyRate * days;
 
     res.json({ days, price });
@@ -62,55 +81,65 @@ exports.calculatePrice = (req, res) => {
   }
 };
 
-// 🔹 Bütün trip-ləri al (pagination + filter)
+// 🔹 Bütün order-ləri al (finCode ilə user məlumatı)
 exports.getOrders = async (req, res) => {
   try {
     const orders = await Order.find()
-      .populate("user_id", "first_name last_name email phone")
-      .populate("category_id", "name code")
-      .populate("product_id", "name code");
-    res.json(orders);
+      .populate({ path: "category_id", select: "name code" })
+      // .populate({ path: "product_id", select: "name code" });
+
+    // finCode ilə user məlumatını ayrıca əlavə edirik
+    const enrichedOrders = await Promise.all(
+      orders.map(async (order) => {
+        const user = await User.findOne({ finCode: order.finCode }).select("first_name last_name email phone finCode");
+        return { ...order.toObject(), user };
+      })
+    );
+
+    res.json(enrichedOrders);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
 
-
+// 🔹 Tək order
 exports.getOrderById = async (req, res) => {
   try {
     const order = await Order.findById(req.params.id)
-      .populate("user_id", "first_name last_name email phone")
-      .populate("category_id", "name code")
-      .populate("product_id", "name code");
+      .populate({ path: "category_id", select: "name code" })
+      // .populate({ path: "product_id", select: "name code" });
 
-    if (!order) return res.status(404).json({ message: "Order not found" });
-    res.json(order);
+    if (!order) return res.status(404).json({ message: "Order tapılmadı" });
+
+    const user = await User.findOne({ finCode: order.finCode }).select("first_name last_name email phone finCode");
+    res.json({ ...order.toObject(), user });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
 
-// 🔹 Trip update
+// 🔹 Update
 exports.updateOrder = async (req, res) => {
   try {
     const order = await Order.findByIdAndUpdate(req.params.id, req.body, { new: true })
-      .populate("user_id", "first_name last_name email phone")
-      .populate("category_id", "name code")
-      .populate("product_id", "name code");
+      .populate({ path: "category_id", select: "name code" })
+      // .populate({ path: "product_id", select: "name code" });
 
-    if (!order) return res.status(404).json({ message: "Order not found" });
-    res.json(order);
+    if (!order) return res.status(404).json({ message: "Order tapılmadı" });
+
+    const user = await User.findOne({ finCode: order.finCode }).select("first_name last_name email phone finCode");
+    res.json({ ...order.toObject(), user });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
 
-// 🔹 Trip delete
+// 🔹 Delete
 exports.deleteOrder = async (req, res) => {
   try {
     const order = await Order.findByIdAndDelete(req.params.id);
-    if (!order) return res.status(404).json({ message: "Order not found" });
-    res.json({ message: "Order deleted" });
+    if (!order) return res.status(404).json({ message: "Order tapılmadı" });
+    res.json({ message: "Order silindi" });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

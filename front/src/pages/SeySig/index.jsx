@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import "./index.scss";
 import { TbActivityHeartbeat, TbStarFilled, TbCheck, TbInfoCircle } from 'react-icons/tb';
+import { useNavigate } from 'react-router-dom'; // <-- əlavə et
 
 const SeyahatSigortasi = () => {
   const [activeTab, setActiveTab] = useState('Hamısı');
-  const [apiPlans, setApiPlans] = useState([]); // <-- data from API
+  const [apiPlans, setApiPlans] = useState([]);
+  const navigate = useNavigate(); // <-- initialize navigate
 
-  // Static fields that are not in API
   const staticFields = {
     dailyPrice: "3-15 AZN",
     processingTime: "Ø 2-3 saat",
@@ -18,17 +19,15 @@ const SeyahatSigortasi = () => {
     popular: true
   };
 
-  // Fetch data from API
   useEffect(() => {
     fetch("http://localhost:5000/api/categories")
       .then(res => res.json())
       .then(data => {
-        // Merge static fields into API data
         const merged = data.map(item => ({
           ...item,
-          ...staticFields, // add extra fields
-          rating: 4.8, // you can also add defaults
-          reviews: Math.floor(Math.random() * 5000) + 100, // mock reviews
+          ...staticFields,
+          rating: 4.8,
+          reviews: Math.floor(Math.random() * 5000) + 100,
         }));
         setApiPlans(merged);
       })
@@ -41,7 +40,7 @@ const SeyahatSigortasi = () => {
     <section className='seyahat-sigortasi'>
       <div className='container'>
         <div className='all'>
-          {/* Header Section */}
+          {/* Header */}
           <div className='header'>
             <div className='title-section'>
               <div className='icon'>
@@ -56,11 +55,11 @@ const SeyahatSigortasi = () => {
               <span>Filtr</span>
             </div>
           </div>
-          
-          {/* Tab Navigation */}
+
+          {/* Tabs */}
           <div className='tab-navigationn'>
             {tabs.map(tab => (
-              <button 
+              <button
                 key={tab}
                 className={activeTab === tab ? 'active' : ''}
                 onClick={() => setActiveTab(tab)}
@@ -69,8 +68,8 @@ const SeyahatSigortasi = () => {
               </button>
             ))}
           </div>
-          
-          {/* Insurance Cards */}
+
+          {/* Cards */}
           <div className='insurance-cards'>
             {apiPlans.map((plan, index) => (
               <div key={index} className='insurance-card'>
@@ -80,7 +79,7 @@ const SeyahatSigortasi = () => {
                       <TbActivityHeartbeat />
                     </div>
                     <div className='text'>
-                      <h4>{plan.name}</h4> {/* from API */}
+                      <h4>{plan.name}</h4>
                       <div className='rating'>
                         <TbStarFilled />
                         <span>{plan.rating} ({plan.reviews} rəy)</span>
@@ -89,7 +88,7 @@ const SeyahatSigortasi = () => {
                   </div>
                   {plan.popular && <div className='popular-badge'>Populyar</div>}
                 </div>
-                
+
                 <div className='card-body'>
                   <div className='details-grid'>
                     <div className='detail-item'>
@@ -113,7 +112,7 @@ const SeyahatSigortasi = () => {
                       <p>● {plan.countries}</p>
                     </div>
                   </div>
-                  
+
                   <div className='features-section'>
                     <h5>Xüsusiyyətlər</h5>
                     <div className='features-list'>
@@ -125,7 +124,7 @@ const SeyahatSigortasi = () => {
                       ))}
                     </div>
                   </div>
-                  
+
                   <div className='coverage-section'>
                     <div className='coverage-grid'>
                       {plan.coverageItems.map((item, i) => (
@@ -137,10 +136,15 @@ const SeyahatSigortasi = () => {
                     </div>
                   </div>
                 </div>
-                
+
                 <div className='card-footer'>
                   <button className='details-btn'>Ətraflı</button>
-                  <button className='apply-btn'>Müraciət et</button>
+                  <button 
+                    className='apply-btn' 
+                    onClick={() => navigate(`/order/${plan._id}`)} // <-- navigate ilə yönləndiririk
+                  >
+                    Müraciət et
+                  </button>
                 </div>
               </div>
             ))}

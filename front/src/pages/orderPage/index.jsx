@@ -1,15 +1,19 @@
 import { useState, useEffect } from "react";
-import { ArrowLeft, Phone, CheckCircle, Calendar, User } from "lucide-react";
+import { ArrowLeft, Phone, CheckCircle, User } from "lucide-react";
+import { useParams } from "react-router-dom";
 import axios from "axios";
 import styles from "./index.module.scss";
 
 axios.defaults.withCredentials = true;
 
 function Order() {
-  const [step, setStep] = useState(1); // 1: məlumatlar, 2: əlaqə, 3: nəticə
+  const { id } = useParams(); // URL-dən gələn kateqoriya ID
+  const [step, setStep] = useState(1);
   const [isSelf, setIsSelf] = useState(true);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
+  // 🔹 Backend-in gözlədiyi data strukturu
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -17,11 +21,12 @@ function Order() {
     passportNumber: "",
     finCode: "",
     birthDate: "",
+    gender: "MALE",
     phone: "",
     email: "",
   });
 
-  // ✅ Özüm üçün seçiləndə backend-dən profili al
+  // 🔹 Öz məlumatlarını avtomatik doldur
   useEffect(() => {
     if (isSelf) {
       setLoading(true);
@@ -36,6 +41,7 @@ function Order() {
             passportNumber: user.passportNumber || "",
             finCode: user.finCode || "",
             birthDate: user.birthDate || "",
+            gender: user.gender || "MALE",
             phone: user.phone || "",
             email: user.email || "",
           });
@@ -43,7 +49,7 @@ function Order() {
         .catch((err) => console.error("Profil alınmadı:", err))
         .finally(() => setLoading(false));
     } else {
-      // ✅ Başqası üçün seçiləndə form sıfırlanır
+      // Başqası üçün
       setFormData({
         firstName: "",
         lastName: "",
@@ -51,20 +57,106 @@ function Order() {
         passportNumber: "",
         finCode: "",
         birthDate: "",
+        gender: "MALE",
         phone: "",
         email: "",
       });
     }
   }, [isSelf]);
 
+  // 🔹 Dəyişiklikləri idarə edir
   const handleChange = (e) => {
-    if (isSelf) return; // özüm üçün rejimdə heç nə dəyişməsin
+    if (isSelf) return;
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleNext = () => {
-    if (step < 3) setStep(step + 1);
+  // 🔹 Addım yoxlanışı
+  const validateStep = () => {
+    if (step === 1) {
+      const requiredFields = [
+        "firstName",
+        "lastName",
+        "fatherName",
+        "passportNumber",
+        "finCode",
+        "birthDate",
+      ];
+      for (const field of requiredFields) {
+        if (!formData[field]?.trim()) {
+          setError("Zəhmət olmasa bütün şəxsi məlumatları doldurun.");
+          return false;
+        }
+      }
+    }
+
+    if (step === 2) {
+      if (!formData.phone?.trim() || !formData.email?.trim()) {
+        setError("Zəhmət olmasa telefon və email məlumatlarını daxil edin.");
+        return false;
+      }
+    }
+
+    setError("");
+    return true;
   };
+
+  // 🔹 Növbəti addım və ya göndəriş
+  const handleNext = async () => {
+    if (!validateStep()) return;
+    if (step < 3) return setStep(step + 1);
+
+    try {
+      setLoading(true);
+      setError("");
+
+      // 1️⃣ Form məlumatlarını backend-ə göndər
+      const formRes = await axios.post("http://localhost:5000/api/forms", {
+        ownerType: isSelf ? "SELF" : "OTHER",
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        fatherName: formData.fatherName,
+        birthDate: formData.birthDate,
+        gender: formData.gender,
+        passportNumber: formData.passportNumber,
+        finCode: formData.finCode,
+        phone: formData.phone,
+        email: formData.email,
+      });
+
+      const userFormId = formRes.data?.data?._id;
+
+      //   console.log(userFormId);
+
+      console.log("finCode:", formData.finCode);
+
+      console.log(id);
+
+
+
+      // if (!userFormId) throw new Error("Form ID tapılmadı!");
+
+      // 2️⃣ Sifariş (order) yaradır
+      await axios.post("http://localhost:5000/api/orders", {
+        finCode: formData.finCode,
+        category_id: id,
+        // product_id: "6703e6b8b5d2fbc5a2435a92", // test üçün
+        status: "pending",
+        start_date: new Date().toISOString(),
+        end_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+        currency: "AZN",
+        total_amount: 100,
+      });
+
+      alert("Məlumatlar uğurla göndərildi ✅");
+    } catch (err) {
+      console.error("Göndərmə xətası:", err);
+      setError("Göndərmə zamanı xəta baş verdi.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
 
   const handleBack = () => {
     if (step > 1) setStep(step - 1);
@@ -72,7 +164,7 @@ function Order() {
 
   return (
     <div className={styles.container}>
-      {/* TABLAR */}
+      {/* 🔹 Addım naviqasiyası */}
       <div className={styles.tabNavigation}>
         <div className={styles.tabContent}>
           <button className={`${styles.tab} ${step === 1 ? styles.active : styles.inactive}`}>
@@ -90,12 +182,14 @@ function Order() {
         </div>
       </div>
 
-      {/* FORM */}
+      {/* 🔹 Əsas forma hissəsi */}
       <main className={styles.main}>
         <div className={styles.formCard}>
+          {error && <p className={styles.error}>{error}</p>}
+
+          {/* 🔹 Addım 1: Şəxsi məlumatlar */}
           {step === 1 && (
             <>
-              {/* Radio */}
               <div className={styles.radioGroup}>
                 <label className={styles.radioLabel}>
                   <input
@@ -121,13 +215,12 @@ function Order() {
                 <p>Profil məlumatları yüklənir...</p>
               ) : (
                 <div className={styles.formFields}>
-                  {[
-                    { name: "firstName", label: "Ad" },
-                    { name: "lastName", label: "Soyad" },
-                    { name: "fatherName", label: "Ata adı" },
-                    { name: "passportNumber", label: "Passport nömrəsi" },
-                    { name: "finCode", label: "FİN kod" },
-                    { name: "birthDate", label: "Doğum tarixi", type: "date" },
+                  {[{ name: "firstName", label: "Ad" },
+                  { name: "lastName", label: "Soyad" },
+                  { name: "fatherName", label: "Ata adı" },
+                  { name: "passportNumber", label: "Passport nömrəsi" },
+                  { name: "finCode", label: "FİN kod" },
+                  { name: "birthDate", label: "Doğum tarixi", type: "date" },
                   ].map((field, i) => (
                     <div key={i} className={styles.formGroup}>
                       <label className={styles.label}>
@@ -143,11 +236,27 @@ function Order() {
                       />
                     </div>
                   ))}
+
+                  {/* 🔹 Yeni: Gender seçimi */}
+                  <div className={styles.formGroup}>
+                    <label className={styles.label}>Cins</label>
+                    <select
+                      name="gender"
+                      value={formData.gender}
+                      onChange={handleChange}
+                      disabled={isSelf}
+                      className={styles.input}
+                    >
+                      <option value="MALE">Kişi</option>
+                      <option value="FEMALE">Qadın</option>
+                    </select>
+                  </div>
                 </div>
               )}
             </>
           )}
 
+          {/* 🔹 Addım 2: Əlaqə məlumatları */}
           {step === 2 && (
             <div className={styles.formFields}>
               <div className={styles.formGroup}>
@@ -182,23 +291,124 @@ function Order() {
             </div>
           )}
 
+          {/* 🔹 Addım 3: Nəticə */}
           {step === 3 && (
-            <div>
-              <h2>Nəticə və təsdiq</h2>
-              <p>Yazdığınız bütün məlumatları yoxlayın və təsdiqləyin:</p>
-              <pre>{JSON.stringify(formData, null, 2)}</pre>
-              <button
-                className={styles.nextButton}
-                onClick={() => alert("Məlumatlar uğurla göndərildi ✅")}
-              >
-                Təsdiqlə
-              </button>
+            <div className={styles.confirmationSection}>
+              <div className={styles.confirmationHeader}>
+                <CheckCircle className={styles.successIcon} />
+                <h2>Məlumatlarınızı Yoxlayın</h2>
+                <p>Bütün məlumatlar düzgündürsə, "Təsdiqlə" düyməsini klikləyin</p>
+              </div>
+
+              <div className={styles.infoGrid}>
+                <div className={styles.infoSection}>
+                  <h3 className={styles.sectionTitle}>
+                    <User className={styles.sectionIcon} />
+                    Şəxsi Məlumatlar
+                  </h3>
+                  <div className={styles.infoRow}>
+                    <span className={styles.infoLabel}>Ad, Soyad, Ata adı:</span>
+                    <span className={styles.infoValue}>{formData.firstName} {formData.lastName} {formData.fatherName}</span>
+                  </div>
+                  <div className={styles.infoRow}>
+                    <span className={styles.infoLabel}>Passport nömrəsi:</span>
+                    <span className={styles.infoValue}>{formData.passportNumber}</span>
+                  </div>
+                  <div className={styles.infoRow}>
+                    <span className={styles.infoLabel}>FİN kod:</span>
+                    <span className={styles.infoValue}>{formData.finCode}</span>
+                  </div>
+                  <div className={styles.infoRow}>
+                    <span className={styles.infoLabel}>Doğum tarixi:</span>
+                    <span className={styles.infoValue}>
+                      {new Date(formData.birthDate).toLocaleDateString('az-AZ')}
+                    </span>
+                  </div>
+                  <div className={styles.infoRow}>
+                    <span className={styles.infoLabel}>Cins:</span>
+                    <span className={styles.infoValue}>
+                      {formData.gender === 'MALE' ? 'Kişi' : 'Qadın'}
+                    </span>
+                  </div>
+                </div>
+
+                <div className={styles.infoSection}>
+                  <h3 className={styles.sectionTitle}>
+                    <Phone className={styles.sectionIcon} />
+                    Əlaqə Məlumatları
+                  </h3>
+                  <div className={styles.infoRow}>
+                    <span className={styles.infoLabel}>Telefon:</span>
+                    <span className={styles.infoValue}>{formData.phone}</span>
+                  </div>
+                  <div className={styles.infoRow}>
+                    <span className={styles.infoLabel}>Email:</span>
+                    <span className={styles.infoValue}>{formData.email}</span>
+                  </div>
+                </div>
+
+                <div className={styles.infoSection}>
+                  <h3 className={styles.sectionTitle}>Sığorta Məlumatları</h3>
+                  <div className={styles.infoRow}>
+                    <span className={styles.infoLabel}>Sığorta olunan:</span>
+                    <span className={styles.infoValue}>
+                      {isSelf ? 'Özüm üçün' : 'Başqası üçün'}
+                    </span>
+                  </div>
+                  <div className={styles.infoRow}>
+                    <span className={styles.infoLabel}>Tarix:</span>
+                    <span className={styles.infoValue}>
+                      {new Date().toLocaleDateString('az-AZ', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                      })}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className={styles.agreementSection}>
+                <label className={styles.checkboxLabel}>
+                  <input type="checkbox" className={styles.checkbox} />
+                  <span className={styles.checkboxText}>
+                    <a href="#" className={styles.link}>İstifadəçi razılaşmasını</a> və
+                    <a href="#" className={styles.link}> məlumatların emalı şərtlərini</a> oxudum və qəbul edirəm
+                  </span>
+                </label>
+              </div>
+
+              <div className={styles.actionButtons}>
+                <button
+                  className={styles.editButton}
+                  onClick={() => setStep(1)}
+                >
+                  Məlumatları Düzəlt
+                </button>
+                <button
+                  className={styles.confirmButton}
+                  onClick={handleNext}
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <>
+                      <div className={styles.spinner}></div>
+                      Göndərilir...
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle className={styles.buttonIcon} />
+                      Təsdiqlə və Göndər
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
           )}
         </div>
       </main>
 
-      {/* FOOTER */}
+      {/* 🔹 Addım idarə düymələri */}
       <footer className={styles.footer}>
         <div className={styles.footerContent}>
           <button
@@ -217,9 +427,9 @@ function Order() {
               cursor: "pointer",
             }}
             onClick={handleNext}
+            disabled={loading}
           >
             {step < 3 ? "Növbəti" : "Bitir"}
-            <ArrowLeft className={styles.arrowIcon} />
           </button>
         </div>
       </footer>
