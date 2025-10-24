@@ -70,9 +70,9 @@ const SeyahatSigortasi = () => {
           </div>
 
           {/* Cards */}
-          <div className='insurance-cards'>
+          <div className='insurance-cards row'>
             {apiPlans.map((plan, index) => (
-              <div key={index} className='insurance-card'>
+              <div key={index} className='insurance-card '>
                 <div className='card-header'>
                   <div className='company-info'>
                     <div className='icon'>

@@ -8,7 +8,7 @@ const Client = () => {
     <>
         <Cheader/>
         <Outlet/>
-        <Cfooter/>
+        {/* <Cfooter/> */}
 
     </>
   )
