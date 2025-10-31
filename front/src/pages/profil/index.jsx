@@ -3,7 +3,7 @@ import './index.scss';
 import { MdExitToApp } from "react-icons/md";
 import axios from "axios";
 
-axios.defaults.withCredentials = true; // send cookies automatically
+axios.defaults.withCredentials = true;
 
 const Profile = () => {
   const [isEditing, setIsEditing] = useState(false);
@@ -14,18 +14,23 @@ const Profile = () => {
     phone: "",
     address: ""
   });
+  const [userId, setUserId] = useState(null);
 
-  // ✅ Fetch profile data from backend
+  // ✅ Fetch user profile (based on JWT cookie)
   useEffect(() => {
-    axios.get("http://localhost:5000/authUser/profile", { withCredentials: true,})
+    axios.get("http://localhost:5000/authUser/profile", { withCredentials: true })
       .then(res => {
-        setUserData(res.data.user); // backend returns user
+        setUserData(res.data.user);
+        setUserId(res.data.user?._id);
+        // console.log(res.data.user);
+
       })
       .catch(err => {
         console.error("Profile fetch error:", err);
       });
   }, []);
 
+  // Handle input change
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setUserData(prev => ({
@@ -34,15 +39,31 @@ const Profile = () => {
     }));
   };
 
+  // ✅ Save updated user info
   const handleSave = () => {
-    setIsEditing(false);
-    // TODO: send updated data to backend with axios.put/post
+
+    const { _id,__v, ...updatedData } = userData;
+
+
+    axios.put(`http://localhost:5000/authUser/update/${userId}`, updatedData, {
+      withCredentials: true,
+    })
+      .then(res => {
+        setUserData(res.data.user); // update UI with new data
+        setIsEditing(false);
+        alert("Məlumatlar uğurla yeniləndi ✅");
+      })
+      .catch(err => {
+        console.error("Update error:", err);
+        alert("Xəta baş verdi. Zəhmət olmasa yenidən cəhd edin ❌");
+      });
   };
 
+  // ✅ Logout
   const handleLogout = () => {
-    axios.post("http://localhost:5000/authUser/logout") // add logout route in backend
+    axios.post("http://localhost:5000/authUser/logout", {}, { withCredentials: true })
       .then(() => {
-        window.location.href = "/login"; // redirect after logout
+        window.location.href = "/login";
       })
       .catch(err => console.error("Logout error:", err));
   };
@@ -62,7 +83,7 @@ const Profile = () => {
               <MdExitToApp /> <span>Çıxış</span>
             </button>
           </div>
-          
+
           <div className='body1 row col-12'>
             <div className='left col-12 col-sm-7 col-md-7'>
               <div className='change'>
@@ -73,7 +94,7 @@ const Profile = () => {
                   <button className='edit-btn' onClick={() => setIsEditing(true)}>Düzəliş et</button>
                 )}
               </div>
-              
+
               <div className='user'>
                 <div className='user-avatar'>
                   <span>
@@ -86,73 +107,35 @@ const Profile = () => {
                   <span className='verified'>Təsdiqlənmiş hesab</span>
                 </div>
               </div>
-              
+
               <div className='details'>
                 <div className='shexsi row'>
-                  <div className='input col-12 col-sm-6 col-md-6'>
-                    <label>Ad</label>
-                    {isEditing ? (
-                      <input 
-                        type='text' 
-                        name="name"
-                        value={userData.name} 
-                        onChange={handleInputChange}
-                      />
-                    ) : (
-                      <div className='value-display'>{userData.name}</div>
-                    )}
-                  </div>
-                  
-                  <div className='input col-12 col-sm-6 col-md-6'>
-                    <label>Soyad</label>
-                    {isEditing ? (
-                      <input 
-                        type='text' 
-                        name="surname"
-                        value={userData.surname} 
-                        onChange={handleInputChange}
-                      />
-                    ) : (
-                      <div className='value-display'>{userData.surname}</div>
-                    )}
-                  </div>
-                  
-                  <div className='input col-12 col-sm-6 col-md-6'>
-                    <label>Email</label>
-                    {isEditing ? (
-                      <input 
-                        type='email' 
-                        name="email"
-                        value={userData.email} 
-                        onChange={handleInputChange}
-                      />
-                    ) : (
-                      <div className='value-display'>{userData.email}</div>
-                    )}
-                  </div>
-                  
-                  <div className='input col-12 col-sm-6 col-md-6'>
-                    <label>Telefon</label>
-                    {isEditing ? (
-                      <input 
-                        type='text' 
-                        name="phone"
-                        value={userData.phone} 
-                        onChange={handleInputChange}
-                      />
-                    ) : (
-                      <div className='value-display'>{userData.phone}</div>
-                    )}
-                  </div>
+                  {["name", "surname", "email", "phone"].map((field, i) => (
+                    <div className='input col-12 col-sm-6 col-md-6' key={i}>
+                      <label>{field === "name" ? "Ad" :
+                        field === "surname" ? "Soyad" :
+                          field === "email" ? "Email" : "Telefon"}</label>
+                      {isEditing ? (
+                        <input
+                          type={field === "email" ? "email" : "text"}
+                          name={field}
+                          value={userData[field] || ""}
+                          onChange={handleInputChange}
+                        />
+                      ) : (
+                        <div className='value-display'>{userData[field]}</div>
+                      )}
+                    </div>
+                  ))}
                 </div>
-                
+
                 <div className='input address-input col-12'>
                   <label>Ünvan</label>
                   {isEditing ? (
-                    <input 
-                      type='text' 
+                    <input
+                      type='text'
                       name="address"
-                      value={userData.address} 
+                      value={userData.address || ""}
                       onChange={handleInputChange}
                     />
                   ) : (
@@ -161,7 +144,7 @@ const Profile = () => {
                 </div>
               </div>
             </div>
-            
+
             <div className='right col-12 col-sm-5 col-md-4'>
               <div className='stat'>
                 <h3>Hesab Statistikası</h3>

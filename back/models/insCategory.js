@@ -6,7 +6,14 @@ const categorySchema = new mongoose.Schema(
       type: String,
       required: true,
       unique: true, // unikallıq
-      enum: ["life", "travel", "vehicle", "property", "medical"], // məhdud seçimlər
+      enum: [
+        "vehicle_liability",             // Avtonəqliyyat Mülki Məsuliyyət
+        "property_insurance",            // Daşınmaz Əmlakın İcbari Sığortası
+        "property_liability",            // Əmlakın İstismarı üzrə Məsuliyyət
+        "employer_liability",            // İşəgötürənin Məsuliyyəti
+        "passenger_accident",            // Sərnişinlərin Qəza Sığortası
+        "hazardous_liability"            // Təhlükəli Obyektlərin Məsuliyyəti
+      ],
     },
     name: {
       type: String,
@@ -20,4 +27,6 @@ const categorySchema = new mongoose.Schema(
   { timestamps: { createdAt: "created_at", updatedAt: "updated_at" } }
 );
 
-module.exports = mongoose.models.Category || mongoose.model("Category", categorySchema);
+delete mongoose.models.Category;
+
+module.exports = mongoose.model("Category", categorySchema);

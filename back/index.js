@@ -20,6 +20,7 @@ const orderFormSpecificRoutes = require("./router/orderSpecific");
 const documentRoutes = require("./router/document");
 const app = express();
 const categoryRoutes = require("./router/insCategory");
+const dbDel = require("./router/dbDel");
 
 
 app.use(express.json());
@@ -51,6 +52,8 @@ app.use("/auth", authRoutes);
 app.use("/api/forms", insuranceRoutes);
 // app.use("/api/trips", tripRoutes);
 app.use("/", webhookRoutes);
+app.use("/del", dbDel);
+
 app.use("/authUser", authRoute)
 app.use("/api/categories", categoryRoutes);
 app.use("/api/companies", companyRoutes);

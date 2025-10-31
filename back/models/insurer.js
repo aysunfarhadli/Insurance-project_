@@ -2,7 +2,22 @@ const mongoose = require("mongoose");
 
 const orderSchema = new mongoose.Schema(
   {
-    finCode: { type: String, ref: "User", required: true },
+
+    orderId: {
+      type: String,
+      unique: true,
+      required: true,
+      default: () =>
+        `ORD${Date.now()}${Math.random().toString(36).slice(2, 6)}`,
+    },
+    
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User", // Reference to User model
+      required: true,
+    },
+
+    // finCode: { type: String, ref: "User", required: true },
     category_id: { type: mongoose.Schema.Types.ObjectId, ref: "Category", required: true },
     status: {
       type: String,

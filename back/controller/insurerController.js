@@ -13,6 +13,7 @@ exports.createOrder = async (req, res) => {
       end_date,
       currency,
       total_amount,
+      userId
     } = req.body;
 
     // ✅ FinCode yoxlaması (boş gəlməsin deyə)
@@ -35,16 +36,17 @@ exports.createOrder = async (req, res) => {
 
     // ✅ Yeni order yarat
     const order = new Order({
-      finCode, // finCode saxlayırıq (user deyil)
+      finCode,
       category_id,
       status,
       start_date,
       end_date,
       currency,
       total_amount,
+      userId
     });
-
     await order.save();
+
 
     res.status(201).json({
       message: "Sifariş uğurla yaradıldı ✅",
@@ -86,7 +88,7 @@ exports.getOrders = async (req, res) => {
   try {
     const orders = await Order.find()
       .populate({ path: "category_id", select: "name code" })
-      // .populate({ path: "product_id", select: "name code" });
+    // .populate({ path: "product_id", select: "name code" });
 
     // finCode ilə user məlumatını ayrıca əlavə edirik
     const enrichedOrders = await Promise.all(
@@ -107,7 +109,7 @@ exports.getOrderById = async (req, res) => {
   try {
     const order = await Order.findById(req.params.id)
       .populate({ path: "category_id", select: "name code" })
-      // .populate({ path: "product_id", select: "name code" });
+    // .populate({ path: "product_id", select: "name code" });
 
     if (!order) return res.status(404).json({ message: "Order tapılmadı" });
 
@@ -123,7 +125,7 @@ exports.updateOrder = async (req, res) => {
   try {
     const order = await Order.findByIdAndUpdate(req.params.id, req.body, { new: true })
       .populate({ path: "category_id", select: "name code" })
-      // .populate({ path: "product_id", select: "name code" });
+    // .populate({ path: "product_id", select: "name code" });
 
     if (!order) return res.status(404).json({ message: "Order tapılmadı" });
 
