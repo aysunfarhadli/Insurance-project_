@@ -1,8 +1,13 @@
 import React from 'react'
+import InsuranceCategory from '../../comoponents/insuranceUi'
 
 const NeqliySig = () => {
   return (
-    <div>NeqliySig</div>
+    <InsuranceCategory
+  type="vehicle_liability"
+  title="Avto Sığorta"
+  subtitle="Nəqliyyat vasitən üçün tam təminat"
+/>
   )
 }
 

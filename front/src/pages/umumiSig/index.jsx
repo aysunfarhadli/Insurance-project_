@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react'
 import "./index.scss"
-import { FaPlane } from "react-icons/fa";
+import { FaExclamationTriangle, FaPlane } from "react-icons/fa";
 import { TbActivityHeartbeat } from "react-icons/tb";
 import { FaHeart } from "react-icons/fa6";
 import { FaHouse } from "react-icons/fa6";
 import { FaCar } from "react-icons/fa";
 import { FaShield } from "react-icons/fa6";
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom'; // ✅ əlavə olundu
 
 const UmSig = () => {
   const [orders, setOrders] = useState([]);
@@ -18,6 +19,42 @@ const UmSig = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [userId, setUserId] = useState(null);
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  const navigate = useNavigate(); // ✅ əlavə olundu
+
+  // Kampaniya slides
+  const campaigns = [
+    {
+      title: "Yeni il kampaniyası",
+      description: "Səyahət sığortasında 30% endirim. Yeni il tətillərinizi güvənlə keçirin.",
+      gradient: "linear-gradient(90deg, #ffe5c4, #ffb6a6)"
+    },
+    {
+      title: "İcbari Sığorta Kampaniyası",
+      description: "Bütün icbari sığorta növlərində sürətli rəsmiləşdirmə. Online müraciət edin!",
+      gradient: "linear-gradient(90deg, #c4e5ff, #a6b6ff)"
+    },
+    {
+      title: "Yay kampaniyası",
+      description: "Avtomobil sığortasında 25% endirim. Yay səyahətləriniz üçün xüsusi təklif!",
+      gradient: "linear-gradient(90deg, #c4ffe5, #a6ffb6)"
+    }
+  ];
+
+  // Karusel funksionallığı
+  const goToSlide = (index) => {
+    setCurrentSlide(index);
+  };
+
+  // Avtomatik çevirmə
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % campaigns.length);
+    }, 5000); // 5 saniyədə bir çevirir
+
+    return () => clearInterval(interval);
+  }, [campaigns.length]);
 
   // Kateqoriya ikonları mapping
   const categoryIcons = {
@@ -61,7 +98,7 @@ const UmSig = () => {
         setUserId(user._id);
       } catch (err) {
         console.error("Authentication check failed:", err);
-        
+
       } finally {
         setLoading(false);
       }
@@ -70,40 +107,40 @@ const UmSig = () => {
     checkAuthAndGetProfile();
   }, []);
 
-  
+
   // Sifarişləri gətir (userId-yə görə)
- useEffect(() => {
-  const getUserAndOrders = async () => {
-  try {
-    setLoading(true);
-    const res = await axios.get("http://localhost:5000/authUser/profile", { withCredentials: true });
-    const user = res.data.user;
-    setUserId(user._id);
+  useEffect(() => {
+    const getUserAndOrders = async () => {
+      try {
+        setLoading(true);
+        const res = await axios.get("http://localhost:5000/authUser/profile", { withCredentials: true });
+        const user = res.data.user;
+        setUserId(user._id);
 
-    const ordersRes = await axios.get(`http://localhost:5000/api/orders`);
-    const allOrders = ordersRes.data;
+        const ordersRes = await axios.get(`http://localhost:5000/api/orders`);
+        const allOrders = ordersRes.data;
 
-    // 🔹 yalnız istifadəçiyə aid sifarişləri seç
-    const userOrders = allOrders.filter(order => order.userId === user._id);
+        // 🔹 yalnız istifadəçiyə aid sifarişləri seç
+        const userOrders = allOrders.filter(order => order.userId === user._id);
 
-    setOrders(userOrders);
+        setOrders(userOrders);
 
-  } catch (err) {
-    console.error(err);
-    setError("Məlumatlar gətirilərkən xəta baş verdi");
-  } finally {
-    setLoading(false);
-  }
-};
+      } catch (err) {
+        console.error(err);
+        setError("Məlumatlar gətirilərkən xəta baş verdi");
+      } finally {
+        setLoading(false);
+      }
+    };
 
 
-  getUserAndOrders();
-}, []);
+    getUserAndOrders();
+  }, []);
   // Statistika məlumatlarını gətir
 
-console.log(orders);
+  console.log(orders);
 
-  
+
 
   // Tarixi formatla
   const formatDate = (dateString) => {
@@ -133,58 +170,95 @@ console.log(orders);
         <div className='container'>
           <div className='all row'>
             <div className='box1 col-12'>
-              <div className='kampaniya'>
-                <h3>Yeni il kampaniyası</h3>
-                <p>Səyahət sığortasında 30% endirim. Yeni il tətillərinizi güvənlə keçirin.</p>
+              <div className='kampaniya-carousel'>
+                <div className='carousel-container'>
+                  <div className='carousel-wrapper'>
+                    <div 
+                      className='carousel-slides' 
+                      style={{ transform: `translateX(-${currentSlide * 100}%)` }}
+                    >
+                      {campaigns.map((campaign, index) => (
+                        <div 
+                          key={index} 
+                          className='kampaniya slide'
+                          style={{ background: campaign.gradient }}
+                        >
+                          <h3>{campaign.title}</h3>
+                          <p>{campaign.description}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div className='carousel-dots'>
+                  {campaigns.map((_, index) => (
+                    <button
+                      key={index}
+                      className={`dot ${currentSlide === index ? 'active' : ''}`}
+                      onClick={() => goToSlide(index)}
+                      aria-label={`Slide ${index + 1}`}
+                    />
+                  ))}
+                </div>
               </div>
               <div className='act'>
                 <a href='#' className='aD'>Kateqoriyalar</a>
                 <a href='#'>Hamısını gör</a>
               </div>
               <div className='sig row'>
-                <div className='sey col-4 sam'>
+                <div className='sey col-4 sam' onClick={() => navigate('/seyahet')}> {/* ✅ əlavə olundu */}
                   <div className='svg'>
                     <FaPlane />
                   </div>
                   <div className='par'>
-                    <h4>Səyahət</h4>
-                    <p>Beynəlxalq və daxili səyahət sığortası</p>
+                    <h4>Sərnişin Qəzası</h4>
+                    <p>Sənişinləri daşıyan qurumlar üçün sığorta</p>
                   </div>
                 </div>
-                <div className='heyat col-4 sam'>
+                <div className='heyat col-4 sam' onClick={() => navigate('/heyat')}> {/* ✅ əlavə olundu */}
                   <div className='svg'>
                     <TbActivityHeartbeat />
                   </div>
                   <div className='par'>
-                    <h4>Həyat</h4>
-                    <p>Həyat və təqaüd sığortası</p>
+                    <h4>İşəgötürən Məsuliyyəti</h4>
+                    <p>İşçilərə dəyən zərərlərə görə məsuliyyət</p>
                   </div>
                 </div>
-                <div className='tibbi col-4 sam'>
+                <div className='tibbi col-4 sam' onClick={() => navigate('/tibbi')}> {/* ✅ əlavə olundu */}
                   <div className='svg'>
                     <FaHeart />
                   </div>
                   <div className='par'>
-                    <h4>Tibbi</h4>
-                    <p>Tibbi xərclərin ödənilməsi</p>
+                    <h4>Əmlak Əməliyyatları</h4>
+                    <p>Əmlak satışının zamanı məsuliyyət</p>
                   </div>
                 </div>
-                <div className='emlak col-4 sam'>
+                <div className='emlak col-4 sam' onClick={() => navigate('/emlak')}> {/* ✅ əlavə olundu */}
                   <div className='svg'>
                     <FaHouse />
                   </div>
                   <div className='par'>
-                    <h4>Əmlak</h4>
-                    <p>Ev və digər əmlak sığortası</p>
+                    <h4>İcbari Əmlak</h4>
+                    <p>Yaşayış və qeyri-yaşayış binaları, mənzillər</p>
                   </div>
                 </div>
-                <div className='neqliy col-4 sam'>
+                <div className='neqliy col-4 sam' onClick={() => navigate('/neqliyyat')}> {/* ✅ əlavə olundu */}
                   <div className='svg'>
                     <FaCar />
                   </div>
                   <div className='par'>
-                    <h4>Nəqliyyat</h4>
-                    <p>Avtomobil və digər nəqliyyat sığortası</p>
+                    <h4>Avtomobil Məsuliyyət</h4>
+                    <p>Üçüncü şəxslərə dəymiş zərərlər üçün məsuliyyət</p>
+                  </div>
+                </div>
+                <div className='tehlukeli col-4 sam' onClick={() => navigate('/tehlukeli')}> {/* ✅ əlavə olundu */}
+                  <div className='svg'>
+                    <FaExclamationTriangle />
+                  </div>
+                  <div className='par'>
+                    <h4>Təhlükəli Obyektlər</h4>
+                    <p>Partlayış, yanğın və kimyəvi təhlükələr</p>
                   </div>
                 </div>
               </div>
@@ -192,7 +266,7 @@ console.log(orders);
           </div>
         </div>
       </section>
-      
+
       <section className='tamam'>
         <div className='container'>
           <div className='all row'>
@@ -201,7 +275,7 @@ console.log(orders);
                 <a href='#' className='wh'>Tamamlanmış sığortalar</a>
                 <a href='#'>Hamısını gör</a>
               </div>
-              
+
               {loading ? (
                 <div className="loading">
                   <p>Yüklənir...</p>
@@ -221,8 +295,8 @@ console.log(orders);
                           </div>
                           <div className='par2'>
                             <h4>{order.category_id?.name || 'Sığorta'}</h4>
-                            <p 
-                              style={{ 
+                            <p
+                              style={{
                                 color: statusColors[order.status],
                                 fontWeight: 'bold'
                               }}
@@ -245,7 +319,7 @@ console.log(orders);
                 </div>
               )}
             </div>
-            
+
             <div className='statistika col-3'>
               <h4>Statistika</h4>
               <div className='stat'>

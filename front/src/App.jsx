@@ -20,6 +20,7 @@ import NeqliySig from './pages/neqliySig'
 import Register from './pages/register'
 import Login from './pages/login'
 import Order from './pages/orderPage'
+import Tehlukeli from './pages/tehlukeSig'
 
 function App() {
 
@@ -35,6 +36,8 @@ function App() {
           <Route path='tibbi' element={<TibbiSig />} />
           <Route path='emlak' element={<EmlakSig />} />
           <Route path='neqliyyat' element={<NeqliySig />} />
+          <Route path='tehlukeli' element={<Tehlukeli />} />
+
           <Route path='profile' element={<Profile />} />
           <Route path='register' element={<Register />} />
           <Route path='login' element={<Login />} />

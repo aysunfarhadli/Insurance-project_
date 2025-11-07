@@ -241,6 +241,78 @@ $shadow-hover: 0 8px 15px rgba(0, 0, 0, 0.2);
   padding: 40px 0;
 
   .box1 {
+    .kampaniya-carousel {
+      position: relative;
+      margin-bottom: 20px;
+
+      .carousel-container {
+        position: relative;
+        overflow: hidden;
+        border-radius: 15px;
+
+        .carousel-wrapper {
+          overflow: hidden;
+          border-radius: 15px;
+        }
+
+        .carousel-slides {
+          display: flex;
+          transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+          will-change: transform;
+
+          .kampaniya.slide {
+            min-width: 100%;
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            border-radius: 15px;
+            box-sizing: border-box;
+            @include hover-lift;
+
+            h3 {
+              animation: fadeInUp 0.6s ease;
+            }
+
+            p {
+              animation: fadeInUp 0.8s ease;
+            }
+          }
+        }
+
+      }
+
+      .carousel-dots {
+        display: flex;
+        justify-content: center;
+        gap: 8px;
+        margin-top: 15px;
+        padding: 0 10px;
+
+        .dot {
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          border: none;
+          background-color: rgba(0, 0, 0, 0.2);
+          cursor: pointer;
+          transition: all 0.3s ease;
+          padding: 0;
+
+          &:hover {
+            background-color: rgba(0, 0, 0, 0.4);
+            transform: scale(1.2);
+          }
+
+          &.active {
+            background-color: rgba(0, 0, 0, 0.6);
+            width: 24px;
+            border-radius: 4px;
+          }
+        }
+      }
+    }
+
     .kampaniya {
       padding: 25px;
       display: flex;
@@ -386,6 +458,9 @@ $shadow-hover: 0 8px 15px rgba(0, 0, 0, 0.2);
       }
       .neqliy {
         background-color: color.scale(#ef6c00, $lightness: 5%);
+      }
+      .tehlukeli {
+        background-color: color.scale(#008db1, $lightness: 5%);
       }
     }
   }
@@ -622,6 +697,40 @@ button:focus {
 
   .statistika {
     margin-top: 30px !important;
+  }
+
+  .box1 {
+    .kampaniya-carousel {
+      .carousel-container {
+        .carousel-slides {
+          .kampaniya.slide {
+            padding: 20px;
+
+            h3 {
+              font-size: 1.2rem;
+            }
+
+            p {
+              font-size: 0.9rem;
+            }
+          }
+        }
+      }
+
+      .carousel-dots {
+        margin-top: 12px;
+        gap: 6px;
+
+        .dot {
+          width: 6px;
+          height: 6px;
+
+          &.active {
+            width: 20px;
+          }
+        }
+      }
+    }
   }
 }
 

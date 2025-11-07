@@ -36,7 +36,7 @@ const categoryConfig = {
     }
   },
   property_insurance: {
-    name: "Daşınmaz Əmlakın İcbari Sığortası",
+    name: "İcbari Əmlak Sığortası",
     icon: Home,
     fields: {
       personal: [
@@ -48,13 +48,14 @@ const categoryConfig = {
         { name: "birthDate", label: "Doğum tarixi", type: "date", required: true },
       ],
       specific: [
-        { name: "propertyAddress", label: "Əmlakın ünvanı", required: true },
-        { name: "propertyType", label: "Əmlak tipi", required: true, options: ["mənzil", "ev", "ofis", "ticarət", "anbar"] },
-        { name: "area", label: "Sahə (m²)", type: "number", required: true },
-        { name: "floor", label: "Mərtəbə sayı / yerləşdiyi mərtəbə" },
-        { name: "wallMaterial", label: "Divar materialı" },
-        { name: "constructionYear", label: "Tikinti ili", type: "number" },
-        { name: "propertyDocument", label: "Mülkiyyət sənədi nömrəsi" },
+        { name: "propertyAddress", label: "Əmlakın ünvanı (küçə, bina/mənzil, şəhər/rayon)", placeholder: "Tam ünvanı daxil edin", required: true },
+        { name: "propertyType", label: "Əmlak növü", placeholder: "Əmlak növünü seçin", required: true, options: ["mənzil", "ev", "ofis", "ticarət", "anbar"] },
+        { name: "totalFloors", label: "Mərtəbə sayı", type: "number", placeholder: "9" },
+        { name: "wallMaterial", label: "Divar materialı", placeholder: "Material seçin", options: ["kərpic", "beton", "ağac", "digər"] },
+        { name: "propertyDocument", label: "Əmlak sənədi nömrəsi (kupça)", placeholder: "Əmlak sənədi nömrəsi" },
+        { name: "area", label: "Sahə (m²)", type: "number", placeholder: "120", required: true },
+        { name: "floorLocation", label: "Yerləşdiyi mərtəbə", type: "number", placeholder: "5" },
+        { name: "constructionYear", label: "Tikinti ili", type: "number", placeholder: "2015" },
       ]
     }
   },
@@ -328,18 +329,16 @@ function Order() {
   };
 
   // 🔹 Field komponenti 
-  // 🔹 Field komponenti 
   const renderField = (field) => {
     if (field.options) {
       return (
         <select
           name={field.name}
-          value={formData[field.name]}
+          value={formData[field.name] || ""}
           onChange={handleChange}
-          // Remove the disabled condition for personal fields
           className={styles.input}
         >
-          <option value="">Seçin</option>
+          <option value="">{field.placeholder || "Seçin"}</option>
           {field.options.map(option => (
             <option key={option} value={option}>
               {option.charAt(0).toUpperCase() + option.slice(1)}
@@ -365,9 +364,8 @@ function Order() {
       <input
         type={field.type || "text"}
         name={field.name}
-        value={formData[field.name]}
+        value={formData[field.name] || ""}
         onChange={handleChange}
-        // Remove the disabled condition for personal fields
         className={styles.input}
         placeholder={field.placeholder || ""}
       />
@@ -472,27 +470,41 @@ function Order() {
 
   return (
     <div className={styles.container}>
-      {/* 🔹 Kateqoriya başlığı */}
-      {/* <div className={styles.categoryHeader}> 
-        <CategoryIcon className={styles.categoryIcon} /> 
-        <h1>{currentCategory.name}</h1> 
-      </div> */}
+      {/* 🔹 Page Header */}
+      <div className={styles.pageHeader}>
+        <button className={styles.backButton} onClick={() => navigate(-1)}>
+          <ArrowLeft />
+        </button>
+        <div className={styles.headerContent}>
+          <h1 className={styles.pageTitle}>{currentCategory.name}</h1>
+          <p className={styles.pageSubtitle}>
+            {category === 'property_insurance' 
+              ? 'Yaşayış və qeyri-yaşayış binaları, mənzillər və tikililər üçün sığorta'
+              : 'Sığorta məlumatlarını doldurun'}
+          </p>
+        </div>
+      </div>
 
-      {/* 🔹 Addım naviqasiyası */}
-      <div className={styles.tabNavigation}>
-        <div className={styles.tabContent}>
-          <button className={`${styles.tab} ${step === 1 ? styles.active : styles.inactive}`}>
-            <User /> Şəxsi məlumatlar
-          </button>
-          <button className={`${styles.tab} ${step === 2 ? styles.active : styles.inactive}`}>
-            <CategoryIcon /> Sığorta məlumatları
-          </button>
-          <button className={`${styles.tab} ${step === 3 ? styles.active : styles.inactive}`}>
-            <Phone /> Əlaqə məlumatları
-          </button>
-          <button className={`${styles.tab} ${step === 4 ? styles.active : styles.inactive}`}>
-            <CheckCircle /> Təsdiq
-          </button>
+      {/* 🔹 Progress Indicator */}
+      <div className={styles.progressContainer}>
+        <div className={styles.progressSteps}>
+          <div className={`${styles.step} ${step >= 1 ? styles.completed : ''} ${step === 1 ? styles.active : ''}`}>
+            <div className={styles.stepCircle}>
+              {step > 1 ? <CheckCircle size={20} /> : '1'}
+            </div>
+            <div className={styles.stepLine}></div>
+          </div>
+          <div className={`${styles.step} ${step >= 2 ? styles.completed : ''} ${step === 2 ? styles.active : ''}`}>
+            <div className={styles.stepCircle}>
+              {step > 2 ? <CheckCircle size={20} /> : '2'}
+            </div>
+            <div className={styles.stepLine}></div>
+          </div>
+          <div className={`${styles.step} ${step >= 3 ? styles.completed : ''} ${step === 3 ? styles.active : ''}`}>
+            <div className={styles.stepCircle}>
+              {step > 3 ? <CheckCircle size={20} /> : '3'}
+            </div>
+          </div>
         </div>
       </div>
 
@@ -562,16 +574,23 @@ function Order() {
           {/* 🔹 Addım 2: Sığorta məlumatları */}
           {step === 2 && (
             <div className={styles.formFields}>
-              <h3 className={styles.sectionTitle}>{currentCategory.name} Məlumatları</h3>
-              {currentCategory.fields.specific.map((field, i) => (
-                <div key={i} className={styles.formGroup}>
-                  <label className={styles.label}>
-                    {field.label}
-                    {field.required && <span className={styles.required}>*</span>}
-                  </label>
-                  {renderField(field)}
-                </div>
-              ))}
+              <div className={styles.sectionHeader}>
+                <CategoryIcon className={styles.sectionIcon} />
+                <h3 className={styles.sectionTitle}>
+                  {category === 'property_insurance' ? 'Əmlak məlumatları' : `${currentCategory.name} Məlumatları`}
+                </h3>
+              </div>
+              <div className={styles.twoColumnLayout}>
+                {currentCategory.fields.specific.map((field, i) => (
+                  <div key={i} className={styles.formGroup}>
+                    <label className={styles.label}>
+                      {field.label}
+                      {field.required && <span className={styles.required}>*</span>}
+                    </label>
+                    {renderField(field)}
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 
@@ -720,24 +739,22 @@ function Order() {
 
       {/* 🔹 Addım idarə düymələri */}
       {step < 4 && (
-        <footer className={styles.footer}>
-          <div className={styles.footerContent}>
-            <button
-              className={`${styles.button} ${styles.cancelButton}`}
-              onClick={handleBack}
-              disabled={step === 1}
-            >
-              <ArrowLeft /> Geri
-            </button>
-            <button
-              className={`${styles.button} ${styles.nextButton}`}
-              onClick={handleNext}
-              disabled={loading}
-            >
-              {step <= 3 ? "Növbəti" : "Təsdiqə keç"}
-            </button>
-          </div>
-        </footer>
+        <div className={styles.formActions}>
+          <button
+            className={styles.prevButton}
+            onClick={handleBack}
+            disabled={step === 1}
+          >
+            Əvvəlki
+          </button>
+          <button
+            className={styles.nextButton}
+            onClick={handleNext}
+            disabled={loading}
+          >
+            Növbəti
+          </button>
+        </div>
       )}
     </div>
   );

@@ -1,8 +1,13 @@
 import React from 'react'
+import InsuranceCategory from '../../comoponents/insuranceUi'
 
 const HeyatSig = () => {
   return (
-    <div>HeyatSig</div>
+   <InsuranceCategory
+  type="employer_liability"
+  title="Həyat Sığortası"
+  subtitle="Gələcəyini etibarda saxla"
+/>
   )
 }
 
