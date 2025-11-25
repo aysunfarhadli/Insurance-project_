@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import './index.scss';
 import { MdExitToApp } from "react-icons/md";
 import axios from "axios";
+import { mockUserProfile } from '../../mockData/user';
+import { withMockFallback } from '../../utils/mockDataHelper';
 
 axios.defaults.withCredentials = true;
 
@@ -18,16 +20,27 @@ const Profile = () => {
 
   // ✅ Fetch user profile (based on JWT cookie)
   useEffect(() => {
-    axios.get("http://localhost:5000/authUser/profile", { withCredentials: true })
-      .then(res => {
-        setUserData(res.data.user);
-        setUserId(res.data.user?._id);
-        // console.log(res.data.user);
+    const loadProfile = async () => {
+      const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+      
+      const { data, isMock } = await withMockFallback(
+        async () => {
+          const res = await axios.get(`${API_BASE}/authUser/profile`, { withCredentials: true });
+          return { data: res.data };
+        },
+        () => ({ user: mockUserProfile })
+      );
 
-      })
-      .catch(err => {
-        console.error("Profile fetch error:", err);
-      });
+      if (isMock) {
+        console.log('📦 Using mock user profile');
+      }
+
+      const user = data.user || data;
+      setUserData(user);
+      setUserId(user._id);
+    };
+
+    loadProfile();
   }, []);
 
   // Handle input change

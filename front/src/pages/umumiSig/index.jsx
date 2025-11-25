@@ -7,7 +7,10 @@ import { FaHouse } from "react-icons/fa6";
 import { FaCar } from "react-icons/fa";
 import { FaShield } from "react-icons/fa6";
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom'; // ✅ əlavə olundu
+import { useNavigate } from 'react-router-dom';
+import { mockUserProfile } from '../../mockData/user';
+import { getMockOrdersByUserId } from '../../mockData/orders';
+import { withMockFallback } from '../../utils/mockDataHelper';
 
 const UmSig = () => {
   const [orders, setOrders] = useState([]);
@@ -93,12 +96,26 @@ const UmSig = () => {
     const checkAuthAndGetProfile = async () => {
       try {
         setLoading(true);
-        const res = await axios("http://localhost:5000/authUser/profile");
-        const user = res.data.user
+        const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+        
+        const { data, isMock } = await withMockFallback(
+          async () => {
+            const res = await axios(`${API_BASE}/authUser/profile`);
+            return { data: res.data };
+          },
+          () => ({ user: mockUserProfile })
+        );
+
+        if (isMock) {
+          console.log('📦 Using mock user profile');
+        }
+
+        const user = data.user || data;
         setUserId(user._id);
       } catch (err) {
         console.error("Authentication check failed:", err);
-
+        // Use mock data on error
+        setUserId(mockUserProfile._id);
       } finally {
         setLoading(false);
       }
@@ -113,26 +130,48 @@ const UmSig = () => {
     const getUserAndOrders = async () => {
       try {
         setLoading(true);
-        const res = await axios.get("http://localhost:5000/authUser/profile", { withCredentials: true });
-        const user = res.data.user;
+        const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+        
+        // Get user profile
+        const { data: userData, isMock: isUserMock } = await withMockFallback(
+          async () => {
+            const res = await axios.get(`${API_BASE}/authUser/profile`, { withCredentials: true });
+            return { data: res.data };
+          },
+          () => ({ user: mockUserProfile })
+        );
+
+        const user = userData.user || userData;
         setUserId(user._id);
 
-        const ordersRes = await axios.get(`http://localhost:5000/api/orders`);
-        const allOrders = ordersRes.data;
+        // Get orders
+        const { data: ordersData, isMock: isOrdersMock } = await withMockFallback(
+          async () => {
+            const ordersRes = await axios.get(`${API_BASE}/api/orders`);
+            return { data: ordersRes.data };
+          },
+          () => getMockOrdersByUserId(user._id)
+        );
 
-        // 🔹 yalnız istifadəçiyə aid sifarişləri seç
+        if (isUserMock || isOrdersMock) {
+          console.log('📦 Using mock orders data');
+        }
+
+        const allOrders = Array.isArray(ordersData) ? ordersData : [];
         const userOrders = allOrders.filter(order => order.userId === user._id);
-
-        setOrders(userOrders);
+        
+        setOrders(userOrders.length > 0 ? userOrders : getMockOrdersByUserId(user._id));
 
       } catch (err) {
         console.error(err);
         setError("Məlumatlar gətirilərkən xəta baş verdi");
+        // Fallback to mock data
+        setUserId(mockUserProfile._id);
+        setOrders(getMockOrdersByUserId(mockUserProfile._id));
       } finally {
         setLoading(false);
       }
     };
-
 
     getUserAndOrders();
   }, []);

@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import "./index.scss";
 import { TbActivityHeartbeat, TbCar, TbHome, TbUserHeart, TbPlane, TbStarFilled, TbClock, TbFilter } from "react-icons/tb";
 import { useNavigate } from "react-router-dom";
+import { getMockCategoriesByType } from "../../mockData/categories";
+import { withMockFallback } from "../../utils/mockDataHelper";
 
 const icons = {
   travel: <TbPlane />,
@@ -25,35 +27,51 @@ const InsuranceCategory = ({ type, title, subtitle }) => {
   };
 
   useEffect(() => {
-    fetch(`http://localhost:5000/api/categories?type=${type}`)
-      .then((res) => res.json())
-      .then((data) => {
-        const badges = ["Ən Populyar", "Ən Sürətli", "Premium", "Budget"];
-        const monthlyPrices = ["45 AZN/ay", "38 AZN/ay", "52 AZN/ay", "32 AZN/ay"];
-        const coverages = ["50,000 AZN", "40,000 AZN", "75,000 AZN", "30,000 AZN"];
-        const processingTimes = ["2 saat", "1 saat", "3 saat", "4 saat"];
-        const featureSets = [
-          ["24/7 Dəstək", "Tez Ödəniş", "Beynəlxalq əhatə"],
-          ["Online Xidmət", "Sürətli Qeydiyyat", "Mobil Tətbiq"],
-          ["Premium Xidmət", "VIP Dəstək", "Genişləndirilmiş əhatə"],
-          ["Əsas əhatə", "Standart Dəstək", "Sənədləşmə"]
-        ];
-        const ratings = [4.8, 4.6, 4.7, 4.5];
-        const reviews = [2341, 1892, 3124, 1456];
-        
-        const merged = data.map((item, index) => ({
-          ...item,
-          monthlyPrice: monthlyPrices[index % monthlyPrices.length],
-          processingTime: processingTimes[index % processingTimes.length],
-          coverage: coverages[index % coverages.length],
-          features: featureSets[index % featureSets.length],
-          badge: badges[index % badges.length],
-          rating: ratings[index % ratings.length],
-          reviews: reviews[index % reviews.length],
-        }));
-        setPlans(merged);
-      })
-      .catch((err) => console.error("API Error:", err));
+    const loadCategories = async () => {
+      const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+      
+      const { data, isMock } = await withMockFallback(
+        async () => {
+          const res = await fetch(`${API_BASE}/api/categories?type=${type}`);
+          if (!res.ok) throw new Error('Failed to fetch categories');
+          return { data: await res.json() };
+        },
+        () => getMockCategoriesByType(type)
+      );
+
+      if (isMock) {
+        console.log('📦 Using mock categories data');
+      }
+
+      const badges = ["Ən Populyar", "Ən Sürətli", "Premium", "Budget"];
+      const monthlyPrices = ["45 AZN/ay", "38 AZN/ay", "52 AZN/ay", "32 AZN/ay"];
+      const coverages = ["50,000 AZN", "40,000 AZN", "75,000 AZN", "30,000 AZN"];
+      const processingTimes = ["2 saat", "1 saat", "3 saat", "4 saat"];
+      const featureSets = [
+        ["24/7 Dəstək", "Tez Ödəniş", "Beynəlxalq əhatə"],
+        ["Online Xidmət", "Sürətli Qeydiyyat", "Mobil Tətbiq"],
+        ["Premium Xidmət", "VIP Dəstək", "Genişləndirilmiş əhatə"],
+        ["Əsas əhatə", "Standart Dəstək", "Sənədləşmə"]
+      ];
+      const ratings = [4.8, 4.6, 4.7, 4.5];
+      const reviews = [2341, 1892, 3124, 1456];
+      
+      // If mock data already has these fields, use them; otherwise merge
+      const merged = Array.isArray(data) ? data.map((item, index) => ({
+        ...item,
+        monthlyPrice: item.monthlyPrice || monthlyPrices[index % monthlyPrices.length],
+        processingTime: item.processingTime || processingTimes[index % processingTimes.length],
+        coverage: item.coverage || coverages[index % coverages.length],
+        features: item.features || featureSets[index % featureSets.length],
+        badge: item.badge || badges[index % badges.length],
+        rating: item.rating || ratings[index % ratings.length],
+        reviews: item.reviews || reviews[index % reviews.length],
+      })) : [];
+      
+      setPlans(merged);
+    };
+
+    loadCategories();
   }, [type]);
 
   const tabs = ["Hamısı", "Populyar", "Ən Ucuz", "Ən Sürətli", "Premium"];

@@ -3,6 +3,9 @@ import { ArrowLeft, Phone, CheckCircle, User, Car, Home, Building, Briefcase, Bu
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import styles from "./index.module.scss";
+import { mockUserProfile } from "../../mockData/user";
+import { getMockCategoryById } from "../../mockData/categories";
+import { withMockFallback } from "../../utils/mockDataHelper";
 
 axios.defaults.withCredentials = true;
 
@@ -167,8 +170,21 @@ function Order() {
     const checkAuthAndGetProfile = async () => {
       try {
         setLoading(true);
-        const res = await axios.get("http://localhost:5000/authUser/profile");
-        const user = res.data.user
+        const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+        
+        const { data, isMock } = await withMockFallback(
+          async () => {
+            const res = await axios.get(`${API_BASE}/authUser/profile`);
+            return { data: res.data };
+          },
+          () => ({ user: mockUserProfile })
+        );
+
+        if (isMock) {
+          console.log('📦 Using mock user profile for order page');
+        }
+
+        const user = data.user || data;
         if (user) {
           setIsAuthenticated(true);
           setUserId(user._id);
@@ -181,9 +197,10 @@ function Order() {
         }
       } catch (err) {
         console.error("Authentication check failed:", err);
-        setIsAuthenticated(false);
-        setError("Sifariş etmək üçün daxil olmalısınız.");
-        setTimeout(() => navigate("/login"), 2000);
+        // Use mock data for development
+        setIsAuthenticated(true);
+        setUserId(mockUserProfile._id);
+        setUserProfile(mockUserProfile);
       } finally {
         setLoading(false);
       }
@@ -197,16 +214,31 @@ function Order() {
     if (!id) return;
     const fetchCategory = async () => {
       try {
-        const res = await axios.get(`http://localhost:5000/api/categories/${id}`);
-        console.log("Gətirilən kateqoriya:", res.data);
-        // Məsələn, kodu ayrıca saxlayırsan: 
-        const categoryCode = res.data.code;
-        setCategory(categoryCode)
+        const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+        
+        const { data, isMock } = await withMockFallback(
+          async () => {
+            const res = await axios.get(`${API_BASE}/api/categories/${id}`);
+            return { data: res.data };
+          },
+          () => getMockCategoryById(id)
+        );
+
+        if (isMock) {
+          console.log('📦 Using mock category data');
+        }
+
+        console.log("Gətirilən kateqoriya:", data);
+        const categoryCode = data.code || data.category_code || 'property_insurance';
+        setCategory(categoryCode);
         console.log("Kateqoriya kodu:", categoryCode);
-        // Əgər istəsən state-də də saxlaya bilərsən 
-        // setCurrentCategoryData(res.data.data); 
       } catch (err) {
         console.error("Kateqoriya alınmadı:", err);
+        // Fallback to mock
+        const mockCat = getMockCategoryById(id);
+        if (mockCat) {
+          setCategory(mockCat.code);
+        }
       }
     };
     fetchCategory();
@@ -214,7 +246,8 @@ function Order() {
 
   console.log("cat2 ", category);
 
-  const currentCategory = categoryConfig[category] || categoryConfig.passenger_accident
+  // Default to property_insurance if category not found (for design purposes)
+  const currentCategory = categoryConfig[category] || categoryConfig.property_insurance;
   const CategoryIcon = currentCategory.icon;
 
   // console.log("cate ", currentCategory); 
