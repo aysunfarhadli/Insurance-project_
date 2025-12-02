@@ -2,6 +2,7 @@
 export { mockCategories, getMockCategoriesByType, getMockCategoryById } from './categories';
 export { mockUserProfile } from './user';
 export { mockOrders, getMockOrdersByUserId } from './orders';
+export { mockCompanies, getMockCompaniesByCategory } from './companies';
 
 // Helper to check if we should use mock data
 export const shouldUseMockData = () => {

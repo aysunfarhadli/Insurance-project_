@@ -6,15 +6,16 @@ export const mockOrders = [
     userId: "mock_user_123",
     category_id: {
       _id: "cat1",
-      code: "passenger_accident",
-      name: "Səyahət Sığortası"
+      code: "vehicle_liability",
+      name: "Avtomobil məsuliyyət sığortası"
     },
-    status: "approved",
+    status: "paid",
     total_amount: 540,
-    created_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+    created_at: new Date(Date.now() - 0 * 24 * 60 * 60 * 1000).toISOString(), // Today
     start_date: new Date().toISOString(),
     end_date: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
-    currency: "AZN"
+    currency: "AZN",
+    company: "Mega Sığorta"
   },
   {
     _id: "order2",
@@ -23,14 +24,15 @@ export const mockOrders = [
     category_id: {
       _id: "cat2",
       code: "property_insurance",
-      name: "İcbari Əmlak Sığortası"
+      name: "İcbari əmlak sığortası"
     },
     status: "paid",
     total_amount: 456,
-    created_at: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
+    created_at: new Date(Date.now() - 0 * 24 * 60 * 60 * 1000).toISOString(), // Today
     start_date: new Date().toISOString(),
     end_date: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
-    currency: "AZN"
+    currency: "AZN",
+    company: "Paşa Sığorta"
   },
   {
     _id: "order3",
@@ -38,15 +40,16 @@ export const mockOrders = [
     userId: "mock_user_123",
     category_id: {
       _id: "cat3",
-      code: "vehicle_liability",
-      name: "Avtomobil Məsuliyyət Sığortası"
+      code: "employer_liability",
+      name: "İşəgötürən məsuliyyət sığortası"
     },
-    status: "pending",
-    total_amount: 540,
-    created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+    status: "paid",
+    total_amount: 660,
+    created_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(), // Yesterday
     start_date: new Date().toISOString(),
     end_date: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
-    currency: "AZN"
+    currency: "AZN",
+    company: "ASCO Sığorta"
   },
   {
     _id: "order4",
@@ -54,15 +57,16 @@ export const mockOrders = [
     userId: "mock_user_123",
     category_id: {
       _id: "cat4",
-      code: "employer_liability",
-      name: "İşəgötürənin Məsuliyyəti"
+      code: "passenger_accident",
+      name: "Səyahət sığortası"
     },
-    status: "priced",
-    total_amount: 660,
-    created_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+    status: "paid",
+    total_amount: 540,
+    created_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(), // Yesterday
     start_date: new Date().toISOString(),
     end_date: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
-    currency: "AZN"
+    currency: "AZN",
+    company: "Atəşgah Sığorta"
   }
 ];
 

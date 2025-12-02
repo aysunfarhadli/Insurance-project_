@@ -12,17 +12,18 @@ axios.defaults.withCredentials = true;
 // 🔹 Hər kateqoriya üçün konfiqurasiya 
 const categoryConfig = {
   vehicle_liability: {
-    name: "Avtonəqliyyat Mülki Məsuliyyət",
+    name: "Avtomobil Məsuliyyət Sığortası",
     icon: Car,
+    subtitle: "Üçüncü şəxslərə dəymiş zərərlər üçün məsuliyyət sığortası",
     fields: {
       // Şəxsi məlumatlar (ümumi bütün kateqoriyalar üçün) 
       personal: [
-        { name: "firstName", label: "Ad", required: true },
-        { name: "lastName", label: "Soyad", required: true },
-        { name: "fatherName", label: "Ata adı", required: true },
-        { name: "passportNumber", label: "Passport nömrəsi", required: true },
-        { name: "finCode", label: "FİN kod", required: true },
-        { name: "birthDate", label: "Doğum tarixi", type: "date", required: true },
+        { name: "fullName", label: "Sahibkarın tam adı", placeholder: "Ad və soyadınızı daxil edin", required: true },
+        { name: "finCode", label: "FİN / Şəxsiyyət vəsiqəsi nömrəsi", placeholder: "AZE1234567", required: true },
+        { name: "voen", label: "VÖEN (hüquqi şəxs üçün)", placeholder: "1234567890", required: false },
+        { name: "phone", label: "Əlaqə nömrəsi", placeholder: "+994 XX XXX XX XX", required: true },
+        { name: "email", label: "Email", placeholder: "email@example.com", required: true },
+        { name: "address", label: "Qeydiyyat ünvanı", placeholder: "Tam ünvanınızı daxil edin", required: false },
       ],
       // Kateqoriyaya xüsusi fieldlər 
       specific: [
@@ -244,6 +245,7 @@ function Order() {
     fetchCategory();
   }, [id]);
 
+
   console.log("cat2 ", category);
 
   // Default to property_insurance if category not found (for design purposes)
@@ -255,15 +257,18 @@ function Order() {
   // 🔹 Dinamik form data strukturu 
   const [formData, setFormData] = useState({
     // Şəxsi məlumatlar 
+    fullName: "",
     firstName: "",
     lastName: "",
     fatherName: "",
     passportNumber: "",
     finCode: "",
+    voen: "",
     birthDate: "",
     gender: "MALE",
     phone: "",
     email: "",
+    address: "",
     // Kateqoriyaya xüsusi məlumatlar (avtomatik boş olacaq) 
     ...Object.fromEntries(
       currentCategory.fields.specific
@@ -277,15 +282,18 @@ function Order() {
     if (isSelf && userProfile) {
       const user = userProfile;
       const userData = {
+        fullName: `${user.name || ""} ${user.surname || ""}`.trim(),
         firstName: user.name || "",
         lastName: user.surname || "",
         fatherName: user.fatherName || "",
         passportNumber: user.passportNumber || "",
         finCode: user.finCode || "",
+        voen: user.voen || "",
         birthDate: user.birthDate || "",
         gender: user.gender || "MALE",
         phone: user.phone || "",
         email: user.email || "",
+        address: user.address || "",
       };
 
       // Kateqoriya xüsusi fieldləri sıfırlamaq 
@@ -409,70 +417,20 @@ function Order() {
   const handleNext = async () => {
     if (!validateStep()) return;
 
-    if (step <= 3) return setStep(step + 1);
-
-    try {
-      setLoading(true);
-      setError("");
-
-      // 1️⃣ Form məlumatlarını backend-ə göndər 
-      const formRes = await axios.post("http://localhost:5000/api/forms", {
-        ownerType: isSelf ? "SELF" : "OTHER",
-        userId: userId, // Add user ID to forms
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        fatherName: formData.fatherName,
-        birthDate: formData.birthDate,
-        gender: formData.gender,
-        passportNumber: formData.passportNumber,
-        finCode: formData.finCode,
-        phone: formData.phone,
-        email: formData.email,
-      });
-
-      // const manualOrderId = 'ORD' + Date.now() + Math.random().toString(36).substr(2, 5); 
-      // console.log("id ", manualOrderId); 
-      
-      // 2️⃣ Sifariş (order) yaradır 
-      const orderRes = await axios.post("http://localhost:5000/api/orders", {
-        // id: manualOrderId, 
-        finCode: formData.finCode,
-        category_id: id,
-        userId: userId, // Add user ID to orders
-        status: "pending",
-        start_date: new Date().toISOString(),
-        end_date: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(), // 1 il 
-        currency: "AZN",
-        total_amount: 100,
-      });
-
-      const orderId = orderRes.data?.data?.orderId;
-      console.log("1 ", orderId);
-
-      if (!orderId) {
-        throw new Error("Order ID alınmadı!");
-      }
-
-      console.log("2 ", orderId);
-
-      // 3️⃣ Kateqoriyaya xüsusi məlumatları saxla 
-      const specificData = {};
-      currentCategory.fields.specific.forEach(field => {
-        specificData[field.name] = formData[field.name];
-      });
-
-      await axios.post("http://localhost:5000/api/order-form-specific", {
-        order_id: orderId, // Əslində order ID olmalıdır 
-        category_code: category,
-        details: specificData
-      });
-
-      alert("Məlumatlar uğurla göndərildi ✅");
-    } catch (err) {
-      console.error("Göndərmə xətası:", err);
-      setError("Göndərmə zamanı xəta baş verdi.");
-    } finally {
-      setLoading(false);
+    if (step < 3) return setStep(step + 1);
+    
+    // Step 3 is last - redirect to company selection page
+    if (step === 3) {
+      // Save form data to sessionStorage
+      const formDataToSave = {
+        ...formData,
+        category,
+        categoryId: id,
+        isSelf
+      };
+      sessionStorage.setItem('orderFormData', JSON.stringify(formDataToSave));
+      navigate(`/companies/${id}`);
+      return;
     }
   };
 
@@ -511,9 +469,10 @@ function Order() {
         <div className={styles.headerContent}>
           <h1 className={styles.pageTitle}>{currentCategory.name}</h1>
           <p className={styles.pageSubtitle}>
-            {category === 'property_insurance' 
+            {currentCategory.subtitle || 
+             (category === 'property_insurance' 
               ? 'Yaşayış və qeyri-yaşayış binaları, mənzillər və tikililər üçün sığorta'
-              : 'Sığorta məlumatlarını doldurun'}
+              : 'Sığorta məlumatlarını doldurun')}
           </p>
         </div>
       </div>
@@ -549,6 +508,11 @@ function Order() {
           {/* 🔹 Addım 1: Şəxsi məlumatlar */}
           {step === 1 && (
             <>
+              <div className={styles.sectionHeader}>
+                <User className={styles.sectionIcon} />
+                <h3 className={styles.sectionTitle}>Sahibkar məlumatları</h3>
+              </div>
+
               <div className={styles.radioGroup}>
                 <label className={styles.radioLabel}>
                   <input
@@ -557,7 +521,7 @@ function Order() {
                     checked={isSelf}
                     onChange={() => setIsSelf(true)}
                   />
-                  <span>Özüm üçün</span>
+                  <span>özüm üçün</span>
                 </label>
                 <label className={styles.radioLabel}>
                   <input
@@ -574,30 +538,58 @@ function Order() {
                 <p>Profil məlumatları yüklənir...</p>
               ) : (
                 <div className={styles.formFields}>
-                  {currentCategory.fields.personal.map((field, i) => (
-                    <div key={i} className={styles.formGroup}>
-                      <label className={styles.label}>
-                        {field.label}
-                        {field.required && <span className={styles.required}>*</span>}
-                      </label>
-                      {renderField(field)}
-                    </div>
-                  ))}
-
-                  {/* Gender seçimi */}
-                  {/* Gender seçimi */}
+                  {/* Full Name - Full Width */}
                   <div className={styles.formGroup}>
-                    <label className={styles.label}>Cins</label>
-                    <select
-                      name="gender"
-                      value={formData.gender}
-                      onChange={handleChange}
-                      // Remove disabled={isSelf}
-                      className={styles.input}
-                    >
-                      <option value="MALE">Kişi</option>
-                      <option value="FEMALE">Qadın</option>
-                    </select>
+                    <label className={styles.label}>
+                      {currentCategory.fields.personal[0].label}
+                      {currentCategory.fields.personal[0].required && <span className={styles.required}>*</span>}
+                    </label>
+                    {renderField(currentCategory.fields.personal[0])}
+                  </div>
+
+                  {/* FIN and VOEN - Two Columns */}
+                  <div className={styles.twoColumnLayout}>
+                    <div className={styles.formGroup}>
+                      <label className={styles.label}>
+                        {currentCategory.fields.personal[1].label}
+                        {currentCategory.fields.personal[1].required && <span className={styles.required}>*</span>}
+                      </label>
+                      {renderField(currentCategory.fields.personal[1])}
+                    </div>
+                    <div className={styles.formGroup}>
+                      <label className={styles.label}>
+                        {currentCategory.fields.personal[2].label}
+                        {currentCategory.fields.personal[2].required && <span className={styles.required}>*</span>}
+                      </label>
+                      {renderField(currentCategory.fields.personal[2])}
+                    </div>
+                  </div>
+
+                  {/* Phone and Email - Two Columns */}
+                  <div className={styles.twoColumnLayout}>
+                    <div className={styles.formGroup}>
+                      <label className={styles.label}>
+                        {currentCategory.fields.personal[3].label}
+                        {currentCategory.fields.personal[3].required && <span className={styles.required}>*</span>}
+                      </label>
+                      {renderField(currentCategory.fields.personal[3])}
+                    </div>
+                    <div className={styles.formGroup}>
+                      <label className={styles.label}>
+                        {currentCategory.fields.personal[4].label}
+                        {currentCategory.fields.personal[4].required && <span className={styles.required}>*</span>}
+                      </label>
+                      {renderField(currentCategory.fields.personal[4])}
+                    </div>
+                  </div>
+
+                  {/* Address - Full Width */}
+                  <div className={styles.formGroup}>
+                    <label className={styles.label}>
+                      {currentCategory.fields.personal[5].label}
+                      {currentCategory.fields.personal[5].required && <span className={styles.required}>*</span>}
+                    </label>
+                    {renderField(currentCategory.fields.personal[5])}
                   </div>
                 </div>
               )}
@@ -662,133 +654,28 @@ function Order() {
   </div> 
 )} 
 
-          {/* 🔹 Addım 4: Təsdiq */}
-          {step === 4 && (
-            <div className={styles.confirmationSection}>
-              <div className={styles.confirmationHeader}>
-                <CheckCircle className={styles.successIcon} />
-                <h2>Məlumatlarınızı Yoxlayın</h2>
-                <p>Bütün məlumatlar düzgündürsə, "Təsdiqlə" düyməsini klikləyin</p>
-              </div>
-
-              <div className={styles.infoGrid}>
-                {/* Şəxsi məlumatlar */}
-                <div className={styles.infoSection}>
-                  <h3 className={styles.sectionTitle}>
-                    <User className={styles.sectionIcon} />
-                    Şəxsi Məlumatlar
-                  </h3>
-                  {currentCategory.fields.personal.map(field => (
-                    <div key={field.name} className={styles.infoRow}>
-                      <span className={styles.infoLabel}>{field.label}:</span>
-                      <span className={styles.infoValue}>{formData[field.name]}</span>
-                    </div>
-                  ))}
-                  <div className={styles.infoRow}>
-                    <span className={styles.infoLabel}>Cins:</span>
-                    <span className={styles.infoValue}>
-                      {formData.gender === 'MALE' ? 'Kişi' : 'Qadın'}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Sığorta məlumatları */}
-                <div className={styles.infoSection}>
-                  <h3 className={styles.sectionTitle}>
-                    <CategoryIcon className={styles.sectionIcon} />
-                    Sığorta Məlumatları
-                  </h3>
-                  {currentCategory.fields.specific.map(field => (
-                    <div key={field.name} className={styles.infoRow}>
-                      <span className={styles.infoLabel}>{field.label}:</span>
-                      <span className={styles.infoValue}>
-                        {field.type === 'checkbox' ? (formData[field.name] ? 'Bəli' : 'Xeyr') : formData[field.name]}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Əlaqə məlumatları */}
-                <div className={styles.infoSection}>
-                  <h3 className={styles.sectionTitle}>
-                    <Phone className={styles.sectionIcon} />
-                    Əlaqə Məlumatları
-                  </h3>
-                  <div className={styles.infoRow}>
-                    <span className={styles.infoLabel}>Telefon:</span>
-                    <span className={styles.infoValue}>{formData.phone}</span>
-                  </div>
-                  <div className={styles.infoRow}>
-                    <span className={styles.infoLabel}>Email:</span>
-                    <span className={styles.infoValue}>{formData.email}</span>
-                  </div>
-                  <div className={styles.infoRow}>
-                    <span className={styles.infoLabel}>Sığorta olunan:</span>
-                    <span className={styles.infoValue}>
-                      {isSelf ? 'Özüm üçün' : 'Başqası üçün'}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <div className={styles.agreementSection}>
-                <label className={styles.checkboxLabel}>
-                  <input type="checkbox" className={styles.checkbox} required />
-                  <span className={styles.checkboxText}>
-                    <a href="#" className={styles.link}>İstifadəçi razılaşmasını</a> və <a href="#" className={styles.link}> məlumatların emalı şərtlərini</a> oxudum və qəbul edirəm
-                  </span>
-                </label>
-              </div>
-
-              <div className={styles.actionButtons}>
-                <button
-                  className={styles.editButton}
-                  onClick={() => setStep(1)}
-                >
-                  Məlumatları Düzəlt
-                </button>
-                <button
-                  className={styles.confirmButton}
-                  onClick={handleNext}
-                  disabled={loading}
-                >
-                  {loading ? (
-                    <>
-                      <div className={styles.spinner}></div>
-                      Göndərilir...
-                    </>
-                  ) : (
-                    <>
-                      <CheckCircle className={styles.buttonIcon} />
-                      Təsdiqlə və Göndər
-                    </>
-                  )}
-                </button>
-              </div>
-            </div>
-          )}
         </div>
       </main>
 
-      {/* 🔹 Addım idarə düymələri */}
-      {step < 4 && (
-        <div className={styles.formActions}>
-          <button
-            className={styles.prevButton}
-            onClick={handleBack}
-            disabled={step === 1}
-          >
-            Əvvəlki
-          </button>
-          <button
-            className={styles.nextButton}
-            onClick={handleNext}
-            disabled={loading}
-          >
-            Növbəti
-          </button>
-        </div>
-      )}
+            {/* 🔹 Addım idarə düymələri */}
+            {step <= 3 && (
+              <div className={styles.formActions}>
+                <button
+                  className={styles.prevButton}
+                  onClick={handleBack}
+                  disabled={step === 1}
+                >
+                  Əvvəlki
+                </button>
+                <button
+                  className={styles.nextButton}
+                  onClick={handleNext}
+                  disabled={loading}
+                >
+                  Növbəti
+                </button>
+              </div>
+            )}
     </div>
   );
 }

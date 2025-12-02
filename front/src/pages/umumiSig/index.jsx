@@ -14,11 +14,6 @@ import { withMockFallback } from '../../utils/mockDataHelper';
 
 const UmSig = () => {
   const [orders, setOrders] = useState([]);
-  const [stats, setStats] = useState({
-    activeOrders: 0,
-    monthlyExpenses: 0,
-    upcomingPayments: 0
-  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [userId, setUserId] = useState(null);
@@ -29,21 +24,23 @@ const UmSig = () => {
   // Kampaniya slides
   const campaigns = [
     {
-      title: "Yeni il kampaniyası",
-      description: "Səyahət sığortasında 30% endirim. Yeni il tətillərinizi güvənlə keçirin.",
-      gradient: "linear-gradient(90deg, #ffe5c4, #ffb6a6)"
+      title: "Mövsümi Təkliflər",
+      description: "Yeni ilin xüsusi təklifləri! Səyahət və tibbi sığortada unikal şərtlər. Ailəvi paketlərdə 30% endirim!",
+      gradient: "linear-gradient(135deg, #a8e6cf 0%, #88d8c0 100%)"
     },
     {
       title: "İcbari Sığorta Kampaniyası",
       description: "Bütün icbari sığorta növlərində sürətli rəsmiləşdirmə. Online müraciət edin!",
-      gradient: "linear-gradient(90deg, #c4e5ff, #a6b6ff)"
+      gradient: "linear-gradient(135deg, #c4e5ff 0%, #a6b6ff 100%)"
     },
     {
       title: "Yay kampaniyası",
       description: "Avtomobil sığortasında 25% endirim. Yay səyahətləriniz üçün xüsusi təklif!",
-      gradient: "linear-gradient(90deg, #c4ffe5, #a6ffb6)"
+      gradient: "linear-gradient(135deg, #ffe5c4 0%, #ffb6a6 100%)"
     }
   ];
+
+  const [activeTab, setActiveTab] = useState("icbari"); // "icbari" or "konullu"
 
   // Karusel funksionallığı
   const goToSlide = (index) => {
@@ -175,8 +172,6 @@ const UmSig = () => {
 
     getUserAndOrders();
   }, []);
-  // Statistika məlumatlarını gətir
-
   console.log(orders);
 
 
@@ -190,17 +185,16 @@ const UmSig = () => {
     });
   };
 
-  // Pul formatı
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('az-AZ', {
-      style: 'currency',
-      currency: 'AZN'
-    }).format(amount);
-  };
 
   // Kateqoriya ikonunu gətir
   const getCategoryIcon = (categoryCode) => {
     return categoryIcons[categoryCode] || categoryIcons.default;
+  };
+
+  // Order card icon colors
+  const getOrderIconColor = (index) => {
+    const colors = ['#9ca3af', '#9333ea', '#10b981', '#2563eb'];
+    return colors[index % colors.length];
   };
 
   return (
@@ -241,12 +235,22 @@ const UmSig = () => {
                   ))}
                 </div>
               </div>
-              <div className='act'>
-                <a href='#' className='aD'>Kateqoriyalar</a>
-                <a href='#'>Hamısını gör</a>
+              <div className='insurance-tabs'>
+                <button 
+                  className={`tab-btn ${activeTab === 'icbari' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('icbari')}
+                >
+                  İcbari Sığorta
+                </button>
+                <button 
+                  className={`tab-btn ${activeTab === 'konullu' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('konullu')}
+                >
+                  Könüllü Sığorta
+                </button>
               </div>
               <div className='sig row'>
-                <div className='sey col-4 sam' onClick={() => navigate('/seyahet')}> {/* ✅ əlavə olundu */}
+                <div className='sey col-4 sam' onClick={() => navigate('/order/mock1')}>
                   <div className='svg'>
                     <FaPlane />
                   </div>
@@ -255,7 +259,7 @@ const UmSig = () => {
                     <p>Sənişinləri daşıyan qurumlar üçün sığorta</p>
                   </div>
                 </div>
-                <div className='heyat col-4 sam' onClick={() => navigate('/heyat')}> {/* ✅ əlavə olundu */}
+                <div className='heyat col-4 sam' onClick={() => navigate('/order/mock6')}>
                   <div className='svg'>
                     <TbActivityHeartbeat />
                   </div>
@@ -264,16 +268,16 @@ const UmSig = () => {
                     <p>İşçilərə dəyən zərərlərə görə məsuliyyət</p>
                   </div>
                 </div>
-                <div className='tibbi col-4 sam' onClick={() => navigate('/tibbi')}> {/* ✅ əlavə olundu */}
+                <div className='tibbi col-4 sam' onClick={() => navigate('/order/mock7')}>
                   <div className='svg'>
                     <FaHeart />
                   </div>
                   <div className='par'>
                     <h4>Əmlak Əməliyyatları</h4>
-                    <p>Əmlak satışının zamanı məsuliyyət</p>
+                    <p>Əmlak istismarı zamanı məsuliyyət</p>
                   </div>
                 </div>
-                <div className='emlak col-4 sam' onClick={() => navigate('/emlak')}> {/* ✅ əlavə olundu */}
+                <div className='emlak col-4 sam' onClick={() => navigate('/order/mock3')}>
                   <div className='svg'>
                     <FaHouse />
                   </div>
@@ -282,7 +286,7 @@ const UmSig = () => {
                     <p>Yaşayış və qeyri-yaşayış binaları, mənzillər</p>
                   </div>
                 </div>
-                <div className='neqliy col-4 sam' onClick={() => navigate('/neqliyyat')}> {/* ✅ əlavə olundu */}
+                <div className='neqliy col-4 sam' onClick={() => navigate('/order/mock5')}>
                   <div className='svg'>
                     <FaCar />
                   </div>
@@ -291,7 +295,7 @@ const UmSig = () => {
                     <p>Üçüncü şəxslərə dəymiş zərərlər üçün məsuliyyət</p>
                   </div>
                 </div>
-                <div className='tehlukeli col-4 sam' onClick={() => navigate('/tehlukeli')}> {/* ✅ əlavə olundu */}
+                <div className='tehlukeli col-4 sam' onClick={() => navigate('/order/mock4')}>
                   <div className='svg'>
                     <FaExclamationTriangle />
                   </div>
@@ -309,9 +313,9 @@ const UmSig = () => {
       <section className='tamam'>
         <div className='container'>
           <div className='all row'>
-            <div className='ms col-9'>
+            <div className='ms col-12'>
               <div className='act row'>
-                <a href='#' className='wh'>Tamamlanmış sığortalar</a>
+                <a href='#' className='wh'>Tamamlanmış sifarişlər</a>
                 <a href='#'>Hamısını gör</a>
               </div>
 
@@ -326,30 +330,25 @@ const UmSig = () => {
               ) : (
                 <div className='cards row'>
                   {orders.length > 0 ? (
-                    orders.map((order) => (
-                      <div key={order._id} className='card'>
-                        <div className='ip'>
-                          <div className='svg'>
-                            {getCategoryIcon(order.category_id?.code)}
-                          </div>
-                          <div className='par2'>
-                            <h4>{order.category_id?.name || 'Sığorta'}</h4>
-                            <p
-                              style={{
-                                color: statusColors[order.status],
-                                fontWeight: 'bold'
-                              }}
-                            >
-                              {statusTexts[order.status]}
-                            </p>
-                            <span>{formatDate(order.created_at)}</span>
+                    orders.slice(0, 4).map((order, index) => {
+                      const companyName = order.company || ["Mega Sığorta", "Paşa Sığorta", "ASCO Sığorta", "Atəşgah Sığorta"][index % 4];
+                      const iconColor = getOrderIconColor(index);
+                      
+                      return (
+                        <div key={order._id} className='order-card'>
+                          <div className='order-card-content'>
+                            <div className='order-icon' style={{ color: iconColor, borderColor: iconColor }}>
+                              {getCategoryIcon(order.category_id?.code)}
+                            </div>
+                            <div className='order-info'>
+                              <h4 className='company-name'>{companyName}</h4>
+                              <p className='order-date'>{formatDate(order.created_at)}</p>
+                              <p className='order-type'>{order.category_id?.name || 'Sığorta'}</p>
+                            </div>
                           </div>
                         </div>
-                        <div>
-                          <p>{formatCurrency(order.total_amount)}</p>
-                        </div>
-                      </div>
-                    ))
+                      );
+                    })
                   ) : (
                     <div className="no-orders">
                       <p>Hələ heç bir sifarişiniz yoxdur</p>
@@ -357,24 +356,6 @@ const UmSig = () => {
                   )}
                 </div>
               )}
-            </div>
-
-            <div className='statistika col-3'>
-              <h4>Statistika</h4>
-              <div className='stat'>
-                <div className='actS same'>
-                  <p>Aktiv sığortalar</p>
-                  <span>{stats.activeOrders}</span>
-                </div>
-                <div className='xerc same'>
-                  <p>Bu ay xərclər</p>
-                  <span>{formatCurrency(stats.monthlyExpenses)}</span>
-                </div>
-                <div className='oden same'>
-                  <p>Yaxın ödənişlər</p>
-                  <span>{stats.upcomingPayments}</span>
-                </div>
-              </div>
             </div>
           </div>
         </div>

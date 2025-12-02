@@ -1,0 +1,409 @@
+.container {
+  min-height: 100vh;
+  background-color: #f5f5f5;
+  padding-bottom: 100px;
+}
+
+// Page Header
+.pageHeader {
+  padding: 24px 20px;
+  background-color: #f5f5f5;
+  border-bottom: 1px solid #e5e7eb;
+
+  .backButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    color: #333;
+    margin-bottom: 16px;
+
+    &:hover {
+      background-color: #f3f4f6;
+    }
+
+    svg {
+      width: 24px;
+      height: 24px;
+    }
+  }
+
+  .headerContent {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+
+    .titleSection {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+
+      .icon {
+        width: 56px;
+        height: 56px;
+        border-radius: 6px;
+        background: linear-gradient(135deg, #ff6b35 0%, #f97316 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 24px;
+        flex-shrink: 0;
+        box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+      }
+
+      .text {
+        .pageTitle {
+          font-size: 28px;
+          font-weight: 700;
+          color: #1a1a1a;
+          margin: 0 0 4px 0;
+        }
+
+        .pageSubtitle {
+          font-size: 14px;
+          color: #666;
+          margin: 0;
+        }
+      }
+    }
+
+    .filterButton {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      border-radius: 6px;
+      padding: 10px 18px;
+      background-color: #ffffff;
+      color: #333;
+      border: 2px solid #d1d5db;
+      transition: all 0.3s ease;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
+      svg {
+        font-size: 16px;
+        color: #4b5563;
+      }
+
+      &:hover {
+        background-color: #f9fafb;
+        border-color: #9ca3af;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+      }
+    }
+  }
+}
+
+// Tab Navigation
+.tabNavigation {
+  display: flex;
+  gap: 8px;
+  padding: 0 20px 24px 20px;
+  background-color: #f5f5f5;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  .tab {
+    padding: 10px 20px;
+    background-color: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.3s ease;
+    color: #6b7280;
+
+    &:hover {
+      background-color: #f9fafb;
+      border-color: #d1d5db;
+      color: #374151;
+    }
+
+    &.active {
+      background-color: #1f2937;
+      color: white;
+      border-color: #1f2937;
+      box-shadow: 0 2px 4px rgba(31, 41, 55, 0.2);
+
+      &:hover {
+        background-color: #111827;
+      }
+    }
+  }
+}
+
+.main {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.companiesGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+
+  @media (max-width: 968px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.companyCard {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  transition: all 0.3s ease;
+  border: 1px solid #e5e7eb;
+
+  &:hover {
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+    transform: translateY(-4px);
+    border-color: #d1d5db;
+  }
+
+  .cardHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 20px;
+    border-bottom: 1px solid #f0f0f0;
+
+    .companyInfo {
+      display: flex;
+      gap: 12px;
+      flex: 1;
+
+      .companyIcon {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 20px;
+        flex-shrink: 0;
+        border: 2px solid white;
+        box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
+      }
+
+      .companyText {
+        flex: 1;
+
+        h4 {
+          font-size: 18px;
+          font-weight: 700;
+          color: #1a1a1a;
+          margin-bottom: 6px;
+          line-height: 1.3;
+        }
+
+        .rating {
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          color: #666;
+          font-size: 13px;
+          font-weight: 500;
+
+          svg {
+            color: #fbbf24;
+            font-size: 14px;
+          }
+        }
+      }
+    }
+
+    .badge {
+      background-color: #f3f4f6;
+      color: #374151;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 5px 12px;
+      border-radius: 8px;
+      text-transform: uppercase;
+      flex-shrink: 0;
+      border: 1px solid #e5e7eb;
+      letter-spacing: 0.5px;
+    }
+  }
+
+  .cardBody {
+    padding: 20px;
+
+    .detailsGrid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px 20px;
+      margin-bottom: 20px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid #f0f0f0;
+
+      .detailItem {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+
+        h5 {
+          font-size: 12px;
+          color: #999;
+          font-weight: 500;
+          margin: 0;
+        }
+
+        p {
+          font-size: 16px;
+          font-weight: 700;
+          color: #1a1a1a;
+          margin: 0;
+          line-height: 1.4;
+
+          &.priceValue {
+            color: #2563eb;
+            font-size: 18px;
+          }
+
+          &.timeValue {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: #1a1a1a;
+
+            svg {
+              font-size: 16px;
+              color: #666;
+            }
+          }
+        }
+      }
+    }
+
+    .featuresSection {
+      margin-bottom: 0;
+
+      h5 {
+        font-size: 12px;
+        font-weight: 600;
+        margin-bottom: 12px;
+        color: #1a1a1a;
+        text-transform: uppercase;
+      }
+
+      .featuresList {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+
+        .featureTag {
+          background-color: #f9fafb;
+          color: #374151;
+          font-size: 12px;
+          font-weight: 500;
+          padding: 7px 14px;
+          border-radius: 10px;
+          border: 1px solid #e5e7eb;
+          transition: all 0.2s ease;
+
+          &:hover {
+            background-color: #f3f4f6;
+            border-color: #d1d5db;
+          }
+        }
+      }
+    }
+  }
+
+  .cardFooter {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    border-top: 1px solid #f0f0f0;
+    gap: 0;
+
+    button {
+      padding: 16px 24px;
+      border: none;
+      font-weight: 700;
+      font-size: 15px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+
+      &::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.3);
+        transform: translate(-50%, -50%);
+        transition: width 0.6s, height 0.6s;
+      }
+
+      &:active::before {
+        width: 300px;
+        height: 300px;
+      }
+    }
+
+    .detailsBtn {
+      background-color: #f5f5f5;
+      color: #333;
+      border-right: 1px solid #f0f0f0;
+
+      &:hover {
+        background-color: #e8e8e8;
+      }
+    }
+
+    .applyBtn {
+      background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+      color: white;
+
+      &:hover:not(:disabled) {
+        background: linear-gradient(135deg, #111827 0%, #030712 100%);
+        box-shadow: 0 4px 8px rgba(31, 41, 55, 0.4);
+      }
+
+      &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+    }
+  }
+}
+
+.loading,
+.error {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+  font-size: 16px;
+}
+
+.error {
+  color: #ef4444;
+}
+

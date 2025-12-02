@@ -21,6 +21,7 @@ import Register from './pages/register'
 import Login from './pages/login'
 import Order from './pages/orderPage'
 import Tehlukeli from './pages/tehlukeSig'
+import CompanySelection from './pages/companySelection'
 
 function App() {
 
@@ -42,6 +43,7 @@ function App() {
           <Route path='register' element={<Register />} />
           <Route path='login' element={<Login />} />
           <Route path='order/:id' element={<Order />} />
+          <Route path='companies/:id' element={<CompanySelection />} />
 
 
         </Route>
