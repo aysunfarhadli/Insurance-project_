@@ -1,7 +1,14 @@
 import { useState, useEffect } from "react";
-import { ArrowLeft, CreditCard, Lock } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
+import logo from "../../assets/cib pay logo png.png";
+import mastercard from "../../assets/image.png";
+import maestro from "../../assets/maestro-vertical-logo.png";
+import visa from "../../assets/Logo-VISA-transparent-PNG.png";
+import visaSecure from "../../assets/uk-visa-secure-640x640.webp";
+import mastercardSecurecode from "../../assets/mastercard-securecode.webp";
+import pciDss from "../../assets/pci-dss-compliant-logo-vector.png";
 import styles from "./index.module.scss";
 
 axios.defaults.withCredentials = true;
@@ -10,12 +17,13 @@ function Payment() {
   const { orderId } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
-  
+
   // Get order data from location state or sessionStorage
   const orderData = location.state?.orderData || JSON.parse(sessionStorage.getItem('paymentOrderData') || '{}');
-  
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showCvv, setShowCvv] = useState(false);
   const [cardData, setCardData] = useState({
     pan: "",
     cvv: "",
@@ -32,13 +40,12 @@ function Payment() {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    
-    // Format card number (add spaces every 4 digits)
+
+    // Format card number (no spaces - as per cibpay requirement)
     if (name === 'pan') {
       const cleaned = value.replace(/\s/g, '');
       if (cleaned.length <= 16 && /^\d*$/.test(cleaned)) {
-        const formatted = cleaned.match(/.{1,4}/g)?.join(' ') || cleaned;
-        setCardData(prev => ({ ...prev, [name]: formatted }));
+        setCardData(prev => ({ ...prev, [name]: cleaned }));
       }
     }
     // Format CVV (max 3 digits)
@@ -70,9 +77,9 @@ function Payment() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-    
+
     // Validate card data
-    if (!cardData.pan || cardData.pan.replace(/\s/g, '').length < 16) {
+    if (!cardData.pan || cardData.pan.length < 16) {
       setError("Kart nömrəsi düzgün deyil");
       return;
     }
@@ -84,15 +91,11 @@ function Payment() {
       setError("Kartın son istifadə tarixi düzgün deyil");
       return;
     }
-    if (!cardData.holder) {
-      setError("Kart sahibinin adı daxil edilməlidir");
-      return;
-    }
 
     try {
       setLoading(true);
       const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
-      
+
       // Get browser details for 3D Secure
       const browserDetails = {
         acceptHeader: navigator.acceptHeader || "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
@@ -123,7 +126,7 @@ function Payment() {
       });
 
       const cibpayOrderId = createOrderRes.data?.data?.id;
-      
+
       if (!cibpayOrderId) {
         throw new Error("Ödəniş sifarişi yaradıla bilmədi");
       }
@@ -131,12 +134,12 @@ function Payment() {
       // Authorize payment
       const authRes = await axios.post(`${API_BASE}/api/payment/authorize`, {
         amount: orderData.total_amount || 150.00,
-        pan: cardData.pan.replace(/\s/g, ''),
+        pan: cardData.pan,
         card: {
           cvv: cardData.cvv,
           expiration_month: parseInt(cardData.expiration_month),
           expiration_year: 2000 + parseInt(cardData.expiration_year),
-          holder: cardData.holder
+          holder: cardData.holder || ""
         },
         client: {
           name: orderData.fullName || "Test User",
@@ -173,9 +176,9 @@ function Payment() {
         email: orderData.email || "example@email.com",
         paymentDate: new Date().toISOString()
       };
-      
+
       sessionStorage.setItem('paymentSuccessData', JSON.stringify(paymentSuccessData));
-      
+
       // Navigate to success page
       navigate(`/payment/success/${orderData.orderId || orderId}`);
     } catch (err) {
@@ -186,110 +189,158 @@ function Payment() {
     }
   };
 
+  const amount = orderData.total_amount || 1.00;
+  const currency = orderData.currency || "AZN";
+
   return (
     <div className={styles.container}>
-      <div className={styles.header}>
-        <button className={styles.backButton} onClick={() => navigate(-1)}>
-          <ArrowLeft />
-        </button>
-        <h1 className={styles.title}>Ödəniş</h1>
-      </div>
-
-      <div className={styles.content}>
-        <div className={styles.orderSummary}>
-          <h3>Sifariş məlumatları</h3>
-          <div className={styles.summaryItem}>
-            <span>Sığorta növü:</span>
-            <span>{orderData.insuranceType || "Avtomobil Məsuliyyət Sığortası"}</span>
-          </div>
-          <div className={styles.summaryItem}>
-            <span>Məbləğ:</span>
-            <span className={styles.amount}>{orderData.total_amount || 150.00} {orderData.currency || "AZN"}</span>
+      <div className={styles.paymentWrapper}>
+        {/* Header with cibpay logo and amount */}
+        <div className={styles.header}>
+          <div className={styles.logoSection}>
+            <div className={styles.logo}>
+              <img src={logo} alt="" />
+              <span className={styles.logoText}>cibpay</span>
+            </div>
+            <div className={styles.amountDisplay}>
+              <span className={styles.amountLabel}>Məbləğ:</span>
+              <span className={styles.amountValue}>{amount.toFixed(2)}{currency}</span>
+            </div>
           </div>
         </div>
 
-        <form className={styles.paymentForm} onSubmit={handleSubmit}>
-          <div className={styles.formHeader}>
-            <CreditCard className={styles.icon} />
-            <h2>Kart məlumatları</h2>
+        {/* Payment Options */}
+        <div className={styles.paymentOptions}>
+          <button type="button" className={styles.birPayButton}>
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <path d="M10 5L12 8H8L10 5Z" fill="currentColor" />
+              <path d="M8 12L10 15L12 12H8Z" fill="currentColor" />
+            </svg>
+            bir pay
+          </button>
+
+          <div className={styles.divider}>
+            <span>və ya</span>
           </div>
 
+          <button type="button" className={styles.googlePayButton}>
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <path d="M10 5C8.5 5 7.2 5.5 6.2 6.3L4.8 4.9C6.1 3.7 7.9 3 10 3C12.1 3 13.9 3.7 15.2 4.9L13.8 6.3C12.8 5.5 11.5 5 10 5Z" fill="#4285F4" />
+              <path d="M10 15C11.5 15 12.8 14.5 13.8 13.7L15.2 15.1C13.9 16.3 12.1 17 10 17C7.9 17 6.1 16.3 4.8 15.1L6.2 13.7C7.2 14.5 8.5 15 10 15Z" fill="#EA4335" />
+              <path d="M4.8 4.9L6.2 6.3C7.2 5.5 8.5 5 10 5V3C7.9 3 6.1 3.7 4.8 4.9Z" fill="#FBBC04" />
+              <path d="M15.2 15.1L13.8 13.7C12.8 14.5 11.5 15 10 15V17C12.1 17 13.9 16.3 15.2 15.1Z" fill="#34A853" />
+            </svg>
+            Buy with G Pay
+          </button>
+        </div>
+
+        {/* Card Brand Logos */}
+        <div className={styles.cardBrands}>
+          <img src={mastercard} alt="Mastercard" className={styles.brandLogo} />
+          <img src={maestro} alt="Maestro" className={styles.brandLogo} />
+          <img src={visa} alt="VISA" className={styles.brandLogo} />
+          <img src={visa} alt="VISA Electron" className={styles.brandLogo} />
+        </div>
+
+        {/* Card Details Form */}
+        <form className={styles.paymentForm} onSubmit={handleSubmit}>
           {error && <div className={styles.error}>{error}</div>}
 
           <div className={styles.formGroup}>
             <label>Kart nömrəsi</label>
-            <input
-              type="text"
-              name="pan"
-              value={cardData.pan}
-              onChange={handleInputChange}
-              placeholder="1234 5678 9012 3456"
-              maxLength="19"
-              required
-            />
-          </div>
-
-          <div className={styles.formRow}>
-            <div className={styles.formGroup}>
-              <label>CVV</label>
+            <div>
               <input
                 type="text"
-                name="cvv"
-                value={cardData.cvv}
+                name="pan"
+                value={cardData.pan}
                 onChange={handleInputChange}
-                placeholder="123"
-                maxLength="3"
+                placeholder="Rəqəmləri boşluq olmadan doldurun"
+                maxLength="16"
                 required
               />
-            </div>
+              <span className={styles.hint}>Rəqəmləri boşluq olmadan doldurun</span>
 
-            <div className={styles.formGroup}>
-              <label>Son istifadə tarixi</label>
-              <div className={styles.expiryInputs}>
-                <input
-                  type="text"
-                  name="expiration_month"
-                  value={cardData.expiration_month}
-                  onChange={handleInputChange}
-                  placeholder="MM"
-                  maxLength="2"
-                  required
-                />
-                <span>/</span>
-                <input
-                  type="text"
-                  name="expiration_year"
-                  value={cardData.expiration_year}
-                  onChange={handleInputChange}
-                  placeholder="YY"
-                  maxLength="2"
-                  required
-                />
-              </div>
             </div>
           </div>
 
           <div className={styles.formGroup}>
-            <label>Kart sahibinin adı</label>
-            <input
-              type="text"
-              name="holder"
-              value={cardData.holder}
-              onChange={handleInputChange}
-              placeholder="AD SOYAD"
-              required
-            />
+            <label>Etibarlıdır:</label>
+            <div className={styles.expiryInputs}>
+              <select
+                name="expiration_month"
+                value={cardData.expiration_month}
+                onChange={handleInputChange}
+                required
+              >
+                <option value="">Ay</option>
+                {Array.from({ length: 12 }, (_, i) => {
+                  const month = String(i + 1).padStart(2, '0');
+                  return <option key={month} value={month}>{month}</option>;
+                })}
+              </select>
+              <select
+                name="expiration_year"
+                value={cardData.expiration_year}
+                onChange={handleInputChange}
+                required
+              >
+                <option value="">İl</option>
+                {Array.from({ length: 10 }, (_, i) => {
+                  const year = String(new Date().getFullYear() % 100 + i).padStart(2, '0');
+                  return <option key={year} value={year}>{year}</option>;
+                })}
+              </select>
+            </div>
           </div>
 
-          <div className={styles.securityNote}>
-            <Lock size={16} />
-            <span>Bütün məlumatlar şifrələnmiş şəkildə ötürülür</span>
+          <div className={styles.formGroup}>
+            <label>CVV</label>
+            <div className={styles.cvvInputWrapper}>
+              <input
+                type={showCvv ? "text" : "password"}
+                name="cvv"
+                value={cardData.cvv}
+                onChange={handleInputChange}
+                placeholder=""
+                maxLength="3"
+                required
+              />
+              <button
+                type="button"
+                className={styles.eyeButton}
+                onClick={() => setShowCvv(!showCvv)}
+              >
+                {showCvv ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+              <span className={styles.hint}>Kartın arxasındakı son 3 rəqəm</span>
+            </div>
+          </div>
+
+          <div className={styles.formGroup}>
+            <label>Kart sahibi</label>
+            <div>
+              <input
+                type="text"
+                name="holder"
+                value={cardData.holder}
+                onChange={handleInputChange}
+                placeholder=""
+              />
+              <span className={styles.hint}>Kartda ad yoxdursa boş saxlayın</span>
+            </div>
           </div>
 
           <button type="submit" className={styles.submitButton} disabled={loading}>
-            {loading ? "Ödəniş edilir..." : "Ödəniş et"}
+            {loading ? "Ödəniş edilir..." : "Ödə"}
           </button>
         </form>
+
+        {/* Security Logos */}
+        <div className={styles.securityLogos}>
+          <img src={visaSecure} alt="VISA SECURE" className={styles.securityLogo} />
+          <img src={mastercardSecurecode} alt="MasterCard SecureCode" className={styles.securityLogo} />
+          <img src={pciDss} alt="PCI DSS COMPLIANT" className={styles.securityLogo} />
+        </div>
       </div>
     </div>
   );
