@@ -726,6 +726,15 @@ button:focus {
 }
 
 // ================== RESPONSIVE ==================
+@media (max-width: 992px) {
+  .sig .sam {
+    &.col-3 {
+      flex: 0 0 calc(50% - 20px);
+      max-width: calc(50% - 20px);
+    }
+  }
+}
+
 @media (max-width: 768px) {
   .umSigorta,
   .tamam {
@@ -734,6 +743,11 @@ button:focus {
 
   .sig .sam {
     margin-bottom: 15px;
+    
+    &.col-3 {
+      flex: 0 0 100%;
+      max-width: 100%;
+    }
   }
 
 

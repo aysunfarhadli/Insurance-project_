@@ -5,9 +5,6 @@ import axios from "axios";
 import { TbStarFilled, TbClock, TbFilter } from "react-icons/tb";
 import { Car } from "lucide-react";
 import styles from "./index.module.scss";
-import { mockCompanies, getMockCompaniesByCategory } from "../../mockData/companies";
-import { getMockCategoryById } from "../../mockData/categories";
-import { withMockFallback } from "../../utils/mockDataHelper";
 
 axios.defaults.withCredentials = true;
 
@@ -15,35 +12,25 @@ function CompanySelection() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [companies, setCompanies] = useState([]);
+  const [filteredCompanies, setFilteredCompanies] = useState([]);
   const [category, setCategory] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState("Hamısı");
+  const [showFilter, setShowFilter] = useState(false);
+  const [filterPrice, setFilterPrice] = useState([0, 100]);
+  const [filterRating, setFilterRating] = useState(0);
 
   // Fetch category info
   useEffect(() => {
     const fetchCategory = async () => {
       try {
         const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
-        
-        const { data, isMock } = await withMockFallback(
-          async () => {
-            const res = await axios.get(`${API_BASE}/api/categories/${id}`);
-            return { data: res.data };
-          },
-          () => getMockCategoryById(id)
-        );
-
-        if (isMock) {
-          console.log('📦 Using mock category data');
-        }
-
-        setCategory(data);
+        const res = await axios.get(`${API_BASE}/api/categories/${id}`);
+        setCategory(res.data);
       } catch (err) {
         console.error("Category fetch error:", err);
-        const mockCat = getMockCategoryById(id);
-        if (mockCat) {
-          setCategory(mockCat);
-        }
+        setError("Kateqoriya məlumatları yüklənə bilmədi.");
       }
     };
 
@@ -57,72 +44,56 @@ function CompanySelection() {
         setLoading(true);
         const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
         
-        const { data, isMock } = await withMockFallback(
-          async () => {
-            const res = await axios.get(`${API_BASE}/api/company-insurance-types`);
-            const companyTypes = res.data.filter(ct => 
-              ct.category_id?._id === id || ct.category_id?.code === category?.code
-            );
-            const companyIds = [...new Set(companyTypes.map(ct => ct.company_id?._id).filter(Boolean))];
-            const companiesRes = await Promise.all(
-              companyIds.map(cid => axios.get(`${API_BASE}/api/companies/${cid}`))
-            );
-            return { data: companiesRes.map(r => r.data) };
-          },
-          () => getMockCompaniesByCategory(id)
-        );
+        // Backend-də category_id query parametri ilə şirkətləri gətir
+        const res = await axios.get(`${API_BASE}/api/company-insurance-types`, {
+          params: { category_id: id }
+        });
+        
+        // Populate edilmiş şirkət məlumatlarını çıxar və unikal şirkətləri götür
+        const companyMap = new Map();
+        res.data.forEach(ct => {
+          // Həm şirkət aktiv olmalıdır, həm də CompanyInsuranceType aktiv olmalıdır
+          if (ct.company_id && 
+              ct.company_id.active !== false && 
+              ct.active !== false) {
+            const companyId = ct.company_id._id || ct.company_id.id;
+            if (!companyMap.has(companyId)) {
+              // Backend-dən gələn məlumatları istifadə et
+              companyMap.set(companyId, {
+                ...ct.company_id,
+                _id: companyId,
+                // CompanyInsuranceType məlumatları
+                monthly_price: ct.monthly_price,
+                coverage_amount: ct.coverage_amount,
+                processing_time_hours: ct.processing_time_hours,
+                rating: ct.rating || 4.5,
+                reviews_count: ct.reviews_count || 0,
+                badge: ct.badge,
+                features: ct.features || [],
+                // Format edilmiş məlumatlar
+                monthlyPrice: ct.monthly_price ? `${ct.monthly_price} AZN/ay` : "Qiymət yoxdur",
+                coverage: ct.coverage_amount ? `${ct.coverage_amount.toLocaleString()} AZN` : "Əhatə yoxdur",
+                processingTime: ct.processing_time_hours ? `${ct.processing_time_hours} saat` : "Müddət yoxdur",
+                reviews: ct.reviews_count || 0,
+                iconColor: ["#9333ea", "#10b981", "#3b82f6", "#f59e0b"][companyMap.size % 4]
+              });
+            }
+          }
+        });
+        const data = Array.from(companyMap.values());
 
-        if (isMock) {
-          console.log('📦 Using mock companies data');
-        }
-
-        // Add mock insurance plan data to companies
-        const badges = ["Ən Populyar", "Ən Sürətli", "Premium", "Budget"];
-        const monthlyPrices = ["45 AZN/ay", "38 AZN/ay", "52 AZN/ay", "32 AZN/ay"];
-        const coverages = ["50,000 AZN", "40,000 AZN", "75,000 AZN", "30,000 AZN"];
-        const processingTimes = ["2 saat", "1 saat", "3 saat", "4 saat"];
-        const featureSets = [
-          ["24/7 Dəstək", "Tez Ödəniş", "Beynəlxalq əhatə"],
-          ["Online Xidmət", "Sürətli Qeydiyyat", "Mobil Tətbiq"],
-          ["Premium Xidmət", "VIP Dəstək", "Genişləndirilmiş əhatə"],
-          ["Əsas əhatə", "Standart Dəstək", "Sənədləşmə"]
-        ];
-        const ratings = [4.8, 4.6, 4.7, 4.5];
-        const reviews = [2341, 1876, 1234, 987];
-        const iconColors = ["#9333ea", "#10b981", "#3b82f6", "#10b981"];
-
-        const companiesWithPlans = (Array.isArray(data) ? data : []).map((company, index) => ({
-          ...company,
-          badge: badges[index % badges.length],
-          monthlyPrice: monthlyPrices[index % monthlyPrices.length],
-          coverage: coverages[index % coverages.length],
-          processingTime: processingTimes[index % processingTimes.length],
-          features: featureSets[index % featureSets.length],
-          rating: ratings[index % ratings.length],
-          reviews: reviews[index % reviews.length],
-          iconColor: iconColors[index % iconColors.length]
-        }));
-
-        setCompanies(companiesWithPlans.length > 0 ? companiesWithPlans : mockCompanies.map((c, i) => ({
-          ...c,
-          badge: badges[i % badges.length],
-          monthlyPrice: monthlyPrices[i % monthlyPrices.length],
-          coverage: coverages[i % coverages.length],
-          processingTime: processingTimes[i % processingTimes.length],
-          features: featureSets[i % featureSets.length],
-          rating: ratings[i % ratings.length],
-          reviews: reviews[i % reviews.length],
-          iconColor: iconColors[i % iconColors.length]
-        })));
+        setCompanies(data);
+        setFilteredCompanies(data);
       } catch (err) {
         console.error("Companies fetch error:", err);
-        setCompanies(mockCompanies);
+        setError("Şirkət məlumatları yüklənə bilmədi.");
+        setCompanies([]);
       } finally {
         setLoading(false);
       }
     };
 
-    if (id) {
+    if (id && category) {
       fetchCompanies();
     }
   }, [id, category]);
@@ -138,17 +109,31 @@ function CompanySelection() {
       }
 
       const formData = JSON.parse(formDataStr);
+      console.log("📋 Form Data:", formData);
       setLoading(true);
 
       const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
 
-      // Get user ID
+      // Get user ID and finCode
       const userRes = await axios.get(`${API_BASE}/authUser/profile`);
-      const userId = userRes.data.user?._id || 'mock_user_123';
+      const user = userRes.data.user || userRes.data;
+      console.log("👤 User Profile:", user);
+      const userId = user._id || 'mock_user_123';
+      
+      // finCode formData-dan gəlir, yoxdursa user profilindən götür
+      const finCode = formData.finCode || user.finCode;
+      console.log("🔑 FIN Code:", finCode);
+      
+      if (!finCode || finCode.trim() === '') {
+        alert('FİN kodu tapılmadı. Zəhmət olmasa formu yenidən doldurun və FİN kodunu daxil edin.');
+        navigate(`/order/${id}`);
+        setLoading(false);
+        return;
+      }
 
       // Create order
       const orderRes = await axios.post(`${API_BASE}/api/orders`, {
-        finCode: formData.finCode,
+        finCode: finCode,
         category_id: id,
         userId: userId,
         company_id: company._id,
@@ -182,20 +167,86 @@ function CompanySelection() {
         details: specificData
       });
 
-      // Clear sessionStorage
-      sessionStorage.removeItem('orderFormData');
+      // Prepare payment data
+      const paymentOrderData = {
+        orderId: orderId,
+        insuranceType: category?.name || "Avtomobil Məsuliyyət Sığortası",
+        total_amount: 150.00, // You can get this from orderRes or company data
+        currency: "AZN",
+        fullName: formData.fullName || "",
+        email: formData.email || "",
+        company_id: company._id,
+        company_name: company.name
+      };
 
-      alert("Məlumatlar uğurla göndərildi ✅");
-      navigate('/umumiSig');
+      // Save payment data to sessionStorage
+      sessionStorage.setItem('paymentOrderData', JSON.stringify(paymentOrderData));
+
+      // Navigate to payment page
+      navigate(`/payment/${orderId}`);
     } catch (err) {
       console.error("Göndərmə xətası:", err);
-      alert("Göndərmə zamanı xəta baş verdi.");
+      const errorMessage = err.response?.data?.message || err.message || "Göndərmə zamanı xəta baş verdi.";
+      alert(errorMessage);
+      
+      // Əgər finCode problemi varsa, form səhifəsinə yönləndir
+      if (errorMessage.includes("finCode")) {
+        navigate(`/order/${id}`);
+      }
     } finally {
       setLoading(false);
     }
   };
 
   const tabs = ["Hamısı", "Populyar", "Ən Ucuz", "Ən Sürətli", "Premium"];
+
+  // Filter və sort funksiyaları
+  useEffect(() => {
+    let filtered = [...companies];
+
+    // Tab filter
+    switch (activeTab) {
+      case "Populyar":
+        filtered = filtered.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+        break;
+      case "Ən Ucuz":
+        filtered = filtered.sort((a, b) => (a.monthly_price || 0) - (b.monthly_price || 0));
+        break;
+      case "Ən Sürətli":
+        filtered = filtered.sort((a, b) => (a.processing_time_hours || 999) - (b.processing_time_hours || 999));
+        break;
+      case "Premium":
+        filtered = filtered.filter(c => c.badge === "Premium");
+        break;
+      default:
+        break;
+    }
+
+    // Price filter
+    if (filterPrice[0] > 0 || filterPrice[1] < 100) {
+      filtered = filtered.filter(c => {
+        const price = c.monthly_price || 0;
+        return price >= filterPrice[0] && price <= filterPrice[1];
+      });
+    }
+
+    // Rating filter
+    if (filterRating > 0) {
+      filtered = filtered.filter(c => (c.rating || 0) >= filterRating);
+    }
+
+    setFilteredCompanies(filtered);
+  }, [companies, activeTab, filterPrice, filterRating]);
+
+  const handleFilterApply = () => {
+    setShowFilter(false);
+  };
+
+  const handleFilterReset = () => {
+    setFilterPrice([0, 100]);
+    setFilterRating(0);
+    setShowFilter(false);
+  };
 
   return (
     <div className={styles.container}>
@@ -218,12 +269,62 @@ function CompanySelection() {
               </p>
             </div>
           </div>
-          <div className={styles.filterButton}>
+          <div className={styles.filterButton} onClick={() => setShowFilter(!showFilter)}>
             <TbFilter />
             <span>Filtr</span>
           </div>
         </div>
       </div>
+
+      {/* Filter Panel */}
+      {showFilter && (
+        <div className={styles.filterPanel}>
+          <div className={styles.filterHeader}>
+            <h3>Filtr</h3>
+            <button onClick={() => setShowFilter(false)}>×</button>
+          </div>
+          <div className={styles.filterContent}>
+            <div className={styles.filterGroup}>
+              <label>Qiymət (AZN/ay)</label>
+              <div className={styles.rangeInputs}>
+                <input
+                  type="number"
+                  min="0"
+                  max="100"
+                  value={filterPrice[0]}
+                  onChange={(e) => setFilterPrice([parseInt(e.target.value) || 0, filterPrice[1]])}
+                  placeholder="Min"
+                />
+                <span>-</span>
+                <input
+                  type="number"
+                  min="0"
+                  max="100"
+                  value={filterPrice[1]}
+                  onChange={(e) => setFilterPrice([filterPrice[0], parseInt(e.target.value) || 100])}
+                  placeholder="Max"
+                />
+              </div>
+            </div>
+            <div className={styles.filterGroup}>
+              <label>Minimum Reytinq</label>
+              <input
+                type="number"
+                min="0"
+                max="5"
+                step="0.1"
+                value={filterRating}
+                onChange={(e) => setFilterRating(parseFloat(e.target.value) || 0)}
+                placeholder="0"
+              />
+            </div>
+          </div>
+          <div className={styles.filterActions}>
+            <button onClick={handleFilterReset}>Təmizlə</button>
+            <button onClick={handleFilterApply} className={styles.applyBtn}>Tətbiq et</button>
+          </div>
+        </div>
+      )}
 
       {/* Tab Navigation */}
       <div className={styles.tabNavigation}>
@@ -242,11 +343,11 @@ function CompanySelection() {
       <main className={styles.main}>
         {loading ? (
           <div className={styles.loading}>Şirkətlər yüklənir...</div>
-        ) : companies.length === 0 ? (
+        ) : filteredCompanies.length === 0 ? (
           <div className={styles.error}>Bu kateqoriya üçün şirkət tapılmadı</div>
         ) : (
           <div className={styles.companiesGrid}>
-            {companies.map((company, index) => (
+            {filteredCompanies.map((company, index) => (
               <div key={company._id} className={styles.companyCard}>
                 <div className={styles.cardHeader}>
                   <div className={styles.companyInfo}>
@@ -257,11 +358,13 @@ function CompanySelection() {
                       <h4>{company.name}</h4>
                       <div className={styles.rating}>
                         <TbStarFilled />
-                        <span>{company.rating} ({company.reviews} rəy)</span>
+                        <span>{company.rating?.toFixed(1) || '4.5'} ({company.reviews_count || company.reviews || 0} rəy)</span>
                       </div>
                     </div>
                   </div>
-                  <div className={styles.badge}>{company.badge}</div>
+                  {company.badge && (
+                    <div className={styles.badge}>{company.badge}</div>
+                  )}
                 </div>
 
                 <div className={styles.cardBody}>

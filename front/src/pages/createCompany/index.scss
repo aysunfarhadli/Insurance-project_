@@ -1,0 +1,232 @@
+.create-company {
+  min-height: calc(100vh - 200px);
+  padding: 40px 20px;
+  background: #f5f5f5;
+
+  &-container {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  &-form {
+    background: white;
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+    .form-title {
+      font-size: 28px;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 8px;
+    }
+
+    .form-description {
+      color: #666;
+      margin-bottom: 30px;
+      font-size: 14px;
+    }
+
+    .alert {
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      font-size: 14px;
+
+      &.alert-error {
+        background: #fee;
+        color: #c33;
+        border: 1px solid #fcc;
+      }
+
+      &.alert-success {
+        background: #efe;
+        color: #3c3;
+        border: 1px solid #cfc;
+      }
+    }
+
+    .json-input-section {
+      margin-bottom: 30px;
+
+      .json-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+
+        label {
+          font-weight: 500;
+          color: #333;
+          font-size: 14px;
+        }
+
+        .format-btn {
+          padding: 6px 12px;
+          background: #6c757d;
+          color: white;
+          border: none;
+          border-radius: 6px;
+          font-size: 12px;
+          cursor: pointer;
+          transition: all 0.3s;
+
+          &:hover {
+            background: #5a6268;
+          }
+        }
+      }
+
+      .json-textarea {
+        width: 100%;
+        padding: 16px;
+        border: 2px solid #ddd;
+        border-radius: 8px;
+        font-size: 14px;
+        font-family: 'Courier New', monospace;
+        line-height: 1.6;
+        resize: vertical;
+        min-height: 300px;
+        transition: all 0.3s;
+        background: #f8f9fa;
+
+        &:focus {
+          outline: none;
+          border-color: #4a90e2;
+          box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+          background: white;
+        }
+
+        &::placeholder {
+          color: #999;
+        }
+      }
+
+      .json-hint {
+        margin-top: 16px;
+        padding: 16px;
+        background: #e7f3ff;
+        border-radius: 8px;
+        border-left: 4px solid #4a90e2;
+
+        p {
+          margin: 0 0 12px 0;
+          color: #333;
+          font-size: 13px;
+        }
+
+        .hint-code {
+          margin: 0;
+          padding: 12px;
+          background: white;
+          border-radius: 6px;
+          font-size: 12px;
+          font-family: 'Courier New', monospace;
+          color: #333;
+          overflow-x: auto;
+          line-height: 1.6;
+        }
+      }
+    }
+
+    .created-company-section {
+      margin-top: 30px;
+      padding: 20px;
+      background: #e7f5e7;
+      border-radius: 8px;
+      border-left: 4px solid #28a745;
+
+      .section-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #28a745;
+        margin-bottom: 16px;
+      }
+
+      .company-details {
+        .detail-item {
+          margin-bottom: 12px;
+          font-size: 14px;
+          color: #333;
+
+          strong {
+            color: #555;
+            margin-right: 8px;
+          }
+
+          .status-active {
+            color: #28a745;
+            font-weight: 600;
+          }
+
+          .status-inactive {
+            color: #dc3545;
+            font-weight: 600;
+          }
+        }
+
+        .contact-details {
+          margin-top: 16px;
+          padding-top: 16px;
+          border-top: 1px solid #c3e6c3;
+
+          strong {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+          }
+
+          .contact-item {
+            margin-left: 16px;
+            margin-bottom: 6px;
+            font-size: 14px;
+            color: #333;
+          }
+        }
+      }
+    }
+
+    .form-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+      margin-top: 30px;
+      padding-top: 30px;
+      border-top: 1px solid #eee;
+
+      .btn {
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s;
+        border: none;
+
+        &.btn-primary {
+          background: #4a90e2;
+          color: white;
+
+          &:hover:not(:disabled) {
+            background: #357abd;
+          }
+
+          &:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+          }
+        }
+
+        &.btn-secondary {
+          background: #f5f5f5;
+          color: #333;
+
+          &:hover {
+            background: #e0e0e0;
+          }
+        }
+      }
+    }
+  }
+}
+

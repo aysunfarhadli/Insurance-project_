@@ -3,9 +3,6 @@ import { ArrowLeft, Phone, CheckCircle, User, Car, Home, Building, Briefcase, Bu
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import styles from "./index.module.scss";
-import { mockUserProfile } from "../../mockData/user";
-import { getMockCategoryById } from "../../mockData/categories";
-import { withMockFallback } from "../../utils/mockDataHelper";
 
 axios.defaults.withCredentials = true;
 
@@ -27,128 +24,134 @@ const categoryConfig = {
       ],
       // Kateqoriyaya xüsusi fieldlər 
       specific: [
-        { name: "stateNumber", label: "Dövlət nömrə nişanı", required: true },
-        { name: "vin", label: "VIN (şassi nömrəsi)", required: true },
-        { name: "brandModel", label: "Marka/Model", required: true },
-        { name: "manufactureYear", label: "Buraxılış ili", type: "number", required: true },
-        { name: "engineVolume", label: "Mühərrik həcmi" },
-        { name: "fuelType", label: "Yanacaq növü" },
-        { name: "usagePurpose", label: "İstifadə təyinatı", required: true, options: ["şəxsi", "taksi", "kommersiya", "korporativ"] },
+        { name: "stateNumber", label: "Dövlət nömrə nişanı", placeholder: "10-AA-123", required: true },
+        { name: "vin", label: "VIN (şassi nömrəsi)", placeholder: "VIN nömrəsini daxil edin", required: true },
+        { name: "brandModel", label: "Marka/Model", placeholder: "Toyota Camry", required: true },
+        { name: "manufactureYear", label: "Buraxılış ili", type: "number", placeholder: "2020", required: true },
+        { name: "engineVolume", label: "Mühərrik həcmi", type: "number", placeholder: "2.5" },
+        { name: "fuelType", label: "Yanacaq növü", options: ["benzin", "dizel", "qaz", "elektrik", "hibrid"] },
+        { name: "usagePurpose", label: "İstifadə təyinatı", placeholder: "Təyinatı seçin", required: true, options: ["şəxsi", "taksi", "kommersiya", "korporativ"] },
         { name: "ownershipType", label: "Sahiblik növü", options: ["fərdi", "hüquqi", "lizinq"] },
-        { name: "previousPolicy", label: "Keçmiş polis nömrəsi" },
+        { name: "previousPolicy", label: "Keçmiş polis nömrəsi (bonus-malus üçün)", placeholder: "POL-123456" },
+        { name: "startDate", label: "Başlama tarixi", type: "date", required: true },
+        { name: "duration", label: "Müddət (il)", type: "number", placeholder: "1", required: true },
       ]
     }
   },
   property_insurance: {
     name: "İcbari Əmlak Sığortası",
     icon: Home,
+    subtitle: "Yaşayış və qeyri-yaşayış binalar, mənzillər və tikililər üçün icbari sığorta",
     fields: {
       personal: [
-        { name: "firstName", label: "Ad", required: true },
-        { name: "lastName", label: "Soyad", required: true },
-        { name: "fatherName", label: "Ata adı", required: true },
-        { name: "passportNumber", label: "Passport nömrəsi", required: true },
-        { name: "finCode", label: "FİN kod", required: true },
-        { name: "birthDate", label: "Doğum tarixi", type: "date", required: true },
+        { name: "fullName", label: "Sahibi tam adı", placeholder: "Ad və soyadınızı daxil edin", required: true },
+        { name: "finCode", label: "FİN / Şəxsiyyət vəsiqəsi nömrəsi", placeholder: "AZE1234567", required: true },
+        { name: "voen", label: "VÖEN (hüquqi şəxs üçün)", placeholder: "1234567890", required: false },
+        { name: "phone", label: "Əlaqə nömrəsi", placeholder: "+994 XX XXX XX XX", required: true },
+        { name: "email", label: "Email", placeholder: "email@example.com", required: true },
+        { name: "address", label: "Qeydiyyat ünvanı", placeholder: "Tam ünvanınızı daxil edin", required: false },
       ],
       specific: [
         { name: "propertyAddress", label: "Əmlakın ünvanı (küçə, bina/mənzil, şəhər/rayon)", placeholder: "Tam ünvanı daxil edin", required: true },
-        { name: "propertyType", label: "Əmlak növü", placeholder: "Əmlak növünü seçin", required: true, options: ["mənzil", "ev", "ofis", "ticarət", "anbar"] },
-        { name: "totalFloors", label: "Mərtəbə sayı", type: "number", placeholder: "9" },
-        { name: "wallMaterial", label: "Divar materialı", placeholder: "Material seçin", options: ["kərpic", "beton", "ağac", "digər"] },
-        { name: "propertyDocument", label: "Əmlak sənədi nömrəsi (kupça)", placeholder: "Əmlak sənədi nömrəsi" },
+        { name: "propertyType", label: "Əmlak tipi", placeholder: "Əmlak tipini seçin", required: true, options: ["mənzil", "ev", "ofis", "ticarət", "anbar"] },
         { name: "area", label: "Sahə (m²)", type: "number", placeholder: "120", required: true },
+        { name: "totalFloors", label: "Mərtəbə sayı", type: "number", placeholder: "9" },
         { name: "floorLocation", label: "Yerləşdiyi mərtəbə", type: "number", placeholder: "5" },
+        { name: "wallMaterial", label: "Divar materialı", placeholder: "Material seçin", options: ["kərpic", "beton", "ağac", "digər"] },
         { name: "constructionYear", label: "Tikinti ili", type: "number", placeholder: "2015" },
+        { name: "propertyDocument", label: "Mülkiyyət sənədi nömrəsi (çıxarış/kupça)", placeholder: "Sənəd nömrəsi" },
+        { name: "startDate", label: "Başlama tarixi", type: "date", required: true },
+        { name: "duration", label: "Müddət (il)", type: "number", placeholder: "1", required: true },
       ]
     }
   },
   property_liability: {
     name: "Əmlakın İstismarı üzrə Məsuliyyət",
     icon: Building,
+    subtitle: "İstismarçı kimi üçüncü şəxslərə dəyə biləcək zərərlərə görə icbari məsuliyyət",
     fields: {
       personal: [
-        { name: "firstName", label: "Ad", required: true },
-        { name: "lastName", label: "Soyad", required: true },
-        { name: "fatherName", label: "Ata adı", required: true },
-        { name: "passportNumber", label: "Passport nömrəsi", required: true },
-        { name: "finCode", label: "FİN kod", required: true },
-        { name: "birthDate", label: "Doğum tarixi", type: "date", required: true },
+        { name: "fullName", label: "İstismarçının adı", placeholder: "Ad və soyadınızı daxil edin", required: true },
+        { name: "finCode", label: "FİN / Şəxsiyyət vəsiqəsi nömrəsi", placeholder: "AZE1234567", required: true },
+        { name: "voen", label: "VÖEN (hüquqi şəxs üçün)", placeholder: "1234567890", required: false },
+        { name: "phone", label: "Əlaqə nömrəsi", placeholder: "+994 XX XXX XX XX", required: true },
+        { name: "email", label: "Email", placeholder: "email@example.com", required: true },
       ],
       specific: [
-        { name: "operatorName", label: "İstismarçının adı", required: true },
-        { name: "objectAddress", label: "Obyektin ünvanı", required: true },
-        { name: "objectPurpose", label: "Obyektin təyinatı", required: true, options: ["ticarət mərkəzi", "ofis", "yaşayış", "sənaye", "ictimai"] },
-        { name: "totalArea", label: "Ümumi sahə (m²)", type: "number" },
-        { name: "visitorFlow", label: "Təxmini gündəlik insan axını", type: "number" },
-        { name: "fireSafety", label: "Yanğın təhlükəsizliyi sertifikatı", type: "checkbox" },
+        { name: "objectAddress", label: "Obyektin ünvanı", placeholder: "Tam ünvanı daxil edin", required: true },
+        { name: "objectPurpose", label: "Obyektin təyinatı", placeholder: "Təyinatı seçin", required: true, options: ["ticarət mərkəzi", "ofis", "yaşayış", "sənaye", "ictimai"] },
+        { name: "totalArea", label: "Ümumi sahə (m²)", type: "number", placeholder: "500" },
+        { name: "visitorFlow", label: "Təxmini gündəlik insan axını", type: "number", placeholder: "100" },
+        { name: "fireSafety", label: "Yanğın təhlükəsizliyi sertifikatı var", type: "checkbox" },
+        { name: "startDate", label: "Başlama tarixi", type: "date", required: true },
+        { name: "duration", label: "Müddət (il)", type: "number", placeholder: "1", required: true },
       ]
     }
   },
   employer_liability: {
     name: "İşəgötürənin Məsuliyyəti",
     icon: Briefcase,
+    subtitle: "İş zamanı əməkdaşlara dəyən zərərlərə görə işəgötürənin məsuliyyəti",
     fields: {
       personal: [
-        { name: "firstName", label: "Ad", required: true },
-        { name: "lastName", label: "Soyad", required: true },
-        { name: "fatherName", label: "Ata adı", required: true },
-        { name: "passportNumber", label: "Passport nömrəsi", required: true },
-        { name: "finCode", label: "FİN kod", required: true },
-        { name: "birthDate", label: "Doğum tarixi", type: "date", required: true },
+        { name: "fullName", label: "Şirkətin adı", placeholder: "Şirkətin tam adını daxil edin", required: true },
+        { name: "finCode", label: "FİN / Şəxsiyyət vəsiqəsi nömrəsi", placeholder: "AZE1234567", required: true },
+        { name: "voen", label: "VÖEN", placeholder: "1234567890", required: true },
+        { name: "phone", label: "Əlaqə nömrəsi", placeholder: "+994 XX XXX XX XX", required: true },
+        { name: "email", label: "Email", placeholder: "email@example.com", required: true },
+        { name: "address", label: "Hüquqi ünvan", placeholder: "Tam ünvanı daxil edin", required: true },
       ],
       specific: [
-        { name: "companyName", label: "Şirkətin adı", required: true },
-        { name: "voen", label: "VÖEN", required: true },
-        { name: "activityField", label: "Fəaliyyət sahəsi", required: true },
-        { name: "legalAddress", label: "Hüquqi ünvan", required: true },
-        { name: "employeeCount", label: "İşçi sayı", type: "number", required: true },
-        { name: "averageSalary", label: "Orta aylıq əməkhaqqı fondu", type: "number" },
+        { name: "activityField", label: "Fəaliyyət sahəsi (NACE/OKED kodu və ya təsvir)", placeholder: "Fəaliyyət sahəsini daxil edin", required: true },
+        { name: "employeeCount", label: "İşçi sayı", type: "number", placeholder: "50", required: true },
+        { name: "averageSalary", label: "Orta aylıq əməkhaqqı fondu", type: "number", placeholder: "5000" },
+        { name: "startDate", label: "Başlama tarixi", type: "date", required: true },
+        { name: "duration", label: "Müddət (il)", type: "number", placeholder: "1", required: true },
       ]
     }
   },
   passenger_accident: {
     name: "Sərnişinlərin Qəza Sığortası",
     icon: Bus,
+    subtitle: "Sərnişin daşıyan subyektlər üçün qanunla nəzərdə tutulmuş icbari sığorta",
     fields: {
       personal: [
-        { name: "firstName", label: "Ad", required: true },
-        { name: "lastName", label: "Soyad", required: true },
-        { name: "fatherName", label: "Ata adı", required: true },
-        { name: "passportNumber", label: "Passport nömrəsi", required: true },
-        { name: "finCode", label: "FİN kod", required: true },
-        { name: "birthDate", label: "Doğum tarixi", type: "date", required: true },
+        { name: "fullName", label: "Daşıyıcının adı", placeholder: "Daşıyıcının tam adını daxil edin", required: true },
+        { name: "finCode", label: "FİN / Şəxsiyyət vəsiqəsi nömrəsi", placeholder: "AZE1234567", required: true },
+        { name: "voen", label: "VÖEN (hüquqi şəxs üçün)", placeholder: "1234567890", required: false },
+        { name: "phone", label: "Əlaqə nömrəsi", placeholder: "+994 XX XXX XX XX", required: true },
+        { name: "email", label: "Email", placeholder: "email@example.com", required: true },
       ],
       specific: [
-        { name: "carrierName", label: "Daşıyıcının adı", required: true },
-        { name: "voen", label: "VÖEN" },
-        { name: "routeType", label: "Marşrut və fəaliyyət növü", required: true, options: ["şəhəriçi", "şəhərlərarası", "daxili rayon", "beynəlxalq"] },
-        { name: "vehicleCount", label: "Nəqliyyat vasitələrinin sayı", type: "number" },
-        { name: "seatCount", label: "Oturacaq sayı", type: "number" },
-        { name: "maxPassengers", label: "Maksimal sərnişin sayı", type: "number" },
+        { name: "routeType", label: "Marşrut və fəaliyyət növü", placeholder: "Fəaliyyət növünü seçin", required: true, options: ["şəhəriçi", "şəhərlərarası", "daxili rayon", "beynəlxalq", "dəniz", "hava"] },
+        { name: "vehicleCount", label: "Nəqliyyat vasitələrinin sayı", type: "number", placeholder: "5" },
+        { name: "seatCount", label: "Oturacaq sayı", type: "number", placeholder: "50" },
+        { name: "maxPassengers", label: "Maksimal sərnişin sayı", type: "number", placeholder: "50" },
+        { name: "startDate", label: "Başlama tarixi", type: "date", required: true },
+        { name: "duration", label: "Müddət (il)", type: "number", placeholder: "1", required: true },
       ]
     }
   },
   hazardous_liability: {
     name: "Təhlükəli Obyektlərin Məsuliyyəti",
     icon: AlertTriangle,
+    subtitle: "Partlayış, kimyəvi, yanğın və s. təhlükə yaradan obyektləri istismar edənlər üçün icbari sığorta",
     fields: {
       personal: [
-        { name: "firstName", label: "Ad", required: true },
-        { name: "lastName", label: "Soyad", required: true },
-        { name: "fatherName", label: "Ata adı", required: true },
-        { name: "passportNumber", label: "Passport nömrəsi", required: true },
-        { name: "finCode", label: "FİN kod", required: true },
-        { name: "birthDate", label: "Doğum tarixi", type: "date", required: true },
+        { name: "fullName", label: "Subyektin adı", placeholder: "Subyektin tam adını daxil edin", required: true },
+        { name: "finCode", label: "FİN / Şəxsiyyət vəsiqəsi nömrəsi", placeholder: "AZE1234567", required: true },
+        { name: "voen", label: "VÖEN (hüquqi şəxs üçün)", placeholder: "1234567890", required: false },
+        { name: "phone", label: "Əlaqə nömrəsi", placeholder: "+994 XX XXX XX XX", required: true },
+        { name: "email", label: "Email", placeholder: "email@example.com", required: true },
       ],
       specific: [
-        { name: "subjectName", label: "Subyektin adı", required: true },
-        { name: "voen", label: "VÖEN" },
-        { name: "objectType", label: "Obyektin tipi", required: true, options: ["kimyəvi", "partlayış", "yanğın", "radioaktiv", "digər"] },
-        { name: "objectAddress", label: "Obyektin ünvanı", required: true },
-        { name: "dangerClass", label: "Təhlükə sinfi" },
-        { name: "employeeCount", label: "İşçi sayı", type: "number" },
-        { name: "operationVolume", label: "Əməliyyat həcmi" },
+        { name: "objectType", label: "Obyektin tipi", placeholder: "Obyekt tipini seçin", required: true, options: ["kimyəvi", "partlayış", "yanğın", "radioaktiv", "digər"] },
+        { name: "objectAddress", label: "Obyektin tipi və ünvanı", placeholder: "Tam ünvanı daxil edin", required: true },
+        { name: "dangerClass", label: "Təhlükə sinfi / Lisenziyalar (uyğunluq sənədləri)", placeholder: "Təhlükə sinfini daxil edin" },
+        { name: "employeeCount", label: "İşçi sayı", type: "number", placeholder: "20" },
+        { name: "operationVolume", label: "Əməliyyat həcmi", placeholder: "Əməliyyat həcmini daxil edin" },
+        { name: "startDate", label: "Başlama tarixi", type: "date", required: true },
+        { name: "duration", label: "Müddət (il)", type: "number", placeholder: "1", required: true },
       ]
     }
   }
@@ -172,20 +175,8 @@ function Order() {
       try {
         setLoading(true);
         const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
-        
-        const { data, isMock } = await withMockFallback(
-          async () => {
-            const res = await axios.get(`${API_BASE}/authUser/profile`);
-            return { data: res.data };
-          },
-          () => ({ user: mockUserProfile })
-        );
-
-        if (isMock) {
-          console.log('📦 Using mock user profile for order page');
-        }
-
-        const user = data.user || data;
+        const res = await axios.get(`${API_BASE}/authUser/profile`);
+        const user = res.data.user || res.data;
         if (user) {
           setIsAuthenticated(true);
           setUserId(user._id);
@@ -198,10 +189,9 @@ function Order() {
         }
       } catch (err) {
         console.error("Authentication check failed:", err);
-        // Use mock data for development
-        setIsAuthenticated(true);
-        setUserId(mockUserProfile._id);
-        setUserProfile(mockUserProfile);
+        // Don't use mock data - handle error properly
+        setIsAuthenticated(false);
+        setError("Giriş edilməyib. Zəhmət olmasa giriş edin.");
       } finally {
         setLoading(false);
       }
@@ -216,30 +206,16 @@ function Order() {
     const fetchCategory = async () => {
       try {
         const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
-        
-        const { data, isMock } = await withMockFallback(
-          async () => {
-            const res = await axios.get(`${API_BASE}/api/categories/${id}`);
-            return { data: res.data };
-          },
-          () => getMockCategoryById(id)
-        );
-
-        if (isMock) {
-          console.log('📦 Using mock category data');
-        }
-
+        const res = await axios.get(`${API_BASE}/api/categories/${id}`);
+        const data = res.data;
         console.log("Gətirilən kateqoriya:", data);
         const categoryCode = data.code || data.category_code || 'property_insurance';
         setCategory(categoryCode);
         console.log("Kateqoriya kodu:", categoryCode);
       } catch (err) {
         console.error("Kateqoriya alınmadı:", err);
-        // Fallback to mock
-        const mockCat = getMockCategoryById(id);
-        if (mockCat) {
-          setCategory(mockCat.code);
-        }
+        // Don't use mock data - handle error properly
+        setError("Kateqoriya məlumatları yüklənə bilmədi.");
       }
     };
     fetchCategory();
@@ -539,58 +515,114 @@ function Order() {
               ) : (
                 <div className={styles.formFields}>
                   {/* Full Name - Full Width */}
-                  <div className={styles.formGroup}>
-                    <label className={styles.label}>
-                      {currentCategory.fields.personal[0].label}
-                      {currentCategory.fields.personal[0].required && <span className={styles.required}>*</span>}
-                    </label>
-                    {renderField(currentCategory.fields.personal[0])}
-                  </div>
+                  {currentCategory.fields.personal.find(f => f.name === 'fullName') && (
+                    <div className={styles.formGroup}>
+                      {(() => {
+                        const field = currentCategory.fields.personal.find(f => f.name === 'fullName');
+                        return (
+                          <>
+                            <label className={styles.label}>
+                              {field.label}
+                              {field.required && <span className={styles.required}>*</span>}
+                            </label>
+                            {renderField(field)}
+                          </>
+                        );
+                      })()}
+                    </div>
+                  )}
 
-                  {/* FIN and VOEN - Two Columns */}
-                  <div className={styles.twoColumnLayout}>
-                    <div className={styles.formGroup}>
-                      <label className={styles.label}>
-                        {currentCategory.fields.personal[1].label}
-                        {currentCategory.fields.personal[1].required && <span className={styles.required}>*</span>}
-                      </label>
-                      {renderField(currentCategory.fields.personal[1])}
+                  {/* FIN/VOEN - Two Columns (if both exist) */}
+                  {currentCategory.fields.personal.find(f => f.name === 'finCode') && currentCategory.fields.personal.find(f => f.name === 'voen') && (
+                    <div className={styles.twoColumnLayout}>
+                      {(() => {
+                        const finField = currentCategory.fields.personal.find(f => f.name === 'finCode');
+                        const voenField = currentCategory.fields.personal.find(f => f.name === 'voen');
+                        return (
+                          <>
+                            <div className={styles.formGroup}>
+                              <label className={styles.label}>
+                                {finField.label}
+                                {finField.required && <span className={styles.required}>*</span>}
+                              </label>
+                              {renderField(finField)}
+                            </div>
+                            <div className={styles.formGroup}>
+                              <label className={styles.label}>
+                                {voenField.label}
+                                {voenField.required && <span className={styles.required}>*</span>}
+                              </label>
+                              {renderField(voenField)}
+                            </div>
+                          </>
+                        );
+                      })()}
                     </div>
+                  )}
+
+                  {/* Single FIN field if VOEN doesn't exist */}
+                  {currentCategory.fields.personal.find(f => f.name === 'finCode') && !currentCategory.fields.personal.find(f => f.name === 'voen') && (
                     <div className={styles.formGroup}>
-                      <label className={styles.label}>
-                        {currentCategory.fields.personal[2].label}
-                        {currentCategory.fields.personal[2].required && <span className={styles.required}>*</span>}
-                      </label>
-                      {renderField(currentCategory.fields.personal[2])}
+                      {(() => {
+                        const field = currentCategory.fields.personal.find(f => f.name === 'finCode');
+                        return (
+                          <>
+                            <label className={styles.label}>
+                              {field.label}
+                              {field.required && <span className={styles.required}>*</span>}
+                            </label>
+                            {renderField(field)}
+                          </>
+                        );
+                      })()}
                     </div>
-                  </div>
+                  )}
 
                   {/* Phone and Email - Two Columns */}
-                  <div className={styles.twoColumnLayout}>
-                    <div className={styles.formGroup}>
-                      <label className={styles.label}>
-                        {currentCategory.fields.personal[3].label}
-                        {currentCategory.fields.personal[3].required && <span className={styles.required}>*</span>}
-                      </label>
-                      {renderField(currentCategory.fields.personal[3])}
+                  {currentCategory.fields.personal.find(f => f.name === 'phone') && currentCategory.fields.personal.find(f => f.name === 'email') && (
+                    <div className={styles.twoColumnLayout}>
+                      {(() => {
+                        const phoneField = currentCategory.fields.personal.find(f => f.name === 'phone');
+                        const emailField = currentCategory.fields.personal.find(f => f.name === 'email');
+                        return (
+                          <>
+                            <div className={styles.formGroup}>
+                              <label className={styles.label}>
+                                {phoneField.label}
+                                {phoneField.required && <span className={styles.required}>*</span>}
+                              </label>
+                              {renderField(phoneField)}
+                            </div>
+                            <div className={styles.formGroup}>
+                              <label className={styles.label}>
+                                {emailField.label}
+                                {emailField.required && <span className={styles.required}>*</span>}
+                              </label>
+                              {renderField(emailField)}
+                            </div>
+                          </>
+                        );
+                      })()}
                     </div>
-                    <div className={styles.formGroup}>
-                      <label className={styles.label}>
-                        {currentCategory.fields.personal[4].label}
-                        {currentCategory.fields.personal[4].required && <span className={styles.required}>*</span>}
-                      </label>
-                      {renderField(currentCategory.fields.personal[4])}
-                    </div>
-                  </div>
+                  )}
 
-                  {/* Address - Full Width */}
-                  <div className={styles.formGroup}>
-                    <label className={styles.label}>
-                      {currentCategory.fields.personal[5].label}
-                      {currentCategory.fields.personal[5].required && <span className={styles.required}>*</span>}
-                    </label>
-                    {renderField(currentCategory.fields.personal[5])}
-                  </div>
+                  {/* Address - Full Width (if exists) */}
+                  {currentCategory.fields.personal.find(f => f.name === 'address') && (
+                    <div className={styles.formGroup}>
+                      {(() => {
+                        const field = currentCategory.fields.personal.find(f => f.name === 'address');
+                        return (
+                          <>
+                            <label className={styles.label}>
+                              {field.label}
+                              {field.required && <span className={styles.required}>*</span>}
+                            </label>
+                            {renderField(field)}
+                          </>
+                        );
+                      })()}
+                    </div>
+                  )}
                 </div>
               )}
             </>

@@ -2,13 +2,13 @@ import React, { useState, useEffect } from 'react';
 import './index.scss';
 import { MdExitToApp } from "react-icons/md";
 import axios from "axios";
-import { mockUserProfile } from '../../mockData/user';
-import { withMockFallback } from '../../utils/mockDataHelper';
 
 axios.defaults.withCredentials = true;
 
 const Profile = () => {
   const [isEditing, setIsEditing] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const [userData, setUserData] = useState({
     name: "",
     surname: "",
@@ -21,23 +21,19 @@ const Profile = () => {
   // ✅ Fetch user profile (based on JWT cookie)
   useEffect(() => {
     const loadProfile = async () => {
-      const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
-      
-      const { data, isMock } = await withMockFallback(
-        async () => {
-          const res = await axios.get(`${API_BASE}/authUser/profile`, { withCredentials: true });
-          return { data: res.data };
-        },
-        () => ({ user: mockUserProfile })
-      );
-
-      if (isMock) {
-        console.log('📦 Using mock user profile');
+      try {
+        setLoading(true);
+        const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+        const res = await axios.get(`${API_BASE}/authUser/profile`, { withCredentials: true });
+        const user = res.data.user || res.data;
+        setUserData(user);
+        setUserId(user._id);
+      } catch (err) {
+        console.error("Profile fetch error:", err);
+        setError("Profil məlumatları yüklənə bilmədi. Zəhmət olmasa yenidən giriş edin.");
+      } finally {
+        setLoading(false);
       }
-
-      const user = data.user || data;
-      setUserData(user);
-      setUserId(user._id);
     };
 
     loadProfile();
@@ -81,7 +77,9 @@ const Profile = () => {
       .catch(err => console.error("Logout error:", err));
   };
 
-  if (!userData.email) return <p>Profil yüklənir...</p>;
+  if (loading) return <p>Profil yüklənir...</p>;
+  if (error) return <p>{error}</p>;
+  if (!userData.email) return <p>Profil məlumatları tapılmadı.</p>;
 
   return (
     <section className="profile-section">

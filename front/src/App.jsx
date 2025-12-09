@@ -22,6 +22,9 @@ import Login from './pages/login'
 import Order from './pages/orderPage'
 import Tehlukeli from './pages/tehlukeSig'
 import CompanySelection from './pages/companySelection'
+import Payment from './pages/payment'
+import PaymentSuccess from './pages/paymentSuccess'
+import CreateCompany from './pages/createCompany'
 
 function App() {
 
@@ -44,6 +47,9 @@ function App() {
           <Route path='login' element={<Login />} />
           <Route path='order/:id' element={<Order />} />
           <Route path='companies/:id' element={<CompanySelection />} />
+          <Route path='create-company' element={<CreateCompany />} />
+          <Route path='payment/:orderId' element={<Payment />} />
+          <Route path='payment/success/:orderId' element={<PaymentSuccess />} />
 
 
         </Route>

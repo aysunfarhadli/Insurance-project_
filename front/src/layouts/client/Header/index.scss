@@ -22,6 +22,18 @@ header {
     justify-content: space-between;
     gap: 20px;
 
+    .logo {
+      display: flex;
+      align-items: center;
+      text-decoration: none;
+
+      img {
+        height: 50px;
+        width: auto;
+        object-fit: contain;
+      }
+    }
+
     h2 {
       font-size: 25px;
       font-weight: 600;

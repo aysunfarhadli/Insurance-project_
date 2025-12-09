@@ -3,9 +3,9 @@
  */
 
 // Check if we should use mock data (when backend is unavailable or in dev mode)
-export const USE_MOCK_DATA = import.meta.env.VITE_USE_MOCK_DATA === 'true' || 
-                              import.meta.env.DEV;
-
+// export const USE_MOCK_DATA = import.meta.env.VITE_USE_MOCK_DATA === 'true' || 
+//                               import.meta.env.DEV;
+export const USE_MOCK_DATA = false;
 /**
  * Wrapper function that tries API call first, falls back to mock data
  * @param {Function} apiCall - Async function that makes API call
@@ -24,10 +24,9 @@ export const withMockFallback = async (apiCall, mockDataGetter, useMock = USE_MO
     const response = await apiCall();
     return { data: response.data || response, isMock: false };
   } catch (error) {
-    console.warn('⚠️ API call failed, using mock data:', error.message);
-    // Fallback to mock data on error
-    await new Promise(resolve => setTimeout(resolve, 300));
-    return { data: mockDataGetter(), isMock: true };
+    console.error('❌ API call failed:', error.message);
+    // Don't fallback to mock data - throw the error instead
+    throw error;
   }
 };
 

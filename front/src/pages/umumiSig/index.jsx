@@ -8,9 +8,6 @@ import { FaCar } from "react-icons/fa";
 import { FaShield } from "react-icons/fa6";
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { mockUserProfile } from '../../mockData/user';
-import { getMockOrdersByUserId } from '../../mockData/orders';
-import { withMockFallback } from '../../utils/mockDataHelper';
 
 const UmSig = () => {
   const [orders, setOrders] = useState([]);
@@ -18,6 +15,7 @@ const UmSig = () => {
   const [error, setError] = useState('');
   const [userId, setUserId] = useState(null);
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [categories, setCategories] = useState([]);
 
   const navigate = useNavigate(); // ✅ əlavə olundu
 
@@ -95,24 +93,13 @@ const UmSig = () => {
         setLoading(true);
         const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
         
-        const { data, isMock } = await withMockFallback(
-          async () => {
-            const res = await axios(`${API_BASE}/authUser/profile`);
-            return { data: res.data };
-          },
-          () => ({ user: mockUserProfile })
-        );
-
-        if (isMock) {
-          console.log('📦 Using mock user profile');
-        }
-
-        const user = data.user || data;
+        const res = await axios(`${API_BASE}/authUser/profile`);
+        const user = res.data.user || res.data;
         setUserId(user._id);
       } catch (err) {
         console.error("Authentication check failed:", err);
-        // Use mock data on error
-        setUserId(mockUserProfile._id);
+        // Don't use mock data - handle error properly
+        setError("Giriş edilməyib. Zəhmət olmasa giriş edin.");
       } finally {
         setLoading(false);
       }
@@ -130,41 +117,24 @@ const UmSig = () => {
         const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
         
         // Get user profile
-        const { data: userData, isMock: isUserMock } = await withMockFallback(
-          async () => {
-            const res = await axios.get(`${API_BASE}/authUser/profile`, { withCredentials: true });
-            return { data: res.data };
-          },
-          () => ({ user: mockUserProfile })
-        );
-
-        const user = userData.user || userData;
+        const userRes = await axios.get(`${API_BASE}/authUser/profile`, { withCredentials: true });
+        const user = userRes.data.user || userRes.data;
         setUserId(user._id);
 
         // Get orders
-        const { data: ordersData, isMock: isOrdersMock } = await withMockFallback(
-          async () => {
-            const ordersRes = await axios.get(`${API_BASE}/api/orders`);
-            return { data: ordersRes.data };
-          },
-          () => getMockOrdersByUserId(user._id)
-        );
-
-        if (isUserMock || isOrdersMock) {
-          console.log('📦 Using mock orders data');
-        }
+        const ordersRes = await axios.get(`${API_BASE}/api/orders`);
+        const ordersData = ordersRes.data;
 
         const allOrders = Array.isArray(ordersData) ? ordersData : [];
         const userOrders = allOrders.filter(order => order.userId === user._id);
         
-        setOrders(userOrders.length > 0 ? userOrders : getMockOrdersByUserId(user._id));
+        setOrders(userOrders);
 
       } catch (err) {
         console.error(err);
         setError("Məlumatlar gətirilərkən xəta baş verdi");
-        // Fallback to mock data
-        setUserId(mockUserProfile._id);
-        setOrders(getMockOrdersByUserId(mockUserProfile._id));
+        // Don't use mock data - handle error properly
+        setOrders([]);
       } finally {
         setLoading(false);
       }
@@ -172,6 +142,28 @@ const UmSig = () => {
 
     getUserAndOrders();
   }, []);
+
+  // Fetch categories to get real IDs
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+        const res = await axios.get(`${API_BASE}/api/categories`);
+        setCategories(Array.isArray(res.data) ? res.data : []);
+      } catch (err) {
+        console.error("Categories fetch error:", err);
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
+  // Helper function to get category ID by code
+  const getCategoryIdByCode = (code) => {
+    const category = categories.find(cat => cat.code === code);
+    return category?._id || null;
+  };
+
   console.log(orders);
 
 
@@ -250,7 +242,11 @@ const UmSig = () => {
                 </button>
               </div>
               <div className='sig row'>
-                <div className='sey col-4 sam' onClick={() => navigate('/order/mock1')}>
+                <div className='sey col-3 sam' onClick={() => {
+                  const categoryId = getCategoryIdByCode('passenger_accident');
+                  if (categoryId) navigate(`/order/${categoryId}`);
+                  else console.error('Category not found: passenger_accident');
+                }}>
                   <div className='svg'>
                     <FaPlane />
                   </div>
@@ -259,7 +255,11 @@ const UmSig = () => {
                     <p>Sənişinləri daşıyan qurumlar üçün sığorta</p>
                   </div>
                 </div>
-                <div className='heyat col-4 sam' onClick={() => navigate('/order/mock6')}>
+                <div className='heyat col-3 sam' onClick={() => {
+                  const categoryId = getCategoryIdByCode('employer_liability');
+                  if (categoryId) navigate(`/order/${categoryId}`);
+                  else console.error('Category not found: employer_liability');
+                }}>
                   <div className='svg'>
                     <TbActivityHeartbeat />
                   </div>
@@ -268,7 +268,11 @@ const UmSig = () => {
                     <p>İşçilərə dəyən zərərlərə görə məsuliyyət</p>
                   </div>
                 </div>
-                <div className='tibbi col-4 sam' onClick={() => navigate('/order/mock7')}>
+                <div className='tibbi col-3 sam' onClick={() => {
+                  const categoryId = getCategoryIdByCode('property_liability');
+                  if (categoryId) navigate(`/order/${categoryId}`);
+                  else console.error('Category not found: property_liability');
+                }}>
                   <div className='svg'>
                     <FaHeart />
                   </div>
@@ -277,7 +281,11 @@ const UmSig = () => {
                     <p>Əmlak istismarı zamanı məsuliyyət</p>
                   </div>
                 </div>
-                <div className='emlak col-4 sam' onClick={() => navigate('/order/mock3')}>
+                <div className='emlak col-3 sam' onClick={() => {
+                  const categoryId = getCategoryIdByCode('property_insurance');
+                  if (categoryId) navigate(`/order/${categoryId}`);
+                  else console.error('Category not found: property_insurance');
+                }}>
                   <div className='svg'>
                     <FaHouse />
                   </div>
@@ -286,7 +294,11 @@ const UmSig = () => {
                     <p>Yaşayış və qeyri-yaşayış binaları, mənzillər</p>
                   </div>
                 </div>
-                <div className='neqliy col-4 sam' onClick={() => navigate('/order/mock5')}>
+                <div className='neqliy col-3 sam' onClick={() => {
+                  const categoryId = getCategoryIdByCode('vehicle_liability');
+                  if (categoryId) navigate(`/order/${categoryId}`);
+                  else console.error('Category not found: vehicle_liability');
+                }}>
                   <div className='svg'>
                     <FaCar />
                   </div>
@@ -295,7 +307,11 @@ const UmSig = () => {
                     <p>Üçüncü şəxslərə dəymiş zərərlər üçün məsuliyyət</p>
                   </div>
                 </div>
-                <div className='tehlukeli col-4 sam' onClick={() => navigate('/order/mock4')}>
+                <div className='tehlukeli col-3 sam' onClick={() => {
+                  const categoryId = getCategoryIdByCode('hazardous_liability');
+                  if (categoryId) navigate(`/order/${categoryId}`);
+                  else console.error('Category not found: hazardous_liability');
+                }}>
                   <div className='svg'>
                     <FaExclamationTriangle />
                   </div>

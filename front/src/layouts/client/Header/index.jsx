@@ -4,6 +4,7 @@ import { FaRegBell } from 'react-icons/fa6';
 import { CgProfile } from 'react-icons/cg';
 import { IoMenu } from 'react-icons/io5';
 import { NavLink } from 'react-router-dom';
+import logoImage from '../../../assets/WhatsApp_Image_2025-12-01_at_14.30.06_9a87f36c-removebg-preview.png';
 
 const Cheader = () => {
   return (
@@ -12,7 +13,7 @@ const Cheader = () => {
         <div className='all'>
           {/* Logo or Brand - navigates to home */}
           <NavLink to="/" className="logo">
-            <h2>CİB sığorta</h2>
+            <img src={logoImage} alt="logo" />
           </NavLink>
 
           {/* You can replace input with a search component or keep it */}
