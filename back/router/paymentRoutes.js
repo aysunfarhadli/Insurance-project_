@@ -6,6 +6,7 @@ const {
   authorizePayment,
   getOrders,
   getOrderById,
+  getOrderStatus,
   createOrder,
   createOrderMKRecurring,
   chargePayment,
@@ -23,8 +24,11 @@ router.post("/authorize", authorizePayment);
 // Orders siyahısı
 router.get("/orders", getOrders);
 
-// Order by ID
+// Order by ID (from Cibpay API)
 router.get("/orders/:orderId", getOrderById);
+
+// Order status (from database)
+router.get("/orders/status/:orderId", getOrderStatus);
 
 // Orders create
 router.post("/orders/create", createOrder);

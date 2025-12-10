@@ -175,7 +175,7 @@ function Order() {
       try {
         setLoading(true);
         const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
-        const res = await axios.get(`${API_BASE}/authUser/profile`);
+        const res = await axios.get(`${API_BASE}/authUser/profile`, { withCredentials: true });
         const user = res.data.user || res.data;
         if (user) {
           setIsAuthenticated(true);
@@ -183,15 +183,15 @@ function Order() {
           setUserProfile(user);
           console.log("User authenticated:", user);
         } else {
-          setIsAuthenticated(false);
-          setError("Sifariş etmək üçün daxil olmalısınız.");
-          setTimeout(() => navigate("/login"), 2000);
+          // Birbaşa login-ə yönləndir
+          navigate("/login");
+          return;
         }
       } catch (err) {
         console.error("Authentication check failed:", err);
-        // Don't use mock data - handle error properly
-        setIsAuthenticated(false);
-        setError("Giriş edilməyib. Zəhmət olmasa giriş edin.");
+        // Birbaşa login-ə yönləndir
+        navigate("/login");
+        return;
       } finally {
         setLoading(false);
       }
@@ -417,19 +417,12 @@ function Order() {
     if (step > 1) setStep(step - 1);
   };
 
-  // Show loading or authentication error
-  if (!isAuthenticated) {
+  // Show loading while checking authentication
+  if (loading && !isAuthenticated) {
     return (
       <div className={styles.container}>
         <div className={styles.loadingContainer}>
-          {loading ? (
-            <p>Yoxlanılır...</p>
-          ) : (
-            <div className={styles.authError}>
-              <p>{error}</p>
-              <p>Giriş səhifəsinə yönləndirilirsiniz...</p>
-            </div>
-          )}
+          <p>Yoxlanılır...</p>
         </div>
       </div>
     );

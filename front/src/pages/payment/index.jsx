@@ -9,6 +9,7 @@ import visa from "../../assets/Logo-VISA-transparent-PNG.png";
 import visaSecure from "../../assets/uk-visa-secure-640x640.webp";
 import mastercardSecurecode from "../../assets/mastercard-securecode.webp";
 import pciDss from "../../assets/pci-dss-compliant-logo-vector.png";
+import LoadingSpinner from "../../components/LoadingSpinner";
 import styles from "./index.module.scss";
 
 axios.defaults.withCredentials = true;
@@ -18,12 +19,12 @@ function Payment() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Get order data from location state or sessionStorage
-  const orderData = location.state?.orderData || JSON.parse(sessionStorage.getItem('paymentOrderData') || '{}');
-
+  const [pageLoading, setPageLoading] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [showCvv, setShowCvv] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [orderData, setOrderData] = useState({});
   const [cardData, setCardData] = useState({
     pan: "",
     cvv: "",
@@ -33,10 +34,55 @@ function Payment() {
   });
 
   useEffect(() => {
-    if (!orderId && !orderData.orderId) {
-      navigate('/umumiSig');
-    }
-  }, [orderId, orderData, navigate]);
+    // Check authentication and load order data
+    const checkAuthAndLoadData = async () => {
+      try {
+        setPageLoading(true);
+        const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+        
+        // Check authentication first
+        try {
+          const authRes = await axios.get(`${API_BASE}/authUser/profile`, { withCredentials: true });
+          const user = authRes.data.user || authRes.data;
+          if (user) {
+            setIsAuthenticated(true);
+          } else {
+            // Birbaşa login-ə yönləndir
+            navigate("/login");
+            return;
+          }
+        } catch (authErr) {
+          console.error("Authentication check failed:", authErr);
+          // Birbaşa login-ə yönləndir
+          navigate("/login");
+          return;
+        }
+
+        // Load order data
+        const data = location.state?.orderData || JSON.parse(sessionStorage.getItem('paymentOrderData') || '{}');
+        setOrderData(data);
+        
+        // Check if order data exists
+        if (!orderId && !data.orderId) {
+          navigate('/umumiSig');
+          return;
+        }
+        
+        // Simulate page loading to ensure smooth transition
+        setTimeout(() => {
+          setPageLoading(false);
+        }, 300);
+      } catch (err) {
+        console.error("Error loading data:", err);
+        setPageLoading(false);
+        if (!orderId) {
+          navigate('/umumiSig');
+        }
+      }
+    };
+
+    checkAuthAndLoadData();
+  }, [orderId, location.state, navigate]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -108,13 +154,13 @@ function Payment() {
         userAgent: navigator.userAgent || ""
       };
 
-      // Create payment order
+      // Create payment order (with auto_charge: false to manually control the flow)
       const createOrderRes = await axios.post(`${API_BASE}/api/payment/orders/create`, {
         amount: orderData.total_amount || 150.00,
         currency: orderData.currency || "AZN",
         merchant_order_id: orderData.orderId || orderId,
         options: {
-          auto_charge: true,
+          auto_charge: false, // Manual authorize and charge
           force3d: 1,
           language: "az",
           return_url: `${window.location.origin}/payment/success/${orderData.orderId || orderId}`
@@ -131,8 +177,10 @@ function Payment() {
         throw new Error("Ödəniş sifarişi yaradıla bilmədi");
       }
 
-      // Authorize payment
+      // Authorize payment with orderId
       const authRes = await axios.post(`${API_BASE}/api/payment/authorize`, {
+        orderId: cibpayOrderId,
+        merchant_order_id: orderData.orderId || orderId,
         amount: orderData.total_amount || 150.00,
         pan: cardData.pan,
         card: {
@@ -155,16 +203,34 @@ function Payment() {
         browserDetails
       });
 
-      // Charge payment (if auto_charge is false, we need to charge manually)
-      // Since auto_charge is true in createOrder, payment should be processed automatically
-      // But we can still call charge to ensure it's processed
+      // Check if authorization was successful
+      if (!authRes.data?.success) {
+        throw new Error(authRes.data?.error || "Ödəniş autorizasiyası uğursuz oldu");
+      }
+
+      // Charge payment after successful authorization
       try {
-        await axios.post(`${API_BASE}/api/payment/orders/charge`, {
-          orderId: cibpayOrderId
+        const chargeRes = await axios.post(`${API_BASE}/api/payment/orders/charge`, {
+          orderId: cibpayOrderId,
+          merchant_order_id: orderData.orderId || orderId
         });
+        
+        // Check payment status
+        const paymentStatus = chargeRes.data?.data?.status || chargeRes.data?.status;
+        if (paymentStatus === "PAID" || paymentStatus === "ISSUED" || paymentStatus === "CHARGED") {
+          console.log("Payment successful:", chargeRes.data);
+        } else if (paymentStatus === "DECLINED" || paymentStatus === "FAILED") {
+          const errorMsg = chargeRes.data?.data?.failure_message || chargeRes.data?.failure_message || "Ödəniş rədd edildi";
+          throw new Error(errorMsg);
+        } else {
+          console.log("Payment status:", paymentStatus);
+        }
       } catch (chargeErr) {
-        // If charge fails, payment might have been auto-charged already
-        console.log("Charge attempt:", chargeErr);
+        console.error("Charge error:", chargeErr.response?.data || chargeErr.message);
+        // If charge fails, check if payment was already processed
+        if (chargeErr.response?.status !== 400 && chargeErr.response?.status !== 409) {
+          throw new Error(chargeErr.response?.data?.error || chargeErr.message || "Ödəniş zamanı xəta baş verdi");
+        }
       }
 
       // Save payment data for success page
@@ -191,6 +257,16 @@ function Payment() {
 
   const amount = orderData.total_amount || 1.00;
   const currency = orderData.currency || "AZN";
+
+  // Show loading spinner while page is loading
+  if (pageLoading) {
+    return (
+      <div className={styles.container}>
+        <LoadingSpinner fullScreen={true} size="large" />
+      </div>
+    );
+  }
+
 
   return (
     <div className={styles.container}>

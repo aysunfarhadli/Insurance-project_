@@ -7,6 +7,24 @@
   align-items: flex-start;
 }
 
+.errorMessage {
+  padding: 40px;
+  text-align: center;
+  
+  p {
+    font-size: 18px;
+    color: #dc2626;
+    margin-bottom: 12px;
+    font-weight: 500;
+  }
+  
+  .redirectMessage {
+    font-size: 14px;
+    color: #6b7280;
+    margin-top: 8px;
+  }
+}
+
 .paymentWrapper {
   max-width: 500px;
   width: 100%;

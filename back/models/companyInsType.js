@@ -16,6 +16,38 @@ const companyInsuranceTypeSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    // Sığorta planı məlumatları
+    monthly_price: {
+      type: Number,
+      default: null, // AZN
+    },
+    coverage_amount: {
+      type: Number,
+      default: null, // AZN
+    },
+    processing_time_hours: {
+      type: Number,
+      default: null, // Saat
+    },
+    rating: {
+      type: Number,
+      default: 4.5,
+      min: 0,
+      max: 5,
+    },
+    reviews_count: {
+      type: Number,
+      default: 0,
+    },
+    badge: {
+      type: String,
+      enum: ["Ən Populyar", "Ən Sürətli", "Premium", "Budget", null],
+      default: null,
+    },
+    features: {
+      type: [String],
+      default: [],
+    },
   },
   { timestamps: { createdAt: "created_at", updatedAt: "updated_at" } }
 );

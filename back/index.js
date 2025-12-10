@@ -47,7 +47,8 @@ mongoose
   .catch((err) => console.error("MongoDB error:", err));
 
 // Router
-app.use("/api/payments", paymentRoutes);
+app.use("/api/payment", paymentRoutes);
+app.use("/api/payments", paymentRoutes); // Keep both for compatibility
 app.use("/auth", authRoutes);
 app.use("/api/forms", insuranceRoutes);
 // app.use("/api/trips", tripRoutes);

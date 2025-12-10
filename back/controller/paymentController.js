@@ -109,15 +109,14 @@ const cibpayWebhook = async (req, res) => {
   // Authorize Payment Controller
   const authorizePayment = async (req, res) => {
     try {
-      const { amount, pan, card, client, options, location, browserDetails } = req.body;
+      const { orderId, amount, pan, card, client, options, location, browserDetails } = req.body;
 
-      // Validate browserDetails exists
-      // if (!browserDetails || Object.keys(browserDetails).length === 0) {
-      //   return res.status(400).json({
-      //     success: false,
-      //     error: "Browser details missing. Required for 3-D Secure 2.0"
-      //   });
-      // }
+      if (!orderId) {
+        return res.status(400).json({
+          success: false,
+          error: "Order ID is required"
+        });
+      }
 
       const authData = {
         amount,
@@ -126,7 +125,7 @@ const cibpayWebhook = async (req, res) => {
           cvv: card.cvv,
           expiration_month: Number(card.expiration_month),
           expiration_year: Number(card.expiration_year),
-          holder: card.holder
+          holder: card.holder || ""
         },
         client: {
           name: client?.name || "Test",
@@ -138,14 +137,14 @@ const cibpayWebhook = async (req, res) => {
         },
         location: {
           ip: location?.ip || "93.88.94.130"
-        },
-        
+        }
       };
 
-      console.log("Sending to CIBPAY:", JSON.stringify(authData, null, 2));
+      console.log("Sending to CIBPAY authorize:", JSON.stringify(authData, null, 2));
 
+      // Cibpay authorize endpoint requires orderId in URL
       const response = await axios.post(
-        "https://api-preprod.cibpay.co/orders/authorize",
+        `https://api-preprod.cibpay.co/orders/${orderId}/authorize`,
         authData,
         {
           headers: {
@@ -154,6 +153,25 @@ const cibpayWebhook = async (req, res) => {
           },
           httpsAgent: agent
         }
+      );
+
+      // Update order status in database
+      const maskedPan = pan.length >= 4 
+        ? pan.substring(pan.length - 4).padStart(pan.length, '*')
+        : pan;
+      
+      await Order.findOneAndUpdate(
+        { orderId: req.body.merchant_order_id || orderId },
+        {
+          transactionId: response.data.id || orderId,
+          status: response.data.status === "AUTHORIZED" || response.data.status === "CHARGED" 
+            ? response.data.status 
+            : "AUTHORIZED",
+          pan: response.data.pan || maskedPan,
+          rawResponse: response.data,
+          updatedAt: new Date()
+        },
+        { upsert: true, new: true }
       );
 
       res.json({ success: true, data: response.data });
@@ -226,7 +244,7 @@ const cibpayWebhook = async (req, res) => {
       currency: req.body.currency || "AZN",
       merchant_order_id: req.body.merchant_order_id,
       options: {
-        auto_charge: req.body.options?.auto_charge ?? true,
+        auto_charge: req.body.options?.auto_charge ?? false, // Set to false to manually authorize and charge
         expiration_timeout: req.body.options?.expiration_timeout || "4320m",
         force3d: req.body.options?.force3d || 1,
         language: req.body.options?.language || "az",
@@ -344,7 +362,15 @@ const cibpayWebhook = async (req, res) => {
    */
   const chargePayment = async (req, res) => {
     try {
-      const { orderId } = req.body;
+      const { orderId, merchant_order_id } = req.body;
+      
+      if (!orderId) {
+        return res.status(400).json({
+          success: false,
+          error: "Order ID is required"
+        });
+      }
+
       const response = await axios.put(`https://api-preprod.cibpay.co/orders/${orderId}/charge`, {},  {
           headers: {
             "Authorization": `Basic ${auth}`,
@@ -353,10 +379,29 @@ const cibpayWebhook = async (req, res) => {
           httpsAgent: agent
         });
       
-      res.json(response.data);
+      // Update order status in database
+      if (merchant_order_id || response.data.merchant_order_id) {
+        await Order.findOneAndUpdate(
+          { orderId: merchant_order_id || response.data.merchant_order_id },
+          {
+            transactionId: response.data.id || orderId,
+            status: response.data.status || "CHARGED",
+            amount: response.data.amount || undefined,
+            currency: response.data.currency || undefined,
+            pan: response.data.pan || undefined,
+            failureMessage: response.data.failure_message || null,
+            rawResponse: response.data,
+            updatedAt: new Date()
+          },
+          { upsert: true, new: true }
+        );
+      }
+      
+      res.json({ success: true, data: response.data });
     } catch (error) {
       console.error('Error charging payment:', error.response?.data || error.message);
       res.status(error.response?.status || 500).json({
+        success: false,
         error: 'Failed to charge payment',
         details: error.response?.data || error.message
       });
