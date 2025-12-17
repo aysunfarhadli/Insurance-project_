@@ -22,8 +22,14 @@ router.get("/profile", authMiddleware, async (req, res) => {
 
 router.post('/logout', authMiddleware, async (req, res) => {
     try {
-        // If you’re using JWT stored in cookies:
-        res.clearCookie('token', { httpOnly: true, secure: true, sameSite: 'None' });
+        // Use same cookie settings as login for proper cookie clearing
+        const isProduction = process.env.NODE_ENV === 'production' || req.get('origin')?.includes('vercel.app');
+        
+        res.clearCookie('token', { 
+            httpOnly: true, 
+            secure: isProduction,
+            sameSite: isProduction ? 'none' : 'strict'
+        });
         res.json({ message: "Logged out successfully" });
     } catch (err) {
         res.status(500).json({ message: "Server error" });

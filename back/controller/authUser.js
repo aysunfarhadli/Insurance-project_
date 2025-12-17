@@ -77,14 +77,27 @@ exports.login = async (req, res) => {
     { expiresIn: '1h' }
   );
 
+  // For cross-origin requests (production), use sameSite: "none" and secure: true
+  // For same-origin (local development), use sameSite: "strict" and secure: false
+  const isProduction = process.env.NODE_ENV === 'production' || req.get('origin')?.includes('vercel.app');
+  
   res.cookie("token", token, {
     httpOnly: true,
-    secure: false,
-    sameSite: "strict",
-    maxAge: 60 * 60 * 1000,
+    secure: isProduction, // true for HTTPS (production), false for HTTP (local)
+    sameSite: isProduction ? "none" : "strict", // "none" for cross-origin, "strict" for same-origin
+    maxAge: 60 * 60 * 1000, // 1 hour
   });
 
-  res.json({ message: "Login successful" });
+  res.json({ 
+    message: "Login successful",
+    user: {
+      _id: user._id,
+      name: user.name,
+      surname: user.surname,
+      email: user.email,
+      phone: user.phone
+    }
+  });
 };
 
 // ========================== UPDATE (PUT) ==========================
