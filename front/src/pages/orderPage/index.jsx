@@ -174,7 +174,7 @@ function Order() {
     const checkAuthAndGetProfile = async () => {
       try {
         setLoading(true);
-        const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+        const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://insurance-project-e1xh.onrender.com';
         const res = await axios.get(`${API_BASE}/authUser/profile`, { withCredentials: true });
         const user = res.data.user || res.data;
         if (user) {
@@ -205,7 +205,7 @@ function Order() {
     if (!id) return;
     const fetchCategory = async () => {
       try {
-        const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+        const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://insurance-project-e1xh.onrender.com';
         const res = await axios.get(`${API_BASE}/api/categories/${id}`);
         const data = res.data;
         console.log("Gətirilən kateqoriya:", data);

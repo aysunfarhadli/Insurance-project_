@@ -27,7 +27,7 @@ const InsuranceCategory = ({ type, title, subtitle }) => {
   useEffect(() => {
     const loadCategories = async () => {
       try {
-        const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+        const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://insurance-project-e1xh.onrender.com';
         const res = await fetch(`${API_BASE}/api/categories?type=${type}`);
         if (!res.ok) throw new Error('Failed to fetch categories');
         const data = await res.json();

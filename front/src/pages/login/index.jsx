@@ -18,7 +18,7 @@ const Login = () => {
     setLoading(true)
 
     try {
-      const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://insurance-project-j5e6.onrender.com';
+      const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://insurance-project-e1xh.onrender.com';
       const res = await fetch(`${API_BASE}/authUser/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },

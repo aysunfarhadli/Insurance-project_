@@ -1,5 +1,5 @@
 // Centralized API Configuration
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://insurance-project-j5e6.onrender.com';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://insurance-project-e1xh.onrender.com';
 
 export const API_ENDPOINTS = {
   // Auth endpoints

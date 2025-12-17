@@ -3,7 +3,7 @@ import { API_ENDPOINTS } from '../config/api';
 
 // Create axios instance with default config
 const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'https://insurance-project-j5e6.onrender.com',
+  baseURL: import.meta.env.VITE_API_BASE_URL || 'https://insurance-project-e1xh.onrender.com',
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json',

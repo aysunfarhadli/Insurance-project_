@@ -23,7 +23,7 @@ const Profile = () => {
     const loadProfile = async () => {
       try {
         setLoading(true);
-        const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+        const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://insurance-project-e1xh.onrender.com';
         const res = await axios.get(`${API_BASE}/authUser/profile`, { withCredentials: true });
         const user = res.data.user || res.data;
         setUserData(user);
@@ -54,7 +54,7 @@ const Profile = () => {
     const { _id,__v, ...updatedData } = userData;
 
 
-    const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://insurance-project-j5e6.onrender.com';
+    const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://insurance-project-e1xh.onrender.com';
     axios.put(`${API_BASE}/authUser/update/${userId}`, updatedData, {
       withCredentials: true,
     })
@@ -71,7 +71,7 @@ const Profile = () => {
 
   // ✅ Logout
   const handleLogout = () => {
-    const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://insurance-project-j5e6.onrender.com';
+    const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://insurance-project-e1xh.onrender.com';
     axios.post(`${API_BASE}/authUser/logout`, {}, { withCredentials: true })
       .then(() => {
         window.location.href = "/login";

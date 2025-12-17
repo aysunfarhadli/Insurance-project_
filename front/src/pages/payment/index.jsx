@@ -38,7 +38,7 @@ function Payment() {
     const checkAuthAndLoadData = async () => {
       try {
         setPageLoading(true);
-        const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+        const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://insurance-project-e1xh.onrender.com';
         
         // Check authentication first
         try {
@@ -140,7 +140,7 @@ function Payment() {
 
     try {
       setLoading(true);
-      const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+      const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://insurance-project-e1xh.onrender.com';
 
       // Get browser details for 3D Secure 2.0 (Cibpay API requires snake_case format)
       const browserDetails = {

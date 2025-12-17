@@ -25,7 +25,7 @@ function CompanySelection() {
   useEffect(() => {
     const fetchCategory = async () => {
       try {
-        const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+        const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://insurance-project-e1xh.onrender.com';
         const res = await axios.get(`${API_BASE}/api/categories/${id}`);
         setCategory(res.data);
       } catch (err) {
@@ -42,7 +42,7 @@ function CompanySelection() {
     const fetchCompanies = async () => {
       try {
         setLoading(true);
-        const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+        const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://insurance-project-e1xh.onrender.com';
         
         // Backend-də category_id query parametri ilə şirkətləri gətir
         const res = await axios.get(`${API_BASE}/api/company-insurance-types`, {
@@ -112,7 +112,7 @@ function CompanySelection() {
       console.log("📋 Form Data:", formData);
       setLoading(true);
 
-      const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+      const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://insurance-project-e1xh.onrender.com';
 
       // Get user ID and finCode
       const userRes = await axios.get(`${API_BASE}/authUser/profile`);
