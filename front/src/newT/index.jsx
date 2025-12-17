@@ -10,8 +10,9 @@ export default function AuthTest() {
 
 
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://insurance-project-j5e6.onrender.com';
 const api = axios.create({
-  baseURL: "http://localhost:5000/authUser",
+  baseURL: `${API_BASE}/authUser`,
   withCredentials: true // cookie gets sent automatically
 });
 

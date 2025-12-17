@@ -1,7 +1,9 @@
 import React, { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import './index.scss'
 
 const Register = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: "",
     surname: "",
@@ -32,7 +34,8 @@ const Register = () => {
     }
 
     try {
-      const res = await fetch("http://localhost:5000/authUser/register", {
+      const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://insurance-project-j5e6.onrender.com';
+      const res = await fetch(`${API_BASE}/authUser/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
