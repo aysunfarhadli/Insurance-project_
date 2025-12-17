@@ -18,6 +18,7 @@ const orderRoutes = require("./router/insurer");
 const orderFormCommonRoutes = require("./router/orderCommon");
 const orderFormSpecificRoutes = require("./router/orderSpecific");
 const documentRoutes = require("./router/document");
+const mygovRoutes = require("./router/mygovRoutes");
 const app = express();
 const categoryRoutes = require("./router/insCategory");
 const dbDel = require("./router/dbDel");
@@ -63,6 +64,7 @@ app.use("/api/documents", documentRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/order-form-common", orderFormCommonRoutes);
 app.use("/api/order-form-specific", orderFormSpecificRoutes);
+app.use("/api/mygov", mygovRoutes);
 
 // Start
 const PORT = process.env.PORT || 5000;

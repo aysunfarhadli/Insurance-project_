@@ -118,7 +118,33 @@ const cibpayWebhook = async (req, res) => {
         });
       }
 
+      // Validate and format browser details for 3-D Secure 2.0
+      if (!browserDetails || Object.keys(browserDetails).length === 0) {
+        return res.status(400).json({
+          success: false,
+          error: "Browser details are required for 3-D Secure 2.0"
+        });
+      }
+
+      // Convert browser details to snake_case format (Cibpay API requirement)
+      // Cibpay API browser details-i root level-də gözləyir
+      const formattedBrowserDetails = {
+        accept_header: browserDetails.acceptHeader || browserDetails.accept_header || "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        java_enabled: browserDetails.javaEnabled !== undefined ? browserDetails.javaEnabled : (browserDetails.java_enabled !== undefined ? browserDetails.java_enabled : false),
+        javascript_enabled: browserDetails.javascriptEnabled !== undefined ? browserDetails.javascriptEnabled : (browserDetails.javascript_enabled !== undefined ? browserDetails.javascript_enabled : true),
+        language: browserDetails.language || "az-AZ",
+        color_depth: browserDetails.colorDepth || browserDetails.color_depth || 24,
+        screen_height: browserDetails.screenHeight || browserDetails.screen_height || 1080,
+        screen_width: browserDetails.screenWidth || browserDetails.screen_width || 1920,
+        time_zone_offset: browserDetails.timeZoneOffset !== undefined ? browserDetails.timeZoneOffset : (browserDetails.time_zone_offset !== undefined ? browserDetails.time_zone_offset : new Date().getTimezoneOffset()),
+        user_agent: browserDetails.userAgent || browserDetails.user_agent || "",
+        challenge_window_size: browserDetails.challengeWindowSize || browserDetails.challenge_window_size || "full-screen"
+      };
+
+      // Cibpay authorize endpoint - orderId body-də göndərilməlidir
+      // Browser details root level-də göndərilir (Cibpay API tələbi)
       const authData = {
+        order_id: orderId, // Cibpay API-də order_id body-də göndərilir
         amount,
         pan,
         card: {
@@ -132,19 +158,20 @@ const cibpayWebhook = async (req, res) => {
           email: client?.email || "test@mail.com"
         },
         options: {
-          force3d: options?.force3d || 1,
-          browser: browserDetails
+          force3d: options?.force3d || 1
         },
+        browser: formattedBrowserDetails, // Browser details root level-də göndərilir
         location: {
           ip: location?.ip || "93.88.94.130"
         }
       };
 
       console.log("Sending to CIBPAY authorize:", JSON.stringify(authData, null, 2));
+      console.log("Order ID for authorize:", orderId);
 
-      // Cibpay authorize endpoint requires orderId in URL
+      // Cibpay authorize endpoint - orderId body-də göndərilir
       const response = await axios.post(
-        `https://api-preprod.cibpay.co/orders/${orderId}/authorize`,
+        `https://api-preprod.cibpay.co/orders/authorize`,
         authData,
         {
           headers: {
@@ -176,7 +203,23 @@ const cibpayWebhook = async (req, res) => {
 
       res.json({ success: true, data: response.data });
     } catch (error) {
-      console.error("Authorize error:", error.response?.data || error.message);
+      console.error("Authorize error:", error.response?.status, error.response?.data || error.message);
+      console.error("Error details:", {
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        headers: error.response?.headers
+      });
+      
+      // 403 xətası üçün xüsusi mesaj
+      if (error.response?.status === 403) {
+        return res.status(403).json({
+          success: false,
+          error: "Authorization failed - Access forbidden. Check order status and credentials.",
+          details: error.response?.data || "Order may not be in 'new' status or authorization credentials are invalid"
+        });
+      }
+
       res.status(error.response?.status || 500).json({
         success: false,
         error: error.response?.data || error.message
@@ -239,23 +282,43 @@ const cibpayWebhook = async (req, res) => {
    */
   const createOrder = async (req, res) => {
   try {
+    // Validation
+    if (!req.body.amount || isNaN(req.body.amount) || req.body.amount <= 0) {
+      return res.status(400).json({
+        success: false,
+        error: "Amount is required and must be a positive number"
+      });
+    }
+
+    if (!req.body.merchant_order_id) {
+      return res.status(400).json({
+        success: false,
+        error: "merchant_order_id is required"
+      });
+    }
+
+    // Build options object - terminal parametrini tamamilə sil
+    const options = {
+      auto_charge: req.body.options?.auto_charge ?? false,
+      expiration_timeout: req.body.options?.expiration_timeout || "30m", // 30 dəqiqə (4320m çox böyükdür)
+      force3d: req.body.options?.force3d || 1,
+      language: req.body.options?.language || "az",
+      return_url: req.body.options?.return_url || "https://cibpay.az"
+      // terminal parametri tamamilə silindi - Cibpay API-də bu parametr validation xətası verir
+    };
+
     const orderData = {
-      amount: req.body.amount,
+      amount: parseFloat(req.body.amount),
       currency: req.body.currency || "AZN",
-      merchant_order_id: req.body.merchant_order_id,
-      options: {
-        auto_charge: req.body.options?.auto_charge ?? false, // Set to false to manually authorize and charge
-        expiration_timeout: req.body.options?.expiration_timeout || "4320m",
-        force3d: req.body.options?.force3d || 1,
-        language: req.body.options?.language || "az",
-        return_url: req.body.options?.return_url || "https://cibpay.az",
-        terminal: req.body.options?.terminal || "atb_test"
-      },
+      merchant_order_id: String(req.body.merchant_order_id),
+      options: options,
       client: {
         name: req.body.client?.name || "Test",
         email: req.body.client?.email || "test@mail.com"
       }
     };
+
+    console.log("Creating order with data:", JSON.stringify(orderData, null, 2));
 
     const response = await axios.post(
       "https://api-preprod.cibpay.co/orders/create",
@@ -285,7 +348,18 @@ const cibpayWebhook = async (req, res) => {
     res.json({ success: true, data: response.data });
   } catch (error) {
     console.error("Error creating order:", error.response?.data || error.message);
+    
+    // Cibpay API validation xətası
+    if (error.response?.status === 422) {
+      return res.status(422).json({
+        success: false,
+        error: "Validation failed",
+        details: error.response?.data || error.message
+      });
+    }
+
     res.status(error.response?.status || 500).json({
+      success: false,
       error: "Failed to create order",
       details: error.response?.data || error.message
     });

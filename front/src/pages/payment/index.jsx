@@ -142,28 +142,41 @@ function Payment() {
       setLoading(true);
       const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
 
-      // Get browser details for 3D Secure
+      // Get browser details for 3D Secure 2.0 (Cibpay API requires snake_case format)
       const browserDetails = {
         acceptHeader: navigator.acceptHeader || "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
         javaEnabled: navigator.javaEnabled ? navigator.javaEnabled() : false,
+        javascriptEnabled: true,
         language: navigator.language || "az-AZ",
         colorDepth: screen.colorDepth || 24,
         screenHeight: screen.height || 1080,
         screenWidth: screen.width || 1920,
+        timeZoneOffset: new Date().getTimezoneOffset(),
         timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || "Asia/Baku",
         userAgent: navigator.userAgent || ""
       };
 
+      // Validate order data before creating payment
+      const merchantOrderId = orderData.orderId || orderId;
+      if (!merchantOrderId) {
+        throw new Error("Sifariş ID tapılmadı. Zəhmət olmasa yenidən cəhd edin.");
+      }
+
+      const amount = parseFloat(orderData.total_amount || 150.00);
+      if (isNaN(amount) || amount <= 0) {
+        throw new Error("Məbləğ düzgün deyil");
+      }
+
       // Create payment order (with auto_charge: false to manually control the flow)
       const createOrderRes = await axios.post(`${API_BASE}/api/payment/orders/create`, {
-        amount: orderData.total_amount || 150.00,
+        amount: amount,
         currency: orderData.currency || "AZN",
-        merchant_order_id: orderData.orderId || orderId,
+        merchant_order_id: String(merchantOrderId),
         options: {
           auto_charge: false, // Manual authorize and charge
           force3d: 1,
           language: "az",
-          return_url: `${window.location.origin}/payment/success/${orderData.orderId || orderId}`
+          return_url: `${window.location.origin}/payment/success/${merchantOrderId}`
         },
         client: {
           name: orderData.fullName || "Test User",
@@ -171,11 +184,16 @@ function Payment() {
         }
       });
 
-      const cibpayOrderId = createOrderRes.data?.data?.id;
+      // Cibpay API orders array qaytarır, ilk order-in id-sini götür
+      const cibpayOrderId = createOrderRes.data?.data?.orders?.[0]?.id || 
+                           createOrderRes.data?.data?.id;
 
       if (!cibpayOrderId) {
-        throw new Error("Ödəniş sifarişi yaradıla bilmədi");
+        console.error("Order response:", createOrderRes.data);
+        throw new Error("Ödəniş sifarişi yaradıla bilmədi - Order ID tapılmadı");
       }
+
+      console.log("✅ Cibpay Order ID:", cibpayOrderId);
 
       // Authorize payment with orderId
       const authRes = await axios.post(`${API_BASE}/api/payment/authorize`, {
@@ -249,7 +267,12 @@ function Payment() {
       navigate(`/payment/success/${orderData.orderId || orderId}`);
     } catch (err) {
       console.error("Payment error:", err);
-      setError(err.response?.data?.error || err.message || "Ödəniş zamanı xəta baş verdi");
+      const errorMessage = err.response?.data?.error || 
+                          err.response?.data?.details?.failure_message ||
+                          err.response?.data?.details?.message ||
+                          err.message || 
+                          "Ödəniş zamanı xəta baş verdi";
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
