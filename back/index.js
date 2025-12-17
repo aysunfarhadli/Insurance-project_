@@ -54,8 +54,7 @@ app.use(cors({
   allowedHeaders: ["Content-Type", "Authorization"]
 }));
 
-// Required for preflight requests
-app.options("*", cors());
+// CORS middleware already handles OPTIONS preflight requests automatically
 
 /* -------------------- RATE LIMIT -------------------- */
 
