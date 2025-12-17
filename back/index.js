@@ -35,7 +35,8 @@ app.use(cookieParser());
 
 const allowedOrigins = [
   "http://localhost:5173",
-  "https://insurance-project-beta.vercel.app"
+  "https://insurance-project-beta.vercel.app",
+  "https://insurance-project-dsji.vercel.app"
 ];
 
 app.use(cors({
