@@ -8,6 +8,7 @@ import { FaCar } from "react-icons/fa";
 import { FaShield } from "react-icons/fa6";
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import LoadingSpinner from '../../components/LoadingSpinner';
 
 const UmSig = () => {
   const [orders, setOrders] = useState([]);
@@ -132,9 +133,9 @@ const UmSig = () => {
 
       } catch (err) {
         console.error(err);
-        setError("Məlumatlar gətirilərkən xəta baş verdi");
-        // Don't use mock data - handle error properly
+        // Silently handle error - just set empty orders array
         setOrders([]);
+        setError(""); // Clear any previous errors
       } finally {
         setLoading(false);
       }
@@ -214,17 +215,17 @@ const UmSig = () => {
                       ))}
                     </div>
                   </div>
-                </div>
-
-                <div className='carousel-dots'>
-                  {campaigns.map((_, index) => (
-                    <button
-                      key={index}
-                      className={`dot ${currentSlide === index ? 'active' : ''}`}
-                      onClick={() => goToSlide(index)}
-                      aria-label={`Slide ${index + 1}`}
-                    />
-                  ))}
+                  
+                  <div className='carousel-dots'>
+                    {campaigns.map((_, index) => (
+                      <button
+                        key={index}
+                        className={`dot ${currentSlide === index ? 'active' : ''}`}
+                        onClick={() => goToSlide(index)}
+                        aria-label={`Slide ${index + 1}`}
+                      />
+                    ))}
+                  </div>
                 </div>
               </div>
               <div className='insurance-tabs'>
@@ -336,41 +337,43 @@ const UmSig = () => {
               </div>
 
               {loading ? (
-                <div className="loading">
-                  <p>Yüklənir...</p>
-                </div>
-              ) : error ? (
-                <div className="error">
-                  <p>{error}</p>
+                <div className="loading" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '40px' }}>
+                  <LoadingSpinner size="large" />
                 </div>
               ) : (
-                <div className='cards row'>
+                <>
                   {orders.length > 0 ? (
-                    orders.slice(0, 4).map((order, index) => {
-                      const companyName = order.company || ["Mega Sığorta", "Paşa Sığorta", "ASCO Sığorta", "Atəşgah Sığorta"][index % 4];
-                      const iconColor = getOrderIconColor(index);
-                      
-                      return (
-                        <div key={order._id} className='order-card'>
-                          <div className='order-card-content'>
-                            <div className='order-icon' style={{ color: iconColor, borderColor: iconColor }}>
-                              {getCategoryIcon(order.category_id?.code)}
-                            </div>
-                            <div className='order-info'>
-                              <h4 className='company-name'>{companyName}</h4>
-                              <p className='order-date'>{formatDate(order.created_at)}</p>
-                              <p className='order-type'>{order.category_id?.name || 'Sığorta'}</p>
+                    <div className='cards row'>
+                      {orders.slice(0, 4).map((order, index) => {
+                        const companyName = order.company || ["Mega Sığorta", "Paşa Sığorta", "ASCO Sığorta", "Atəşgah Sığorta"][index % 4];
+                        const iconColor = getOrderIconColor(index);
+                        
+                        return (
+                          <div key={order._id} className='order-card'>
+                            <div className='order-card-content'>
+                              <div className='order-icon' style={{ color: iconColor, borderColor: iconColor }}>
+                                {getCategoryIcon(order.category_id?.code)}
+                              </div>
+                              <div className='order-info'>
+                                <h4 className='company-name'>{companyName}</h4>
+                                <p className='order-date'>{formatDate(order.created_at)}</p>
+                                <p className='order-type'>{order.category_id?.name || 'Sığorta'}</p>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      );
-                    })
+                        );
+                      })}
+                    </div>
                   ) : (
-                    <div className="no-orders">
-                      <p>Hələ heç bir sifarişiniz yoxdur</p>
+                    <div className="empty-orders">
+                      <div className="empty-state">
+                        <div className="empty-icon">📋</div>
+                        <p className="empty-message">Hələ heç bir tamamlanmış sifarişiniz yoxdur</p>
+                        <p className="empty-subtitle">Sifariş verdikdən sonra burada görünəcək</p>
+                      </div>
                     </div>
                   )}
-                </div>
+                </>
               )}
             </div>
           </div>

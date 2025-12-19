@@ -1,5 +1,10 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Button } from '../../components/ui/button'
+import { Input } from '../../components/ui/input'
+import { Label } from '../../components/ui/label'
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../../components/ui/card'
+import LoadingSpinner from '../../components/LoadingSpinner'
 import './index.scss'
 
 const Register = () => {
@@ -14,6 +19,7 @@ const Register = () => {
   });
 
   const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false);
 
   // input dəyişdikdə state update
   const handleChange = (e) => {
@@ -32,6 +38,9 @@ const Register = () => {
       setMessage("Şifrələr eyni olmalıdır!");
       return;
     }
+
+    setLoading(true);
+    setMessage("");
 
     try {
       const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://insurance-project-e1xh.onrender.com';
@@ -68,45 +77,72 @@ const Register = () => {
       }
     } catch (err) {
       setMessage("Serverə qoşulmaq mümkün olmadı!");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <section className='register'>
-      <form className="signup-form" onSubmit={handleSubmit}>
-        <h2 className="form-title">Qeydiyyat</h2>
-        <p className="form-description">CİB sığorta hesabı yaradın</p>
+      <Card className="signup-form">
+        <CardHeader>
+          <CardTitle className="form-title">Qeydiyyat</CardTitle>
+          <CardDescription className="form-description">CİB sığorta hesabı yaradın</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit}>
+            <div className="form-group">
+              <Label htmlFor="name">Ad</Label>
+              <Input type="text" id="name" name="name" value={formData.name} onChange={handleChange} required placeholder="Ad" />
+            </div>
 
-        <div className="form-group">
-          <input type="text" name="name" value={formData.name} onChange={handleChange} required placeholder="Ad" />
-        </div>
+            <div className="form-group">
+              <Label htmlFor="surname">Soyad</Label>
+              <Input type="text" id="surname" name="surname" value={formData.surname} onChange={handleChange} required placeholder="Soyad" />
+            </div>
 
-        <div className="form-group">
-          <input type="text" name="surname" value={formData.surname} onChange={handleChange} required placeholder="Soyad" />
-        </div>
+            <div className="form-group">
+              <Label htmlFor="phone">Telefon nömrəsi</Label>
+              <Input type="tel" id="phone" name="phone" value={formData.phone} onChange={handleChange} required placeholder="Telefon nömrəsi" />
+            </div>
 
-        <div className="form-group">
-          <input type="tel" name="phone" value={formData.phone} onChange={handleChange} required placeholder="Telefon nömrəsi" />
-        </div>
+            <div className="form-group">
+              <Label htmlFor="email">Email ünvanı</Label>
+              <Input type="email" id="email" name="email" value={formData.email} onChange={handleChange} required placeholder="Email ünvanı" />
+            </div>
 
-        <div className="form-group">
-          <input type="email" name="email" value={formData.email} onChange={handleChange} required placeholder="Email ünvanı" />
-        </div>
+            <div className="form-group">
+              <Label htmlFor="password">Şifrə</Label>
+              <Input type="password" id="password" name="password" value={formData.password} onChange={handleChange} required placeholder="Şifrə" />
+            </div>
 
-        <div className="form-group">
-          <input type="password" name="password" value={formData.password} onChange={handleChange} required placeholder="Şifrə" />
-        </div>
+            <div className="form-group">
+              <Label htmlFor="confirmPassword">Şifrə təkrarı</Label>
+              <Input type="password" id="confirmPassword" name="confirmPassword" value={formData.confirmPassword} onChange={handleChange} required placeholder="Şifrə təkrarı" />
+            </div>
 
-        <div className="form-group">
-          <input type="password" name="confirmPassword" value={formData.confirmPassword} onChange={handleChange} required placeholder="Şifrə təkrarı" />
-        </div>
+            <Button type="submit" className="submit-btn" disabled={loading} style={{ width: '100%', marginTop: '10px' }}>
+              {loading ? (
+                <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                  <LoadingSpinner size="small" />
+                  Gözləyin...
+                </span>
+              ) : "Qeydiyyatdan keç"}
+            </Button>
 
-        <button type="submit" className="submit-btn">Qeydiyyatdan keç</button>
+            {message && <p className="form-message" style={{ 
+              marginTop: '16px', 
+              padding: '12px', 
+              borderRadius: '4px',
+              backgroundColor: message.includes('✅') ? 'var(--green-100)' : 'var(--red-100)',
+              color: message.includes('✅') ? 'var(--green-600)' : 'var(--red-600)',
+              fontSize: '14px'
+            }}>{message}</p>}
 
-        {message && <p className="form-message">{message}</p>}
-
-        <p className="login-link">Hesabınız var? <a href="/login">Daxil olun</a></p>
-      </form>
+            <p className="login-link">Hesabınız var? <a href="/login">Daxil olun</a></p>
+          </form>
+        </CardContent>
+      </Card>
     </section>
   )
 }

@@ -17,20 +17,20 @@ const Cheader = () => {
           </NavLink>
 
           {/* You can replace input with a search component or keep it */}
-          <input placeholder="Search..." />
+          <input placeholder="Axtarış..." />
 
           <div className='icons'>
-            <NavLink to="/notifications" className="icon">
+            {/* <NavLink to="/notifications" className="icon">
               <FaRegBell />
-            </NavLink>
+            </NavLink> */}
 
             <NavLink to="/profile" className="icon">
               <CgProfile />
             </NavLink>
-
+{/* 
             <NavLink to="/menu" className="icon">
               <IoMenu />
-            </NavLink>
+            </NavLink> */}
           </div>
         </div>
       </div>

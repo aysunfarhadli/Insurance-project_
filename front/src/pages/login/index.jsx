@@ -1,5 +1,10 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Button } from '../../components/ui/button'
+import { Input } from '../../components/ui/input'
+import { Label } from '../../components/ui/label'
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../../components/ui/card'
+import LoadingSpinner from '../../components/LoadingSpinner'
 import './index.scss'
 
 const Login = () => {
@@ -45,46 +50,56 @@ const Login = () => {
   return (
     <section className='login'>
       <div className="login-container">
-        <form className="login-form" onSubmit={handleSubmit}>
-          <h2 className="login-title">Daxil olun</h2>
-          <p className="login-description">CİB siğorta hesabınıza daxil olun</p>
+        <Card className="login-form">
+          <CardHeader>
+            <CardTitle className="login-title">Daxil olun</CardTitle>
+            <CardDescription className="login-description">CİB siğorta hesabınıza daxil olun</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit}>
+              {error && <p className="error-text" style={{ color: 'var(--destructive)', marginBottom: '16px', fontSize: '14px' }}>{error}</p>}
 
-          {error && <p className="error-text">{error}</p>}
+              <div className="form-group">
+                <Label htmlFor="email">Email ünvanı</Label>
+                <Input
+                  type="email"
+                  id="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  required
+                  placeholder="email@example.com"
+                />
+              </div>
 
-          <div className="form-group">
-            <label htmlFor="email">Email ünvanı</label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              required
-              placeholder="email@example.com"
-            />
-          </div>
+              <div className="form-group">
+                <Label htmlFor="password">Şifrə</Label>
+                <Input
+                  type="password"
+                  id="password"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  required
+                  placeholder="Şifrənizi daxil edin"
+                />
+              </div>
 
-          <div className="form-group">
-            <label htmlFor="password">Şifrə</label>
-            <input
-              type="password"
-              id="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              required
-              placeholder="Şifrənizi daxil edin"
-            />
-          </div>
+              <Button type="submit" className="login-btn" disabled={loading} style={{ width: '100%', marginTop: '10px' }}>
+                {loading ? (
+                  <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                    <LoadingSpinner size="small" />
+                    Gözləyin...
+                  </span>
+                ) : "Daxil ol"}
+              </Button>
 
-          <button type="submit" className="login-btn" disabled={loading}>
-            {loading ? "Gözləyin..." : "Daxil ol"}
-          </button>
-
-          <p className="register-link">
-            Hesabınız yoxdur? <a href="/register">Qeydiyyatdan keçin</a>
-          </p>
-        </form>
+              <p className="register-link">
+                Hesabınız yoxdur? <a href="/register">Qeydiyyatdan keçin</a>
+              </p>
+            </form>
+          </CardContent>
+        </Card>
       </div>
     </section>
   )

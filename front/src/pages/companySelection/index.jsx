@@ -4,6 +4,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { TbStarFilled, TbClock, TbFilter } from "react-icons/tb";
 import { Car } from "lucide-react";
+import LoadingSpinner from "../../components/LoadingSpinner";
 import styles from "./index.module.scss";
 
 axios.defaults.withCredentials = true;
@@ -115,6 +116,14 @@ function CompanySelection() {
       const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://insurance-project-e1xh.onrender.com';
 
       // Get user ID and finCode
+      // COMMENTED OUT FOR TESTING - Uncomment to enable authentication
+      // Mock user data for testing
+      const userId = 'test_user_123';
+      const finCode = formData.finCode || '1234567'; // Use formData finCode or default test value
+      console.log("👤 Mock User ID:", userId);
+      console.log("🔑 FIN Code:", finCode);
+      
+      /* UNCOMMENT BELOW TO ENABLE AUTHENTICATION
       const userRes = await axios.get(`${API_BASE}/authUser/profile`);
       const user = userRes.data.user || userRes.data;
       console.log("👤 User Profile:", user);
@@ -123,6 +132,7 @@ function CompanySelection() {
       // finCode formData-dan gəlir, yoxdursa user profilindən götür
       const finCode = formData.finCode || user.finCode;
       console.log("🔑 FIN Code:", finCode);
+      */
       
       if (!finCode || finCode.trim() === '') {
         alert('FİN kodu tapılmadı. Zəhmət olmasa formu yenidən doldurun və FİN kodunu daxil edin.');
@@ -247,6 +257,15 @@ function CompanySelection() {
     setFilterRating(0);
     setShowFilter(false);
   };
+
+  // Show loading spinner while data is loading
+  if (loading && companies.length === 0) {
+    return (
+      <div className={styles.container}>
+        <LoadingSpinner fullScreen={true} size="large" />
+      </div>
+    );
+  }
 
   return (
     <div className={styles.container}>

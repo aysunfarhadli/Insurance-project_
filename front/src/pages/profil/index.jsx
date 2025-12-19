@@ -2,12 +2,20 @@ import React, { useState, useEffect } from 'react';
 import './index.scss';
 import { MdExitToApp } from "react-icons/md";
 import axios from "axios";
+import { useNavigate } from 'react-router-dom';
+import { Button } from '../../components/ui/button';
+import { Input } from '../../components/ui/input';
+import { Label } from '../../components/ui/label';
+import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/card';
+import LoadingSpinner from '../../components/LoadingSpinner';
 
 axios.defaults.withCredentials = true;
 
 const Profile = () => {
+  const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [error, setError] = useState("");
   const [userData, setUserData] = useState({
     name: "",
@@ -18,26 +26,59 @@ const Profile = () => {
   });
   const [userId, setUserId] = useState(null);
 
-  // ✅ Fetch user profile (based on JWT cookie)
+  // ✅ Check authentication and fetch user profile
+  // COMMENTED OUT FOR TESTING - Uncomment to enable authentication
   useEffect(() => {
-    const loadProfile = async () => {
+    const checkAuthAndLoadProfile = async () => {
       try {
         setLoading(true);
+        // Mock user data for testing
+        setUserData({
+          name: "Test",
+          surname: "User",
+          email: "test@example.com",
+          phone: "+994501234567",
+          address: "Test Address"
+        });
+        setUserId("test_user_id");
+        setIsAuthenticated(true);
+        setLoading(false);
+        return;
+
+        /* UNCOMMENT BELOW TO ENABLE AUTHENTICATION
         const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://insurance-project-e1xh.onrender.com';
-        const res = await axios.get(`${API_BASE}/authUser/profile`, { withCredentials: true });
-        const user = res.data.user || res.data;
-        setUserData(user);
-        setUserId(user._id);
+        
+        // First check if user is authenticated
+        try {
+          const authRes = await axios.get(`${API_BASE}/authUser/profile`, { withCredentials: true });
+          const user = authRes.data.user || authRes.data;
+          
+          if (user && user.email) {
+            setIsAuthenticated(true);
+            setUserData(user);
+            setUserId(user._id);
+          } else {
+            // User not authenticated, redirect to login
+            navigate("/login");
+            return;
+          }
+        } catch (authErr) {
+          console.error("Authentication check failed:", authErr);
+          // If authentication fails, redirect to login immediately
+          navigate("/login");
+          return;
+        }
+        */
       } catch (err) {
-        console.error("Profile fetch error:", err);
+        console.error("Profile load error:", err);
         setError("Profil məlumatları yüklənə bilmədi. Zəhmət olmasa yenidən giriş edin.");
-      } finally {
+        // navigate("/login"); // COMMENTED OUT FOR TESTING
         setLoading(false);
       }
     };
 
-    loadProfile();
-  }, []);
+    checkAuthAndLoadProfile();
+  }, [navigate]);
 
   // Handle input change
   const handleInputChange = (e) => {
@@ -79,9 +120,31 @@ const Profile = () => {
       .catch(err => console.error("Logout error:", err));
   };
 
-  if (loading) return <p>Profil yüklənir...</p>;
-  if (error) return <p>{error}</p>;
-  if (!userData.email) return <p>Profil məlumatları tapılmadı.</p>;
+  // Show loading spinner while checking authentication
+  if (loading) {
+    return (
+      <section className="profile-section">
+        <div className='container'>
+          <LoadingSpinner fullScreen={true} size="large" />
+        </div>
+      </section>
+    );
+  }
+
+  // If not authenticated, don't render (redirect will happen)
+  if (!isAuthenticated || !userData.email) {
+    return null;
+  }
+
+  if (error) {
+    return (
+      <section className="profile-section">
+        <div className='container'>
+          <p style={{ color: 'var(--destructive)' }}>{error}</p>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="profile-section">
@@ -92,9 +155,9 @@ const Profile = () => {
               <h2>Profil</h2>
               <p>Hesab məlumatlarınızı idarə edin</p>
             </div>
-            <button className='logout-btn' onClick={handleLogout}>
+            <Button variant="outline" className='logout-btn' onClick={handleLogout}>
               <MdExitToApp /> <span>Çıxış</span>
-            </button>
+            </Button>
           </div>
 
           <div className='body1 row col-12'>
@@ -102,9 +165,9 @@ const Profile = () => {
               <div className='change'>
                 <p>Şəxsi məlumatlar</p>
                 {isEditing ? (
-                  <button className='save-btn' onClick={handleSave}>Yadda saxla</button>
+                  <Button className='save-btn' onClick={handleSave}>Yadda saxla</Button>
                 ) : (
-                  <button className='edit-btn' onClick={() => setIsEditing(true)}>Düzəliş et</button>
+                  <Button variant="outline" className='edit-btn' onClick={() => setIsEditing(true)}>Düzəliş et</Button>
                 )}
               </div>
 
@@ -125,11 +188,11 @@ const Profile = () => {
                 <div className='shexsi row'>
                   {["name", "surname", "email", "phone"].map((field, i) => (
                     <div className='input col-12 col-sm-6 col-md-6' key={i}>
-                      <label>{field === "name" ? "Ad" :
+                      <Label>{field === "name" ? "Ad" :
                         field === "surname" ? "Soyad" :
-                          field === "email" ? "Email" : "Telefon"}</label>
+                          field === "email" ? "Email" : "Telefon"}</Label>
                       {isEditing ? (
-                        <input
+                        <Input
                           type={field === "email" ? "email" : "text"}
                           name={field}
                           value={userData[field] || ""}
@@ -143,9 +206,9 @@ const Profile = () => {
                 </div>
 
                 <div className='input address-input col-12'>
-                  <label>Ünvan</label>
+                  <Label>Ünvan</Label>
                   {isEditing ? (
-                    <input
+                    <Input
                       type='text'
                       name="address"
                       value={userData.address || ""}

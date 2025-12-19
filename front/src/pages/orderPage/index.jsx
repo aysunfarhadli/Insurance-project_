@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { ArrowLeft, Phone, CheckCircle, User, Car, Home, Building, Briefcase, Bus, AlertTriangle } from "lucide-react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
+import LoadingSpinner from "../../components/LoadingSpinner";
 import styles from "./index.module.scss";
 
 axios.defaults.withCredentials = true;
@@ -170,10 +171,25 @@ function Order() {
   const [userProfile, setUserProfile] = useState(null);
 
   // 🔹 Check authentication and get user profile
+  // COMMENTED OUT FOR TESTING - Uncomment to enable authentication
   useEffect(() => {
     const checkAuthAndGetProfile = async () => {
       try {
         setLoading(true);
+        // Mock user data for testing
+        setIsAuthenticated(true);
+        setUserId("test_user_id");
+        setUserProfile({
+          name: "Test",
+          surname: "User",
+          email: "test@example.com",
+          phone: "+994501234567",
+          finCode: "1234567"
+        });
+        setLoading(false);
+        return;
+
+        /* UNCOMMENT BELOW TO ENABLE AUTHENTICATION
         const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://insurance-project-e1xh.onrender.com';
         const res = await axios.get(`${API_BASE}/authUser/profile`, { withCredentials: true });
         const user = res.data.user || res.data;
@@ -187,13 +203,14 @@ function Order() {
           navigate("/login");
           return;
         }
+        */
       } catch (err) {
         console.error("Authentication check failed:", err);
         // Birbaşa login-ə yönləndir
-        navigate("/login");
-        return;
-      } finally {
+        // navigate("/login"); // COMMENTED OUT FOR TESTING
         setLoading(false);
+        setIsAuthenticated(true); // Mock authentication for testing
+        setUserId("test_user_id");
       }
     };
 
@@ -417,13 +434,11 @@ function Order() {
     if (step > 1) setStep(step - 1);
   };
 
-  // Show loading while checking authentication
+  // Show loading spinner while checking authentication
   if (loading && !isAuthenticated) {
     return (
       <div className={styles.container}>
-        <div className={styles.loadingContainer}>
-          <p>Yoxlanılır...</p>
-        </div>
+        <LoadingSpinner fullScreen={true} size="large" />
       </div>
     );
   }

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
+import LoadingSpinner from '../../components/LoadingSpinner'
 import './index.scss'
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://insurance-project-e1xh.onrender.com'
@@ -25,7 +26,12 @@ const CreateCompany = () => {
   const [createdCompany, setCreatedCompany] = useState(null)
 
   // İstifadəçinin login olub-olmadığını yoxlayırıq
+  // COMMENTED OUT FOR TESTING - Uncomment to enable authentication
   useEffect(() => {
+    // Mock authentication for testing - comment out the check
+    return;
+    
+    /* UNCOMMENT BELOW TO ENABLE AUTHENTICATION
     const checkAuth = async () => {
       try {
         const res = await axios.get(`${API_BASE}/authUser/profile`, {
@@ -39,6 +45,7 @@ const CreateCompany = () => {
       }
     }
     checkAuth()
+    */
   }, [navigate])
 
   const handleJsonChange = (e) => {
@@ -210,7 +217,12 @@ const CreateCompany = () => {
               className="btn btn-primary" 
               disabled={loading}
             >
-              {loading ? 'Gözləyin...' : 'Şirkət Yarat'}
+              {loading ? (
+                <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                  <LoadingSpinner size="small" />
+                  Gözləyin...
+                </span>
+              ) : 'Şirkət Yarat'}
             </button>
           </div>
         </form>

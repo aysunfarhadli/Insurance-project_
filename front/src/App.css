@@ -6,6 +6,20 @@
   font-family: 'Arial', sans-serif;
 }
 
+/* Remove blue border on focus */
+*:focus {
+  outline: none !important;
+}
+
+button:focus,
+a:focus,
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
 .container{
   max-width: 90%;
   margin: 0 auto;
