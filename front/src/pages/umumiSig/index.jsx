@@ -60,10 +60,52 @@ const UmSig = () => {
     travel: <FaPlane />,
     life: <TbActivityHeartbeat />,
     health: <FaHeart />,
+    medical: <FaHeart />,
     property: <FaHouse />,
+    property_voluntary: <FaHouse />,
     vehicle: <FaCar />,
+    transport: <FaCar />,
     default: <FaShield />
   };
+
+  // Könüllü sığorta kateqoriyaları
+  const voluntaryCategories = [
+    {
+      code: 'travel',
+      name: 'Səyahət',
+      description: 'Beynəlxalq və daxili səyahət sığortası',
+      icon: FaPlane,
+      route: 'travel'
+    },
+    {
+      code: 'life',
+      name: 'Hayat',
+      description: 'Hayat və təqaüd sığortası',
+      icon: TbActivityHeartbeat,
+      route: 'life'
+    },
+    {
+      code: 'medical',
+      name: 'Tibbi',
+      description: 'Tibbi xərclərin ödənilməsi',
+      icon: FaHeart,
+      route: 'medical'
+    },
+    {
+      code: 'property_voluntary',
+      name: 'Əmlak',
+      description: 'Ev və digər əmlak sığortası',
+      icon: FaHouse,
+      route: 'property_voluntary'
+    },
+    {
+      code: 'transport',
+      name: 'Nəqliyyat',
+      description: 'Avtomobil və nəqliyyat sığortası',
+      icon: FaCar,
+      route: 'transport'
+    }
+  ];
 
   // Status rəngləri
   const statusColors = {
@@ -150,9 +192,12 @@ const UmSig = () => {
       try {
         const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://insurance-project-e1xh.onrender.com';
         const res = await axios.get(`${API_BASE}/api/categories`);
-        setCategories(Array.isArray(res.data) ? res.data : []);
+        const categoriesData = Array.isArray(res.data) ? res.data : [];
+        setCategories(categoriesData);
+        console.log("Fetched categories:", categoriesData.map(c => ({ code: c.code, name: c.name, id: c._id })));
       } catch (err) {
         console.error("Categories fetch error:", err);
+        setCategories([]);
       }
     };
 
@@ -161,8 +206,17 @@ const UmSig = () => {
 
   // Helper function to get category ID by code
   const getCategoryIdByCode = (code) => {
-    const category = categories.find(cat => cat.code === code);
-    return category?._id || null;
+    if (!code || !categories || categories.length === 0) {
+      console.warn(`Cannot find category: code="${code}", categories array:`, categories);
+      return null;
+    }
+    const category = categories.find(cat => cat && cat.code === code);
+    if (!category) {
+      console.warn(`Category with code "${code}" not found. Available categories:`, categories.map(c => ({ code: c.code, name: c.name, id: c._id })));
+      return null;
+    }
+    console.log(`Found category: code="${code}" -> id="${category._id}", name="${category.name}"`);
+    return category._id || null;
   };
 
   console.log(orders);
@@ -243,6 +297,8 @@ const UmSig = () => {
                 </button>
               </div>
               <div className='sig row'>
+                {activeTab === 'icbari' ? (
+                  <>
                 <div className='sey col-3 sam' onClick={() => {
                   const categoryId = getCategoryIdByCode('passenger_accident');
                   if (categoryId) navigate(`/order/${categoryId}`);
@@ -321,6 +377,50 @@ const UmSig = () => {
                     <p>Partlayış, yanğın və kimyəvi təhlükələr</p>
                   </div>
                 </div>
+                  </>
+                ) : (
+                  <>
+                    {voluntaryCategories.map((category) => {
+                      const Icon = category.icon;
+                      return (
+                        <div 
+                          key={category.code}
+                          className={`${category.code} col-3 sam `}
+                          onClick={async () => {
+                            try {
+                              // Fetch categories again to ensure we have latest data
+                              const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://insurance-project-e1xh.onrender.com';
+                              const res = await axios.get(`${API_BASE}/api/categories`);
+                              const allCategories = Array.isArray(res.data) ? res.data : [];
+                              
+                              // Find the specific category by code
+                              const foundCategory = allCategories.find(cat => cat && cat.code === category.code);
+                              
+                              if (foundCategory && foundCategory._id) {
+                                console.log(`Navigating to /order/${foundCategory._id} for ${category.name} (${category.code})`);
+                                navigate(`/order/${foundCategory._id}`);
+                              } else {
+                                console.error(`Category "${category.code}" not found. Available categories:`, allCategories.map(c => ({ code: c.code, name: c.name })));
+                                alert(`"${category.name}" kateqoriyası tapılmadı. Zəhmət olmasa əvvəlcə bu kateqoriyanı yaradın (/create-category səhifəsində).`);
+                              }
+                            } catch (err) {
+                              console.error('Error fetching categories:', err);
+                              alert('Xəta baş verdi. Zəhmət olmasa yenidən cəhd edin.');
+                            }
+                          }}
+                        >
+                          <div className='svg'>
+                            <Icon />
+                          </div>
+                          <div className='par'>
+                            <h4>{category.name}</h4>
+                            <p>{category.description}</p>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </>
+                )}
               </div>
             </div>
           </div>

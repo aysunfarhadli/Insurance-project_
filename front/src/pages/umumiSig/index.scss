@@ -419,9 +419,9 @@ $shadow-hover: 0 8px 15px rgba(0, 0, 0, 0.2);
     }
 
     .sig {
-    //   display: flex;
-    //   flex-wrap: wrap;
-    //   gap: 15px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: stretch;
 
       .sam {
         display: flex;
@@ -430,7 +430,8 @@ $shadow-hover: 0 8px 15px rgba(0, 0, 0, 0.2);
         gap: 1.2rem;
         color: white;
         border-radius: 12px;
-        min-height: 120px;
+        min-height: 180px;
+        height: 100%;
         position: relative;
         overflow: hidden;
         cursor: pointer;
@@ -518,6 +519,22 @@ $shadow-hover: 0 8px 15px rgba(0, 0, 0, 0.2);
       }
       .tehlukeli {
         background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+      }
+      // Könüllü Sığorta
+      .travel {
+        background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+      }
+      .life {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      }
+      .medical {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+      }
+      .property_voluntary {
+        background: linear-gradient(135deg, #9333ea 0%, #7c3aed 100%);
+      }
+      .transport {
+        background: linear-gradient(135deg, #ff6b35 0%, #f97316 100%);
       }
     }
   }
@@ -870,5 +887,3 @@ button:focus {
     }
   }
 }
-
-

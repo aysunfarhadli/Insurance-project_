@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ArrowLeft, Phone, CheckCircle, User, Car, Home, Building, Briefcase, Bus, AlertTriangle } from "lucide-react";
+import { ArrowLeft, Phone, CheckCircle, User, Car, Home, Building, Briefcase, Bus, AlertTriangle, Plane, Activity, Heart } from "lucide-react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import LoadingSpinner from "../../components/LoadingSpinner";
@@ -155,6 +155,123 @@ const categoryConfig = {
         { name: "duration", label: "Müddət (il)", type: "number", placeholder: "1", required: true },
       ]
     }
+  },
+  // Könüllü Sığorta Kateqoriyaları
+  travel: {
+    name: "Səyahət Sığortası",
+    icon: Plane,
+    subtitle: "Beynəlxalq və daxili səyahət sığortası",
+    fields: {
+      personal: [
+        { name: "fullName", label: "Səyahətçinin tam adı", placeholder: "Ad və soyadınızı daxil edin", required: true },
+        { name: "finCode", label: "FİN / Şəxsiyyət vəsiqəsi nömrəsi", placeholder: "AZE1234567", required: true },
+        { name: "phone", label: "Əlaqə nömrəsi", placeholder: "+994 XX XXX XX XX", required: true },
+        { name: "email", label: "Email", placeholder: "email@example.com", required: true },
+        { name: "address", label: "Qeydiyyat ünvanı", placeholder: "Tam ünvanınızı daxil edin", required: false },
+      ],
+      specific: [
+        { name: "destination", label: "Təyinat ölkəsi/şəhər", placeholder: "Təyinatı daxil edin", required: true },
+        { name: "travelType", label: "Səyahət növü", placeholder: "Səyahət növünü seçin", required: true, options: ["beynəlxalq", "daxili", "hər ikisi"] },
+        { name: "travelPurpose", label: "Səyahət məqsədi", placeholder: "Məqsədi seçin", options: ["turizm", "iş", "təhsil", "sağlamlıq", "digər"] },
+        { name: "startDate", label: "Səyahət başlama tarixi", type: "date", required: true },
+        { name: "endDate", label: "Səyahət bitmə tarixi", type: "date", required: true },
+        { name: "travelerCount", label: "Səyahətçi sayı", type: "number", placeholder: "1", required: true },
+        { name: "coverageAmount", label: "Təminat məbləği (USD)", type: "number", placeholder: "50000" },
+      ]
+    }
+  },
+  life: {
+    name: "Hayat Sığortası",
+    icon: Activity,
+    subtitle: "Hayat və təqaüd sığortası",
+    fields: {
+      personal: [
+        { name: "fullName", label: "Sığorta olunan şəxsin tam adı", placeholder: "Ad və soyadınızı daxil edin", required: true },
+        { name: "finCode", label: "FİN / Şəxsiyyət vəsiqəsi nömrəsi", placeholder: "AZE1234567", required: true },
+        { name: "birthDate", label: "Doğum tarixi", type: "date", required: true },
+        { name: "phone", label: "Əlaqə nömrəsi", placeholder: "+994 XX XXX XX XX", required: true },
+        { name: "email", label: "Email", placeholder: "email@example.com", required: true },
+        { name: "address", label: "Qeydiyyat ünvanı", placeholder: "Tam ünvanınızı daxil edin", required: false },
+      ],
+      specific: [
+        { name: "coverageType", label: "Təminat növü", placeholder: "Təminat növünü seçin", required: true, options: ["hayat", "təqaüd", "hər ikisi"] },
+        { name: "coverageAmount", label: "Təminat məbləği (AZN)", type: "number", placeholder: "100000", required: true },
+        { name: "paymentFrequency", label: "Ödəniş tezliyi", placeholder: "Tezliyi seçin", options: ["aylıq", "rüblük", "illik"] },
+        { name: "startDate", label: "Başlama tarixi", type: "date", required: true },
+        { name: "duration", label: "Müddət (il)", type: "number", placeholder: "10", required: true },
+      ]
+    }
+  },
+  medical: {
+    name: "Tibbi Sığortası",
+    icon: Heart,
+    subtitle: "Tibbi xərclərin ödənilməsi",
+    fields: {
+      personal: [
+        { name: "fullName", label: "Sığorta olunan şəxsin tam adı", placeholder: "Ad və soyadınızı daxil edin", required: true },
+        { name: "finCode", label: "FİN / Şəxsiyyət vəsiqəsi nömrəsi", placeholder: "AZE1234567", required: true },
+        { name: "birthDate", label: "Doğum tarixi", type: "date", required: true },
+        { name: "phone", label: "Əlaqə nömrəsi", placeholder: "+994 XX XXX XX XX", required: true },
+        { name: "email", label: "Email", placeholder: "email@example.com", required: true },
+        { name: "address", label: "Qeydiyyat ünvanı", placeholder: "Tam ünvanınızı daxil edin", required: false },
+      ],
+      specific: [
+        { name: "coverageType", label: "Təminat növü", placeholder: "Təminat növünü seçin", required: true, options: ["ambulator", "stasionar", "stomatologiya", "tam"] },
+        { name: "coverageAmount", label: "Təminat məbləği (AZN)", type: "number", placeholder: "50000", required: true },
+        { name: "familyMembers", label: "Ailə üzvlərinin sayı", type: "number", placeholder: "0" },
+        { name: "startDate", label: "Başlama tarixi", type: "date", required: true },
+        { name: "duration", label: "Müddət (il)", type: "number", placeholder: "1", required: true },
+      ]
+    }
+  },
+  property_voluntary: {
+    name: "Əmlak Sığortası (Könüllü)",
+    icon: Home,
+    subtitle: "Ev və digər əmlak sığortası",
+    fields: {
+      personal: [
+        { name: "fullName", label: "Sahibkarın tam adı", placeholder: "Ad və soyadınızı daxil edin", required: true },
+        { name: "finCode", label: "FİN / Şəxsiyyət vəsiqəsi nömrəsi", placeholder: "AZE1234567", required: true },
+        { name: "voen", label: "VÖEN (hüquqi şəxs üçün)", placeholder: "1234567890", required: false },
+        { name: "phone", label: "Əlaqə nömrəsi", placeholder: "+994 XX XXX XX XX", required: true },
+        { name: "email", label: "Email", placeholder: "email@example.com", required: true },
+        { name: "address", label: "Qeydiyyat ünvanı", placeholder: "Tam ünvanınızı daxil edin", required: false },
+      ],
+      specific: [
+        { name: "propertyAddress", label: "Əmlakın ünvanı", placeholder: "Tam ünvanı daxil edin", required: true },
+        { name: "propertyType", label: "Əmlak tipi", placeholder: "Əmlak tipini seçin", required: true, options: ["mənzil", "ev", "ofis", "ticarət", "anbar", "villa"] },
+        { name: "area", label: "Sahə (m²)", type: "number", placeholder: "120", required: true },
+        { name: "propertyValue", label: "Əmlakın dəyəri (AZN)", type: "number", placeholder: "150000", required: true },
+        { name: "coverageAmount", label: "Təminat məbləği (AZN)", type: "number", placeholder: "150000", required: true },
+        { name: "startDate", label: "Başlama tarixi", type: "date", required: true },
+        { name: "duration", label: "Müddət (il)", type: "number", placeholder: "1", required: true },
+      ]
+    }
+  },
+  transport: {
+    name: "Nəqliyyat Sığortası",
+    icon: Car,
+    subtitle: "Avtomobil və nəqliyyat sığortası",
+    fields: {
+      personal: [
+        { name: "fullName", label: "Sahibkarın tam adı", placeholder: "Ad və soyadınızı daxil edin", required: true },
+        { name: "finCode", label: "FİN / Şəxsiyyət vəsiqəsi nömrəsi", placeholder: "AZE1234567", required: true },
+        { name: "voen", label: "VÖEN (hüquqi şəxs üçün)", placeholder: "1234567890", required: false },
+        { name: "phone", label: "Əlaqə nömrəsi", placeholder: "+994 XX XXX XX XX", required: true },
+        { name: "email", label: "Email", placeholder: "email@example.com", required: true },
+        { name: "address", label: "Qeydiyyat ünvanı", placeholder: "Tam ünvanınızı daxil edin", required: false },
+      ],
+      specific: [
+        { name: "stateNumber", label: "Dövlət nömrə nişanı", placeholder: "10-AA-123", required: true },
+        { name: "vin", label: "VIN (şassi nömrəsi)", placeholder: "VIN nömrəsini daxil edin", required: true },
+        { name: "brandModel", label: "Marka/Model", placeholder: "Toyota Camry", required: true },
+        { name: "manufactureYear", label: "Buraxılış ili", type: "number", placeholder: "2020", required: true },
+        { name: "vehicleValue", label: "Nəqliyyat vasitəsinin dəyəri (AZN)", type: "number", placeholder: "30000", required: true },
+        { name: "coverageType", label: "Təminat növü", placeholder: "Təminat növünü seçin", options: ["tam", "qismi", "CASCO"] },
+        { name: "startDate", label: "Başlama tarixi", type: "date", required: true },
+        { name: "duration", label: "Müddət (il)", type: "number", placeholder: "1", required: true },
+      ]
+    }
   }
 };
 
@@ -248,30 +365,12 @@ function Order() {
   // console.log("cate ", currentCategory); 
 
   // 🔹 Dinamik form data strukturu 
-  const [formData, setFormData] = useState({
-    // Şəxsi məlumatlar 
-    fullName: "",
-    firstName: "",
-    lastName: "",
-    fatherName: "",
-    passportNumber: "",
-    finCode: "",
-    voen: "",
-    birthDate: "",
-    gender: "MALE",
-    phone: "",
-    email: "",
-    address: "",
-    // Kateqoriyaya xüsusi məlumatlar (avtomatik boş olacaq) 
-    ...Object.fromEntries(
-      currentCategory.fields.specific
-        .filter(field => !currentCategory.fields.personal.some(p => p.name === field.name))
-        .map(field => [field.name, ""])
-    )
-  });
+  const [formData, setFormData] = useState({});
 
-  // 🔹 Öz məlumatlarını avtomatik doldur 
+  // 🔹 Form data-nı initialize et və öz məlumatlarını avtomatik doldur 
   useEffect(() => {
+    if (!currentCategory || !currentCategory.fields) return;
+    
     if (isSelf && userProfile) {
       const user = userProfile;
       const userData = {
@@ -305,14 +404,14 @@ function Order() {
         ...currentCategory.fields.specific
       ];
       const emptyForm = Object.fromEntries(
-        allFields.map(field => [field.name, ""])
+        allFields.map(field => [field.name, field.type === 'checkbox' ? false : ""])
       );
       setFormData({
         ...emptyForm,
         gender: "MALE"
       });
     }
-  }, [isSelf, id, userProfile]);
+  }, [isSelf, id, userProfile, currentCategory]);
 
   // 🔹 Dəyişiklikləri idarə edir 
   const handleChange = (e) => {
@@ -331,22 +430,41 @@ function Order() {
   // 🔹 Addım yoxlanışı 
   const validateStep = () => {
     if (step === 1) {
+      if (!currentCategory || !currentCategory.fields || !currentCategory.fields.personal) {
+        setError("Kateqoriya məlumatları yüklənmədi.");
+        return false;
+      }
       const requiredFields = currentCategory.fields.personal
         .filter(field => field.required)
         .map(field => field.name);
+      
+      console.log("Required fields:", requiredFields);
+      console.log("Form data:", formData);
+      
       for (const field of requiredFields) {
-        if (!formData[field]?.trim()) {
+        const value = formData[field];
+        // Check if value exists and is not empty (handle string, number, date types)
+        if (value === undefined || value === null || value === "" || (typeof value === 'string' && !value.trim())) {
+          console.log(`Missing field: ${field}, value:`, value);
           setError("Zəhmət olmasa bütün şəxsi məlumatları doldurun.");
           return false;
         }
       }
     }
     if (step === 2) {
+      if (!currentCategory || !currentCategory.fields || !currentCategory.fields.specific) {
+        setError("Kateqoriya məlumatları yüklənmədi.");
+        return false;
+      }
       const requiredSpecificFields = currentCategory.fields.specific
         .filter(field => field.required)
         .map(field => field.name);
+      
       for (const field of requiredSpecificFields) {
-        if (!formData[field]?.trim()) {
+        const value = formData[field];
+        // Check if value exists and is not empty (handle string, number, date types)
+        if (value === undefined || value === null || value === "" || (typeof value === 'string' && !value.trim())) {
+          console.log(`Missing specific field: ${field}, value:`, value);
           setError("Zəhmət olmasa bütün tələb olunan sığorta məlumatlarını doldurun.");
           return false;
         }
@@ -427,7 +545,7 @@ function Order() {
     }
   };
 
-        console.log("salammmmmmmmmmmmm", userId);
+        // console.log("salammmmmmmmmmmmm", userId);
 
 
   const handleBack = () => {

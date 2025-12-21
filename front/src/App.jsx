@@ -25,6 +25,7 @@ import CompanySelection from './pages/companySelection'
 import Payment from './pages/payment'
 import PaymentSuccess from './pages/paymentSuccess'
 import CreateCompany from './pages/createCompany'
+import CreateCategory from './pages/createCategory'
 
 function App() {
 
@@ -48,6 +49,7 @@ function App() {
           <Route path='order/:id' element={<Order />} />
           <Route path='companies/:id' element={<CompanySelection />} />
           <Route path='create-company' element={<CreateCompany />} />
+          <Route path='create-category' element={<CreateCategory />} />
           <Route path='payment/:orderId' element={<Payment />} />
           <Route path='payment/success/:orderId' element={<PaymentSuccess />} />
 

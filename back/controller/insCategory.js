@@ -5,6 +5,10 @@ exports.createCategory = async (req, res) => {
   try {
     const { code, name, active } = req.body;
 
+    // Debug: Check schema enum values
+    const schema = Category.schema.path('code');
+    console.log('Category code enum values:', schema.enumValues);
+
     const exists = await Category.findOne({ code });
     if (exists) {
       return res.status(400).json({ message: "Bu code artıq mövcuddur" });
@@ -15,6 +19,7 @@ exports.createCategory = async (req, res) => {
 
     res.status(201).json(category);
   } catch (err) {
+    console.error('Category creation error:', err);
     res.status(500).json({ message: err.message });
   }
 };

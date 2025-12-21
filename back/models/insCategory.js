@@ -1,5 +1,8 @@
 const mongoose = require("mongoose");
 
+// Clear model cache completely before defining schema
+
+
 const categorySchema = new mongoose.Schema(
   {
     code: {
@@ -12,7 +15,12 @@ const categorySchema = new mongoose.Schema(
         "property_liability",            // Əmlakın İstismarı üzrə Məsuliyyət
         "employer_liability",            // İşəgötürənin Məsuliyyəti
         "passenger_accident",            // Sərnişinlərin Qəza Sığortası
-        "hazardous_liability"            // Təhlükəli Obyektlərin Məsuliyyəti
+        "hazardous_liability",           // Təhlükəli Obyektlərin Məsuliyyəti
+        "travel",                        // Səyahət
+        "life",                          // Hayat
+        "medical",                       // Tibbi
+        "property_voluntary",            // Əmlak (Könüllü)
+        "transport"                      // Nəqliyyat
       ],
     },
     name: {
@@ -27,6 +35,8 @@ const categorySchema = new mongoose.Schema(
   { timestamps: { createdAt: "created_at", updatedAt: "updated_at" } }
 );
 
-delete mongoose.models.Category;
+if (mongoose.models && mongoose.models.Category) {
+  delete mongoose.models.Category;
+}
 
 module.exports = mongoose.model("Category", categorySchema);
