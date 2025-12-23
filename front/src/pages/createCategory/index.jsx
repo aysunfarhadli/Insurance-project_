@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import axios from 'axios'
 import LoadingSpinner from '../../components/LoadingSpinner'
 import './index.scss'
@@ -7,6 +8,7 @@ import './index.scss'
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://insurance-project-e1xh.onrender.com'
 
 const CreateCategory = () => {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const [formData, setFormData] = useState({
     code: '',
@@ -62,13 +64,13 @@ const CreateCategory = () => {
 
     // Validation
     if (!formData.code) {
-      setError('Kod seçilməlidir')
+      setError(t('category.codeRequired'))
       setLoading(false)
       return
     }
 
     if (!formData.name || formData.name.trim() === '') {
-      setError('Ad doldurulmalıdır')
+      setError(t('category.nameRequired'))
       setLoading(false)
       return
     }
@@ -82,7 +84,7 @@ const CreateCategory = () => {
       })
 
       if (res.status === 201) {
-        setSuccess('Kateqoriya uğurla yaradıldı!')
+        setSuccess(t('category.categoryCreated'))
         setCreatedCategory(res.data)
         // Reset form
         setFormData({
@@ -96,7 +98,7 @@ const CreateCategory = () => {
         }, 5000)
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Xəta baş verdi')
+      setError(err.response?.data?.message || t('common.error'))
     } finally {
       setLoading(false)
     }
@@ -106,8 +108,8 @@ const CreateCategory = () => {
     <section className='create-category'>
       <div className="create-category-container">
         <form className="create-category-form" onSubmit={handleSubmit}>
-          <h2 className="form-title">Yeni Kateqoriya Yarat</h2>
-          <p className="form-description">Sığorta kateqoriyası üçün məlumatları doldurun</p>
+          <h2 className="form-title">{t('category.create')}</h2>
+          <p className="form-description">{t('category.createDesc')}</p>
 
           {error && <div className="alert alert-error">{error}</div>}
           {success && <div className="alert alert-success">{success}</div>}
@@ -115,25 +117,25 @@ const CreateCategory = () => {
           {/* Yaradılan kateqoriyanın məlumatları */}
           {createdCategory && (
             <div className="created-category-section">
-              <h3 className="section-title">✅ Yaradılan Kateqoriya</h3>
+              <h3 className="section-title">✅ {t('category.created')}</h3>
               <div className="category-details">
                 <div className="detail-item">
-                  <strong>ID:</strong> <span>{createdCategory._id}</span>
+                  <strong>{t('category.id')}:</strong> <span>{createdCategory._id}</span>
                 </div>
                 <div className="detail-item">
-                  <strong>Kod:</strong> <span>{createdCategory.code}</span>
+                  <strong>{t('category.code')}:</strong> <span>{createdCategory.code}</span>
                 </div>
                 <div className="detail-item">
-                  <strong>Ad:</strong> <span>{createdCategory.name}</span>
+                  <strong>{t('category.name')}:</strong> <span>{createdCategory.name}</span>
                 </div>
                 <div className="detail-item">
-                  <strong>Status:</strong> <span className={createdCategory.active ? 'status-active' : 'status-inactive'}>
-                    {createdCategory.active ? 'Aktiv' : 'Qeyri-aktiv'}
+                  <strong>{t('category.status')}:</strong> <span className={createdCategory.active ? 'status-active' : 'status-inactive'}>
+                    {createdCategory.active ? t('category.activeStatus') : t('category.inactiveStatus')}
                   </span>
                 </div>
                 {createdCategory.created_at && (
                   <div className="detail-item">
-                    <strong>Yaradılma tarixi:</strong> <span>{new Date(createdCategory.created_at).toLocaleString('az-AZ')}</span>
+                    <strong>{t('category.createdAt')}:</strong> <span>{new Date(createdCategory.created_at).toLocaleString('az-AZ')}</span>
                   </div>
                 )}
               </div>
@@ -142,7 +144,7 @@ const CreateCategory = () => {
 
           <div className="form-fields">
             <div className="form-group">
-              <label htmlFor="code">Kod *</label>
+              <label htmlFor="code">{t('category.code')} *</label>
               <select
                 id="code"
                 name="code"
@@ -151,15 +153,15 @@ const CreateCategory = () => {
                 className="form-input"
                 required
               >
-                <option value="">Kod seçin</option>
-                <optgroup label="İcbari Sığorta">
+                <option value="">{t('category.selectCode')}</option>
+                <optgroup label={t('insurance.mandatory')}>
                   {categoryCodes.filter(c => c.group === 'İcbari').map(code => (
                     <option key={code.value} value={code.value}>
                       {code.label}
                     </option>
                   ))}
                 </optgroup>
-                <optgroup label="Könüllü Sığorta">
+                <optgroup label={t('insurance.voluntary')}>
                   {categoryCodes.filter(c => c.group === 'Könüllü').map(code => (
                     <option key={code.value} value={code.value}>
                       {code.label}
@@ -167,11 +169,11 @@ const CreateCategory = () => {
                   ))}
                 </optgroup>
               </select>
-              <small className="form-hint">Kateqoriya kodunu seçin</small>
+              <small className="form-hint">{t('category.codeHint')}</small>
             </div>
 
             <div className="form-group">
-              <label htmlFor="name">Ad *</label>
+              <label htmlFor="name">{t('category.name')} *</label>
               <input
                 type="text"
                 id="name"
@@ -179,13 +181,11 @@ const CreateCategory = () => {
                 value={formData.name}
                 onChange={handleChange}
                 className="form-input"
-                placeholder="Kateqoriya adını daxil edin (avtomatik doldurulacaq)"
+                placeholder={t('category.namePlaceholder')}
                 required
               />
               <small className="form-hint">
-                {formData.code && categoryCodes.find(c => c.value === formData.code)?.defaultName 
-                  ? 'Ad avtomatik doldurulub. Lazım olsa dəyişdirə bilərsiniz.' 
-                  : 'Kod seçdikdə ad avtomatik doldurulacaq'}
+                {t('category.nameHint')}
               </small>
             </div>
 
@@ -198,9 +198,9 @@ const CreateCategory = () => {
                   onChange={handleChange}
                   className="form-checkbox"
                 />
-                <span>Aktiv</span>
+                <span>{t('category.active')}</span>
               </label>
-              <small className="form-hint">Kateqoriya aktiv olacaqsa işarələyin</small>
+              <small className="form-hint">{t('category.activeHint')}</small>
             </div>
           </div>
 
@@ -210,7 +210,7 @@ const CreateCategory = () => {
               className="btn btn-secondary" 
               onClick={() => navigate('/profile')}
             >
-              Ləğv et
+              {t('common.cancel')}
             </button>
             <button 
               type="submit" 
@@ -220,9 +220,9 @@ const CreateCategory = () => {
               {loading ? (
                 <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
                   <LoadingSpinner size="small" />
-                  Gözləyin...
+                  {t('common.wait')}
                 </span>
-              ) : 'Kateqoriya Yarat'}
+              ) : t('category.createButton')}
             </button>
           </div>
         </form>

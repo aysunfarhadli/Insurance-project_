@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { ArrowLeft, Phone, CheckCircle, User, Car, Home, Building, Briefcase, Bus, AlertTriangle, Plane, Activity, Heart } from "lucide-react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import axios from "axios";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import styles from "./index.module.scss";
@@ -276,10 +277,35 @@ const categoryConfig = {
 };
 
 function Order() {
+  const { t } = useTranslation();
   const { id } = useParams();
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [isSelf, setIsSelf] = useState(true);
+
+  // Helper function to translate field labels and placeholders
+  const translateField = (field) => {
+    const translationKey = `order.${field.name}`;
+    const placeholderKey = `order.${field.name}Placeholder`;
+    
+    // Try to get translation, fallback to original if not found
+    let translatedLabel = t(translationKey);
+    let translatedPlaceholder = t(placeholderKey);
+    
+    // If translation returns the key itself (meaning not found), use original
+    if (translatedLabel === translationKey) {
+      translatedLabel = field.label;
+    }
+    if (translatedPlaceholder === placeholderKey) {
+      translatedPlaceholder = field.placeholder;
+    }
+    
+    return {
+      ...field,
+      label: translatedLabel,
+      placeholder: translatedPlaceholder
+    };
+  };
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [category, setCategory] = useState("");
@@ -370,7 +396,7 @@ function Order() {
   // 🔹 Form data-nı initialize et və öz məlumatlarını avtomatik doldur 
   useEffect(() => {
     if (!currentCategory || !currentCategory.fields) return;
-    
+
     if (isSelf && userProfile) {
       const user = userProfile;
       const userData = {
@@ -437,10 +463,10 @@ function Order() {
       const requiredFields = currentCategory.fields.personal
         .filter(field => field.required)
         .map(field => field.name);
-      
+
       console.log("Required fields:", requiredFields);
       console.log("Form data:", formData);
-      
+
       for (const field of requiredFields) {
         const value = formData[field];
         // Check if value exists and is not empty (handle string, number, date types)
@@ -459,7 +485,7 @@ function Order() {
       const requiredSpecificFields = currentCategory.fields.specific
         .filter(field => field.required)
         .map(field => field.name);
-      
+
       for (const field of requiredSpecificFields) {
         const value = formData[field];
         // Check if value exists and is not empty (handle string, number, date types)
@@ -529,7 +555,7 @@ function Order() {
     if (!validateStep()) return;
 
     if (step < 3) return setStep(step + 1);
-    
+
     // Step 3 is last - redirect to company selection page
     if (step === 3) {
       // Save form data to sessionStorage
@@ -545,7 +571,7 @@ function Order() {
     }
   };
 
-        // console.log("salammmmmmmmmmmmm", userId);
+  // console.log("salammmmmmmmmmmmm", userId);
 
 
   const handleBack = () => {
@@ -571,10 +597,10 @@ function Order() {
         <div className={styles.headerContent}>
           <h1 className={styles.pageTitle}>{currentCategory.name}</h1>
           <p className={styles.pageSubtitle}>
-            {currentCategory.subtitle || 
-             (category === 'property_insurance' 
-              ? 'Yaşayış və qeyri-yaşayış binaları, mənzillər və tikililər üçün sığorta'
-              : 'Sığorta məlumatlarını doldurun')}
+            {currentCategory.subtitle ||
+              (category === 'property_insurance'
+                ? 'Yaşayış və qeyri-yaşayış binaları, mənzillər və tikililər üçün sığorta'
+                : 'Sığorta məlumatlarını doldurun')}
           </p>
         </div>
       </div>
@@ -612,7 +638,7 @@ function Order() {
             <>
               <div className={styles.sectionHeader}>
                 <User className={styles.sectionIcon} />
-                <h3 className={styles.sectionTitle}>Sahibkar məlumatları</h3>
+                <h3 className={styles.sectionTitle}>{t('common.ownerInfo')}</h3>
               </div>
 
               <div className={styles.radioGroup}>
@@ -623,7 +649,7 @@ function Order() {
                     checked={isSelf}
                     onChange={() => setIsSelf(true)}
                   />
-                  <span>özüm üçün</span>
+                  <span>{t('common.forSelf')}</span>
                 </label>
                 <label className={styles.radioLabel}>
                   <input
@@ -632,12 +658,12 @@ function Order() {
                     checked={!isSelf}
                     onChange={() => setIsSelf(false)}
                   />
-                  <span>Başqası üçün</span>
+                  <span>{t('common.forOther')}</span>
                 </label>
               </div>
 
               {loading ? (
-                <p>Profil məlumatları yüklənir...</p>
+                <p>{t('common.loading')}</p>
               ) : (
                 <div className={styles.formFields}>
                   {/* Full Name - Full Width */}
@@ -648,10 +674,10 @@ function Order() {
                         return (
                           <>
                             <label className={styles.label}>
-                              {field.label}
+                              {translateField(field).label}
                               {field.required && <span className={styles.required}>*</span>}
                             </label>
-                            {renderField(field)}
+                            {renderField(translateField(field))}
                           </>
                         );
                       })()}
@@ -668,17 +694,17 @@ function Order() {
                           <>
                             <div className={styles.formGroup}>
                               <label className={styles.label}>
-                                {finField.label}
+                                {translateField(finField).label}
                                 {finField.required && <span className={styles.required}>*</span>}
                               </label>
-                              {renderField(finField)}
+                              {renderField(translateField(finField))}
                             </div>
                             <div className={styles.formGroup}>
                               <label className={styles.label}>
-                                {voenField.label}
+                                {translateField(voenField).label}
                                 {voenField.required && <span className={styles.required}>*</span>}
                               </label>
-                              {renderField(voenField)}
+                              {renderField(translateField(voenField))}
                             </div>
                           </>
                         );
@@ -694,10 +720,10 @@ function Order() {
                         return (
                           <>
                             <label className={styles.label}>
-                              {field.label}
+                              {translateField(field).label}
                               {field.required && <span className={styles.required}>*</span>}
                             </label>
-                            {renderField(field)}
+                            {renderField(translateField(field))}
                           </>
                         );
                       })()}
@@ -714,18 +740,36 @@ function Order() {
                           <>
                             <div className={styles.formGroup}>
                               <label className={styles.label}>
-                                {phoneField.label}
+                                {translateField(phoneField).label}
                                 {phoneField.required && <span className={styles.required}>*</span>}
                               </label>
-                              {renderField(phoneField)}
+                              {renderField(translateField(phoneField))}
                             </div>
                             <div className={styles.formGroup}>
                               <label className={styles.label}>
-                                {emailField.label}
+                                {translateField(emailField).label}
                                 {emailField.required && <span className={styles.required}>*</span>}
                               </label>
-                              {renderField(emailField)}
+                              {renderField(translateField(emailField))}
                             </div>
+                          </>
+                        );
+                      })()}
+                    </div>
+                  )}
+
+                  {/* Birth Date - Full Width (if exists, for life and medical categories) */}
+                  {currentCategory.fields.personal.find(f => f.name === 'birthDate') && (
+                    <div className={styles.formGroup}>
+                      {(() => {
+                        const field = currentCategory.fields.personal.find(f => f.name === 'birthDate');
+                        return (
+                          <>
+                            <label className={styles.label}>
+                              {translateField(field).label}
+                              {field.required && <span className={styles.required}>*</span>}
+                            </label>
+                            {renderField(translateField(field))}
                           </>
                         );
                       })()}
@@ -740,10 +784,10 @@ function Order() {
                         return (
                           <>
                             <label className={styles.label}>
-                              {field.label}
+                              {translateField(field).label}
                               {field.required && <span className={styles.required}>*</span>}
                             </label>
-                            {renderField(field)}
+                            {renderField(translateField(field))}
                           </>
                         );
                       })()}
@@ -760,80 +804,83 @@ function Order() {
               <div className={styles.sectionHeader}>
                 <CategoryIcon className={styles.sectionIcon} />
                 <h3 className={styles.sectionTitle}>
-                  {category === 'property_insurance' ? 'Əmlak məlumatları' : `${currentCategory.name} Məlumatları`}
+                  {t('order.specificInfo')}
                 </h3>
               </div>
               <div className={styles.twoColumnLayout}>
-                {currentCategory.fields.specific.map((field, i) => (
-                  <div key={i} className={styles.formGroup}>
-                    <label className={styles.label}>
-                      {field.label}
-                      {field.required && <span className={styles.required}>*</span>}
-                    </label>
-                    {renderField(field)}
-                  </div>
-                ))}
+                {currentCategory.fields.specific.map((field, i) => {
+                  const translatedField = translateField(field);
+                  return (
+                    <div key={i} className={styles.formGroup}>
+                      <label className={styles.label}>
+                        {translatedField.label}
+                        {field.required && <span className={styles.required}>*</span>}
+                      </label>
+                      {renderField(translatedField)}
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}
 
           {/* 🔹 Addım 3: Əlaqə məlumatları */}
-{step === 3 && ( 
-  <div className={styles.formFields}> 
-    <h3 className={styles.sectionTitle}>Əlaqə Məlumatları</h3> 
-    <div className={styles.formGroup}> 
-      <label className={styles.label}> 
-        Telefon nömrəsi <span className={styles.required}>*</span> 
-      </label> 
-      <input 
-        type="text" 
-        name="phone" 
-        value={formData.phone} 
-        onChange={handleChange} 
-        placeholder="+994..." 
-        className={styles.input} 
-        // Remove disabled={isSelf}
-      /> 
-    </div> 
-    <div className={styles.formGroup}> 
-      <label className={styles.label}> 
-        Email <span className={styles.required}>*</span> 
-      </label> 
-      <input 
-        type="email" 
-        name="email" 
-        value={formData.email} 
-        onChange={handleChange} 
-        placeholder="example@mail.com" 
-        className={styles.input} 
-        // Remove disabled={isSelf}
-      /> 
-    </div> 
-  </div> 
-)} 
+          {step === 3 && (
+            <div className={styles.formFields}>
+              <h3 className={styles.sectionTitle}>{t('order.contactInfo')}</h3>
+              <div className={styles.formGroup}>
+                <label className={styles.label}>
+                  {t('order.phone')} <span className={styles.required}>*</span>
+                </label>
+                <input
+                  type="text"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleChange}
+                  placeholder={t('order.phonePlaceholder')}
+                  className={styles.input}
+                // Remove disabled={isSelf}
+                />
+              </div>
+              <div className={styles.formGroup}>
+                <label className={styles.label}>
+                  {t('order.email')} <span className={styles.required}>*</span>
+                </label>
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  placeholder="example@mail.com"
+                  className={styles.input}
+                // Remove disabled={isSelf}
+                />
+              </div>
+            </div>
+          )}
 
         </div>
       </main>
 
-            {/* 🔹 Addım idarə düymələri */}
-            {step <= 3 && (
-              <div className={styles.formActions}>
-                <button
-                  className={styles.prevButton}
-                  onClick={handleBack}
-                  disabled={step === 1}
-                >
-                  Əvvəlki
-                </button>
-                <button
-                  className={styles.nextButton}
-                  onClick={handleNext}
-                  disabled={loading}
-                >
-                  Növbəti
-                </button>
-              </div>
-            )}
+      {/* 🔹 Addım idarə düymələri */}
+      {step <= 3 && (
+        <div className={styles.formActions}>
+          <button
+            className={styles.prevButton}
+            onClick={handleBack}
+            disabled={step === 1}
+          >
+            {t('common.previous')}
+          </button>
+          <button
+            className={styles.nextButton}
+            onClick={handleNext}
+            disabled={loading}
+          >
+            {t('common.next')}
+          </button>
+        </div>
+      )}
     </div>
   );
 }

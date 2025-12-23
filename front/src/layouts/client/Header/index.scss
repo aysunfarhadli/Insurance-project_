@@ -72,5 +72,81 @@ header {
         }
       }
     }
+
+    .language-switcher {
+      position: relative;
+
+      .lang-button {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        background: transparent;
+        border: 1px solid #dcdcdc;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-size: 14px;
+
+        &:hover {
+          border-color: #007bff;
+          background-color: #f8f9fa;
+        }
+
+        .lang-flag {
+          font-size: 18px;
+        }
+
+        .lang-code {
+          font-weight: 500;
+          color: #333;
+        }
+      }
+
+      .lang-menu {
+        position: absolute;
+        top: calc(100% + 8px);
+        right: 0;
+        background: white;
+        border: 1px solid #eaeaea;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        min-width: 120px;
+        z-index: 1000;
+        overflow: hidden;
+
+        .lang-option {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          width: 100%;
+          padding: 10px 16px;
+          background: transparent;
+          border: none;
+          cursor: pointer;
+          transition: background-color 0.2s ease;
+          text-align: left;
+          font-size: 14px;
+
+          &:hover {
+            background-color: #f8f9fa;
+          }
+
+          &.active {
+            background-color: #e7f3ff;
+            color: #007bff;
+            font-weight: 500;
+          }
+
+          .lang-flag {
+            font-size: 18px;
+          }
+
+          .lang-name {
+            font-weight: 500;
+          }
+        }
+      }
+    }
   }
 }

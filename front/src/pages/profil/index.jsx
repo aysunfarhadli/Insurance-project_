@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './index.scss';
 import { MdExitToApp } from "react-icons/md";
+import { useTranslation } from 'react-i18next';
 import axios from "axios";
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../../components/ui/button';
@@ -12,6 +13,7 @@ import LoadingSpinner from '../../components/LoadingSpinner';
 axios.defaults.withCredentials = true;
 
 const Profile = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -71,7 +73,7 @@ const Profile = () => {
         */
       } catch (err) {
         console.error("Profile load error:", err);
-        setError("Profil məlumatları yüklənə bilmədi. Zəhmət olmasa yenidən giriş edin.");
+        setError(t('profile.loadError'));
         // navigate("/login"); // COMMENTED OUT FOR TESTING
         setLoading(false);
       }
@@ -102,11 +104,11 @@ const Profile = () => {
       .then(res => {
         setUserData(res.data.user); // update UI with new data
         setIsEditing(false);
-        alert("Məlumatlar uğurla yeniləndi ✅");
+        alert(t('profile.updateSuccess'));
       })
       .catch(err => {
         console.error("Update error:", err);
-        alert("Xəta baş verdi. Zəhmət olmasa yenidən cəhd edin ❌");
+        alert(t('profile.updateError'));
       });
   };
 
@@ -152,22 +154,22 @@ const Profile = () => {
         <div className='all'>
           <div className='head'>
             <div className='prof'>
-              <h2>Profil</h2>
-              <p>Hesab məlumatlarınızı idarə edin</p>
+              <h2>{t('header.profile')}</h2>
+              <p>{t('profile.manageAccount')}</p>
             </div>
             <Button variant="outline" className='logout-btn' onClick={handleLogout}>
-              <MdExitToApp /> <span>Çıxış</span>
+              <MdExitToApp /> <span>{t('header.logout')}</span>
             </Button>
           </div>
 
           <div className='body1 row col-12'>
             <div className='left col-12 col-sm-7 col-md-7'>
               <div className='change'>
-                <p>Şəxsi məlumatlar</p>
+                <p>{t('order.personalInfo')}</p>
                 {isEditing ? (
-                  <Button className='save-btn' onClick={handleSave}>Yadda saxla</Button>
+                  <Button className='save-btn' onClick={handleSave}>{t('profile.save')}</Button>
                 ) : (
-                  <Button variant="outline" className='edit-btn' onClick={() => setIsEditing(true)}>Düzəliş et</Button>
+                  <Button variant="outline" className='edit-btn' onClick={() => setIsEditing(true)}>{t('profile.edit')}</Button>
                 )}
               </div>
 
@@ -180,42 +182,56 @@ const Profile = () => {
                 <div className='info'>
                   <h3>{userData.name} {userData.surname}</h3>
                   <p>{userData.email}</p>
-                  <span className='verified'>Təsdiqlənmiş hesab</span>
+                  <span className='verified'>{t('profile.verifiedAccount')}</span>
                 </div>
               </div>
 
               <div className='details'>
                 <div className='shexsi row'>
                   {["name", "surname", "email", "phone"].map((field, i) => (
-                    <div className='input col-12 col-sm-6 col-md-6' key={i}>
-                      <Label>{field === "name" ? "Ad" :
-                        field === "surname" ? "Soyad" :
-                          field === "email" ? "Email" : "Telefon"}</Label>
+                    <div className='formGroup col-6' key={i}>
                       {isEditing ? (
-                        <Input
-                          type={field === "email" ? "email" : "text"}
-                          name={field}
-                          value={userData[field] || ""}
-                          onChange={handleInputChange}
-                        />
+                        <>
+                          <Input
+                            type={field === "email" ? "email" : "text"}
+                            name={field}
+                            value={userData[field] || ""}
+                            onChange={handleInputChange}
+                            placeholder=" "
+                          />
+                          <Label className='label'>{field === "name" ? t('auth.name') :
+                            field === "surname" ? t('auth.surname') :
+                              field === "email" ? t('order.email') : t('order.phone')}</Label>
+                        </>
                       ) : (
-                        <div className='value-display'>{userData[field]}</div>
+                        <div className='value-display'>
+                          <Label className='label-display'>{field === "name" ? t('auth.name') :
+                            field === "surname" ? t('auth.surname') :
+                              field === "email" ? t('order.email') : t('order.phone')}</Label>
+                          <div>{userData[field]}</div>
+                        </div>
                       )}
                     </div>
                   ))}
                 </div>
 
-                <div className='input address-input col-12'>
-                  <Label>Ünvan</Label>
+                <div className='formGroup address-input col-12'>
                   {isEditing ? (
-                    <Input
-                      type='text'
-                      name="address"
-                      value={userData.address || ""}
-                      onChange={handleInputChange}
-                    />
+                    <>
+                      <Input
+                        type='text'
+                        name="address"
+                        value={userData.address || ""}
+                        onChange={handleInputChange}
+                        placeholder=" "
+                      />
+                      <Label className='label'>{t('order.address')}</Label>
+                    </>
                   ) : (
-                    <div className='value-display'>{userData.address}</div>
+                    <div className='value-display'>
+                      <Label className='label-display'>{t('order.address')}</Label>
+                      <div>{userData.address}</div>
+                    </div>
                   )}
                 </div>
               </div>
@@ -223,21 +239,21 @@ const Profile = () => {
 
             <div className='right col-12 col-sm-5 col-md-4'>
               <div className='stat'>
-                <h3>Hesab Statistikası</h3>
+                <h3>{t('profile.accountStatistics')}</h3>
                 <div className='stat-item active'>
-                  <p>Aktiv Sığortalar</p>
+                  <p>{t('profile.activeInsurances')}</p>
                   <span>5</span>
                 </div>
                 <div className='stat-item tamam'>
-                  <p>Tamamlanmış Sığortalar</p>
+                  <p>{t('profile.completedInsurances')}</p>
                   <span>12</span>
                 </div>
                 <div className='stat-item umumi'>
-                  <p>Ümumi Xərclər</p>
+                  <p>{t('profile.totalExpenses')}</p>
                   <span>8.450 AZN</span>
                 </div>
                 <div className='stat-item qenaet'>
-                  <p>Qənaət</p>
+                  <p>{t('profile.savings')}</p>
                   <span>1.200 AZN</span>
                 </div>
               </div>

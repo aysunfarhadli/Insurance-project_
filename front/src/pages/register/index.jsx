@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Button } from '../../components/ui/button'
 import { Input } from '../../components/ui/input'
 import { Label } from '../../components/ui/label'
@@ -8,6 +9,7 @@ import LoadingSpinner from '../../components/LoadingSpinner'
 import './index.scss'
 
 const Register = () => {
+  const { t } = useTranslation()
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: "",
@@ -35,7 +37,7 @@ const Register = () => {
 
     // sadə frontend yoxlaması
     if (formData.password !== formData.confirmPassword) {
-      setMessage("Şifrələr eyni olmalıdır!");
+      setMessage(t('auth.passwordsMustMatch'));
       return;
     }
 
@@ -60,7 +62,7 @@ const Register = () => {
       const data = await res.json();
 
       if (res.ok) {
-        setMessage("Qeydiyyat uğurla tamamlandı ✅");
+        setMessage(t('auth.registrationSuccess'));
         setFormData({
           name: "",
           surname: "",
@@ -73,10 +75,10 @@ const Register = () => {
         navigate("/profile") // uğurlu login sonrası yönləndir
 
       } else {
-        setMessage(data.message || "Xəta baş verdi!");
+        setMessage(data.message || t('common.error'));
       }
     } catch (err) {
-      setMessage("Serverə qoşulmaq mümkün olmadı!");
+      setMessage(t('auth.connectionErrorExclamation'));
     } finally {
       setLoading(false);
     }
@@ -86,48 +88,48 @@ const Register = () => {
     <section className='register'>
       <Card className="signup-form">
         <CardHeader>
-          <CardTitle className="form-title">Qeydiyyat</CardTitle>
-          <CardDescription className="form-description">CİB sığorta hesabı yaradın</CardDescription>
+          <CardTitle className="form-title">{t('auth.register')}</CardTitle>
+          <CardDescription className="form-description">{t('auth.registerDesc')}</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit}>
             <div className="form-group">
-              <Label htmlFor="name">Ad</Label>
-              <Input type="text" id="name" name="name" value={formData.name} onChange={handleChange} required placeholder="Ad" />
+              <Label htmlFor="name">{t('auth.name')}</Label>
+              <Input type="text" id="name" name="name" value={formData.name} onChange={handleChange} required placeholder={t('auth.namePlaceholder')} />
             </div>
 
             <div className="form-group">
-              <Label htmlFor="surname">Soyad</Label>
-              <Input type="text" id="surname" name="surname" value={formData.surname} onChange={handleChange} required placeholder="Soyad" />
+              <Label htmlFor="surname">{t('auth.surname')}</Label>
+              <Input type="text" id="surname" name="surname" value={formData.surname} onChange={handleChange} required placeholder={t('auth.surnamePlaceholder')} />
             </div>
 
             <div className="form-group">
-              <Label htmlFor="phone">Telefon nömrəsi</Label>
-              <Input type="tel" id="phone" name="phone" value={formData.phone} onChange={handleChange} required placeholder="Telefon nömrəsi" />
+              <Label htmlFor="phone">{t('order.phone')}</Label>
+              <Input type="tel" id="phone" name="phone" value={formData.phone} onChange={handleChange} required placeholder={t('auth.phonePlaceholder')} />
             </div>
 
             <div className="form-group">
-              <Label htmlFor="email">Email ünvanı</Label>
-              <Input type="email" id="email" name="email" value={formData.email} onChange={handleChange} required placeholder="Email ünvanı" />
+              <Label htmlFor="email">{t('auth.email')}</Label>
+              <Input type="email" id="email" name="email" value={formData.email} onChange={handleChange} required placeholder={t('auth.emailPlaceholder')} />
             </div>
 
             <div className="form-group">
-              <Label htmlFor="password">Şifrə</Label>
-              <Input type="password" id="password" name="password" value={formData.password} onChange={handleChange} required placeholder="Şifrə" />
+              <Label htmlFor="password">{t('auth.password')}</Label>
+              <Input type="password" id="password" name="password" value={formData.password} onChange={handleChange} required placeholder={t('auth.password')} />
             </div>
 
             <div className="form-group">
-              <Label htmlFor="confirmPassword">Şifrə təkrarı</Label>
-              <Input type="password" id="confirmPassword" name="confirmPassword" value={formData.confirmPassword} onChange={handleChange} required placeholder="Şifrə təkrarı" />
+              <Label htmlFor="confirmPassword">{t('auth.confirmPassword')}</Label>
+              <Input type="password" id="confirmPassword" name="confirmPassword" value={formData.confirmPassword} onChange={handleChange} required placeholder={t('auth.confirmPasswordPlaceholder')} />
             </div>
 
             <Button type="submit" className="submit-btn" disabled={loading} style={{ width: '100%', marginTop: '10px' }}>
               {loading ? (
                 <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
                   <LoadingSpinner size="small" />
-                  Gözləyin...
+                  {t('common.wait')}
                 </span>
-              ) : "Qeydiyyatdan keç"}
+              ) : t('auth.registerButton')}
             </Button>
 
             {message && <p className="form-message" style={{ 
@@ -139,7 +141,7 @@ const Register = () => {
               fontSize: '14px'
             }}>{message}</p>}
 
-            <p className="login-link">Hesabınız var? <a href="/login">Daxil olun</a></p>
+            <p className="login-link">{t('common.haveAccount')} <a href="/login">{t('auth.login')}</a></p>
           </form>
         </CardContent>
       </Card>

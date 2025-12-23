@@ -426,11 +426,11 @@ $shadow-hover: 0 8px 15px rgba(0, 0, 0, 0.2);
       .sam {
         display: flex;
         flex-direction: column;
-        padding: 20px 24px;
-        gap: 1.2rem;
+        padding: 25px 30px;
+        // gap: 1.2rem;
         color: white;
         border-radius: 12px;
-        min-height: 180px;
+        min-height: 250px;
         height: 100%;
         position: relative;
         overflow: hidden;
@@ -493,10 +493,10 @@ $shadow-hover: 0 8px 15px rgba(0, 0, 0, 0.2);
           }
 
           p {
-            font-size: 13px;
+            font-size: 11px;
             opacity: 0.95;
             margin: 0;
-            line-height: 1.4;
+            line-height: 1.3;
           }
         }
       }
@@ -825,7 +825,7 @@ button:focus {
 // ================== RESPONSIVE ==================
 @media (max-width: 992px) {
   .sig .sam {
-    &.col-3 {
+    &.col-2 {
       flex: 0 0 calc(50% - 20px);
       max-width: calc(50% - 20px);
     }
@@ -841,7 +841,7 @@ button:focus {
   .sig .sam {
     margin-bottom: 15px;
     
-    &.col-3 {
+    &.col-2 {
       flex: 0 0 100%;
       max-width: 100%;
     }

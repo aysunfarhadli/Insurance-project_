@@ -8,9 +8,11 @@ import { FaCar } from "react-icons/fa";
 import { FaShield } from "react-icons/fa6";
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import LoadingSpinner from '../../components/LoadingSpinner';
 
 const UmSig = () => {
+  const { t } = useTranslation();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -23,18 +25,18 @@ const UmSig = () => {
   // Kampaniya slides
   const campaigns = [
     {
-      title: "Mövsümi Təkliflər",
-      description: "Yeni ilin xüsusi təklifləri! Səyahət və tibbi sığortada unikal şərtlər. Ailəvi paketlərdə 30% endirim!",
+      title: t('insurance.campaigns.seasonal'),
+      description: t('insurance.campaigns.seasonalDesc'),
       gradient: "linear-gradient(135deg, #a8e6cf 0%, #88d8c0 100%)"
     },
     {
-      title: "İcbari Sığorta Kampaniyası",
-      description: "Bütün icbari sığorta növlərində sürətli rəsmiləşdirmə. Online müraciət edin!",
+      title: t('insurance.campaigns.mandatory'),
+      description: t('insurance.campaigns.mandatoryDesc'),
       gradient: "linear-gradient(135deg, #c4e5ff 0%, #a6b6ff 100%)"
     },
     {
-      title: "Yay kampaniyası",
-      description: "Avtomobil sığortasında 25% endirim. Yay səyahətləriniz üçün xüsusi təklif!",
+      title: t('insurance.campaigns.summer'),
+      description: t('insurance.campaigns.summerDesc'),
       gradient: "linear-gradient(135deg, #ffe5c4 0%, #ffb6a6 100%)"
     }
   ];
@@ -72,36 +74,36 @@ const UmSig = () => {
   const voluntaryCategories = [
     {
       code: 'travel',
-      name: 'Səyahət',
-      description: 'Beynəlxalq və daxili səyahət sığortası',
+      name: t('insurance.categories.travel'),
+      description: t('insurance.categories.travelDesc'),
       icon: FaPlane,
       route: 'travel'
     },
     {
       code: 'life',
-      name: 'Hayat',
-      description: 'Hayat və təqaüd sığortası',
+      name: t('insurance.categories.life'),
+      description: t('insurance.categories.lifeDesc'),
       icon: TbActivityHeartbeat,
       route: 'life'
     },
     {
       code: 'medical',
-      name: 'Tibbi',
-      description: 'Tibbi xərclərin ödənilməsi',
+      name: t('insurance.categories.medical'),
+      description: t('insurance.categories.medicalDesc'),
       icon: FaHeart,
       route: 'medical'
     },
     {
       code: 'property_voluntary',
-      name: 'Əmlak',
-      description: 'Ev və digər əmlak sığortası',
+      name: t('insurance.categories.property'),
+      description: t('insurance.categories.propertyDesc'),
       icon: FaHouse,
       route: 'property_voluntary'
     },
     {
       code: 'transport',
-      name: 'Nəqliyyat',
-      description: 'Avtomobil və nəqliyyat sığortası',
+      name: t('insurance.categories.transport'),
+      description: t('insurance.categories.transportDesc'),
       icon: FaCar,
       route: 'transport'
     }
@@ -287,19 +289,19 @@ const UmSig = () => {
                   className={`tab-btn ${activeTab === 'icbari' ? 'active' : ''}`}
                   onClick={() => setActiveTab('icbari')}
                 >
-                  İcbari Sığorta
+                  {t('insurance.mandatory')}
                 </button>
                 <button 
                   className={`tab-btn ${activeTab === 'konullu' ? 'active' : ''}`}
                   onClick={() => setActiveTab('konullu')}
                 >
-                  Könüllü Sığorta
+                  {t('insurance.voluntary')}
                 </button>
               </div>
               <div className='sig row'>
                 {activeTab === 'icbari' ? (
                   <>
-                <div className='sey col-3 sam' onClick={() => {
+                <div className='sey col-2 sam' onClick={() => {
                   const categoryId = getCategoryIdByCode('passenger_accident');
                   if (categoryId) navigate(`/order/${categoryId}`);
                   else console.error('Category not found: passenger_accident');
@@ -308,11 +310,11 @@ const UmSig = () => {
                     <FaPlane />
                   </div>
                   <div className='par'>
-                    <h4>Sərnişin Qəzası</h4>
-                    <p>Sənişinləri daşıyan qurumlar üçün sığorta</p>
+                    <h4>{t('insurance.categories.passengerAccident')}</h4>
+                    <p>{t('insurance.categories.passengerAccidentDesc')}</p>
                   </div>
                 </div>
-                <div className='heyat col-3 sam' onClick={() => {
+                <div className='heyat col-2 sam' onClick={() => {
                   const categoryId = getCategoryIdByCode('employer_liability');
                   if (categoryId) navigate(`/order/${categoryId}`);
                   else console.error('Category not found: employer_liability');
@@ -321,11 +323,11 @@ const UmSig = () => {
                     <TbActivityHeartbeat />
                   </div>
                   <div className='par'>
-                    <h4>İşəgötürən Məsuliyyəti</h4>
-                    <p>İşçilərə dəyən zərərlərə görə məsuliyyət</p>
+                    <h4>{t('insurance.categories.employerLiability')}</h4>
+                    <p>{t('insurance.categories.employerLiabilityDesc')}</p>
                   </div>
                 </div>
-                <div className='tibbi col-3 sam' onClick={() => {
+                <div className='tibbi col-2 sam' onClick={() => {
                   const categoryId = getCategoryIdByCode('property_liability');
                   if (categoryId) navigate(`/order/${categoryId}`);
                   else console.error('Category not found: property_liability');
@@ -334,11 +336,11 @@ const UmSig = () => {
                     <FaHeart />
                   </div>
                   <div className='par'>
-                    <h4>Əmlak Əməliyyatları</h4>
-                    <p>Əmlak istismarı zamanı məsuliyyət</p>
+                    <h4>{t('insurance.categories.propertyOperations')}</h4>
+                    <p>{t('insurance.categories.propertyOperationsDesc')}</p>
                   </div>
                 </div>
-                <div className='emlak col-3 sam' onClick={() => {
+                <div className='emlak col-2 sam' onClick={() => {
                   const categoryId = getCategoryIdByCode('property_insurance');
                   if (categoryId) navigate(`/order/${categoryId}`);
                   else console.error('Category not found: property_insurance');
@@ -347,11 +349,11 @@ const UmSig = () => {
                     <FaHouse />
                   </div>
                   <div className='par'>
-                    <h4>İcbari Əmlak</h4>
-                    <p>Yaşayış və qeyri-yaşayış binaları, mənzillər</p>
+                    <h4>{t('insurance.categories.mandatoryProperty')}</h4>
+                    <p>{t('insurance.categories.mandatoryPropertyDesc')}</p>
                   </div>
                 </div>
-                <div className='neqliy col-3 sam' onClick={() => {
+                <div className='neqliy col-2 sam' onClick={() => {
                   const categoryId = getCategoryIdByCode('vehicle_liability');
                   if (categoryId) navigate(`/order/${categoryId}`);
                   else console.error('Category not found: vehicle_liability');
@@ -360,11 +362,11 @@ const UmSig = () => {
                     <FaCar />
                   </div>
                   <div className='par'>
-                    <h4>Avtomobil Məsuliyyət</h4>
-                    <p>Üçüncü şəxslərə dəymiş zərərlər üçün məsuliyyət</p>
+                    <h4>{t('insurance.categories.vehicleLiability')}</h4>
+                    <p>{t('insurance.categories.vehicleLiabilityDesc')}</p>
                   </div>
                 </div>
-                <div className='tehlukeli col-3 sam' onClick={() => {
+                <div className='tehlukeli col-2 sam' onClick={() => {
                   const categoryId = getCategoryIdByCode('hazardous_liability');
                   if (categoryId) navigate(`/order/${categoryId}`);
                   else console.error('Category not found: hazardous_liability');
@@ -373,8 +375,8 @@ const UmSig = () => {
                     <FaExclamationTriangle />
                   </div>
                   <div className='par'>
-                    <h4>Təhlükəli Obyektlər</h4>
-                    <p>Partlayış, yanğın və kimyəvi təhlükələr</p>
+                    <h4>{t('insurance.categories.hazardous')}</h4>
+                    <p>{t('insurance.categories.hazardousDesc')}</p>
                   </div>
                 </div>
                   </>
@@ -385,7 +387,7 @@ const UmSig = () => {
                       return (
                         <div 
                           key={category.code}
-                          className={`${category.code} col-3 sam `}
+                          className={`${category.code} col-2 sam `}
                           onClick={async () => {
                             try {
                               // Fetch categories again to ensure we have latest data
@@ -432,8 +434,8 @@ const UmSig = () => {
           <div className='all row'>
             <div className='ms col-12'>
               <div className='act row'>
-                <a href='#' className='wh'>Tamamlanmış sifarişlər</a>
-                <a href='#'>Hamısını gör</a>
+                <a href='#' className='wh'>{t('insurance.orders')}</a>
+                <a href='#'>{t('common.seeAll')}</a>
               </div>
 
               {loading ? (
@@ -468,8 +470,7 @@ const UmSig = () => {
                     <div className="empty-orders">
                       <div className="empty-state">
                         <div className="empty-icon">📋</div>
-                        <p className="empty-message">Hələ heç bir tamamlanmış sifarişiniz yoxdur</p>
-                        <p className="empty-subtitle">Sifariş verdikdən sonra burada görünəcək</p>
+                        <p className="empty-message">{t('common.noData')}</p>
                       </div>
                     </div>
                   )}

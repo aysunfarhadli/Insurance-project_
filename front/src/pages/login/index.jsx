@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Button } from '../../components/ui/button'
 import { Input } from '../../components/ui/input'
 import { Label } from '../../components/ui/label'
@@ -8,6 +9,7 @@ import LoadingSpinner from '../../components/LoadingSpinner'
 import './index.scss'
 
 const Login = () => {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const [formData, setFormData] = useState({ email: "", password: "" })
   const [loading, setLoading] = useState(false)
@@ -34,14 +36,14 @@ const Login = () => {
       const data = await res.json()
 
       if (!res.ok) {
-        setError(data.message || "Xəta baş verdi")
+        setError(data.message || t('common.error'))
       } else {
         // login successful
         localStorage.setItem("user", JSON.stringify(data.user)) // istəsən saxla
         navigate("/profile")
       }
     } catch (err) {
-      setError("Serverə qoşulmaq mümkün olmadı")
+      setError(t('auth.connectionError'))
     } finally {
       setLoading(false)
     }
@@ -52,15 +54,15 @@ const Login = () => {
       <div className="login-container">
         <Card className="login-form">
           <CardHeader>
-            <CardTitle className="login-title">Daxil olun</CardTitle>
-            <CardDescription className="login-description">CİB siğorta hesabınıza daxil olun</CardDescription>
+            <CardTitle className="login-title">{t('auth.login')}</CardTitle>
+            <CardDescription className="login-description">{t('auth.loginDesc')}</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit}>
               {error && <p className="error-text" style={{ color: 'var(--destructive)', marginBottom: '16px', fontSize: '14px' }}>{error}</p>}
 
               <div className="form-group">
-                <Label htmlFor="email">Email ünvanı</Label>
+                <Label htmlFor="email">{t('auth.email')}</Label>
                 <Input
                   type="email"
                   id="email"
@@ -68,12 +70,12 @@ const Login = () => {
                   value={formData.email}
                   onChange={handleChange}
                   required
-                  placeholder="email@example.com"
+                  placeholder={t('auth.emailPlaceholder')}
                 />
               </div>
 
               <div className="form-group">
-                <Label htmlFor="password">Şifrə</Label>
+                <Label htmlFor="password">{t('auth.password')}</Label>
                 <Input
                   type="password"
                   id="password"
@@ -81,7 +83,7 @@ const Login = () => {
                   value={formData.password}
                   onChange={handleChange}
                   required
-                  placeholder="Şifrənizi daxil edin"
+                  placeholder={t('auth.passwordPlaceholder')}
                 />
               </div>
 
@@ -89,13 +91,13 @@ const Login = () => {
                 {loading ? (
                   <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
                     <LoadingSpinner size="small" />
-                    Gözləyin...
+                    {t('common.wait')}
                   </span>
-                ) : "Daxil ol"}
+                ) : t('auth.loginButton')}
               </Button>
 
               <p className="register-link">
-                Hesabınız yoxdur? <a href="/register">Qeydiyyatdan keçin</a>
+                {t('common.noAccount')} <a href="/register">{t('common.register')}</a>
               </p>
             </form>
           </CardContent>
