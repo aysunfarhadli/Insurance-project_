@@ -10,6 +10,8 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import LoadingSpinner from '../../components/LoadingSpinner';
+import carouselImage1 from '../../assets/WhatsApp Image 2025-12-26 at 3.33.27 PM.jpeg';
+import carouselImage2 from '../../assets/WhatsApp Image 2025-12-26 at 3.33.28 PM.jpeg';
 
 const UmSig = () => {
   const { t } = useTranslation();
@@ -27,17 +29,12 @@ const UmSig = () => {
     {
       title: t('insurance.campaigns.seasonal'),
       description: t('insurance.campaigns.seasonalDesc'),
-      gradient: "linear-gradient(135deg, #a8e6cf 0%, #88d8c0 100%)"
+      image: carouselImage1
     },
     {
       title: t('insurance.campaigns.mandatory'),
       description: t('insurance.campaigns.mandatoryDesc'),
-      gradient: "linear-gradient(135deg, #c4e5ff 0%, #a6b6ff 100%)"
-    },
-    {
-      title: t('insurance.campaigns.summer'),
-      description: t('insurance.campaigns.summerDesc'),
-      gradient: "linear-gradient(135deg, #ffe5c4 0%, #ffb6a6 100%)"
+      image: carouselImage2
     }
   ];
 
@@ -263,10 +260,12 @@ const UmSig = () => {
                         <div 
                           key={index} 
                           className='kampaniya slide'
-                          style={{ background: campaign.gradient }}
+                          style={{ backgroundImage: `url(${campaign.image})` }}
                         >
-                          <h3>{campaign.title}</h3>
-                          <p>{campaign.description}</p>
+                          <div className="slide-overlay">
+                            <h3>{campaign.title}</h3>
+                            <p>{campaign.description}</p>
+                          </div>
                         </div>
                       ))}
                     </div>

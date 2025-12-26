@@ -287,11 +287,11 @@ function Order() {
   const translateField = (field) => {
     const translationKey = `order.${field.name}`;
     const placeholderKey = `order.${field.name}Placeholder`;
-    
+
     // Try to get translation, fallback to original if not found
     let translatedLabel = t(translationKey);
     let translatedPlaceholder = t(placeholderKey);
-    
+
     // If translation returns the key itself (meaning not found), use original
     if (translatedLabel === translationKey) {
       translatedLabel = field.label;
@@ -299,7 +299,7 @@ function Order() {
     if (translatedPlaceholder === placeholderKey) {
       translatedPlaceholder = field.placeholder;
     }
-    
+
     return {
       ...field,
       label: translatedLabel,
@@ -588,300 +588,302 @@ function Order() {
   }
 
   return (
-    <div className={styles.container}>
-      {/* 🔹 Page Header */}
-      <div className={styles.pageHeader}>
-        <button className={styles.backButton} onClick={() => navigate(-1)}>
-          <ArrowLeft />
-        </button>
-        <div className={styles.headerContent}>
-          <h1 className={styles.pageTitle}>{currentCategory.name}</h1>
-          <p className={styles.pageSubtitle}>
-            {currentCategory.subtitle ||
-              (category === 'property_insurance'
-                ? 'Yaşayış və qeyri-yaşayış binaları, mənzillər və tikililər üçün sığorta'
-                : 'Sığorta məlumatlarını doldurun')}
-          </p>
-        </div>
-      </div>
-
-      {/* 🔹 Progress Indicator */}
-      <div className={styles.progressContainer}>
-        <div className={styles.progressSteps}>
-          <div className={`${styles.step} ${step >= 1 ? styles.completed : ''} ${step === 1 ? styles.active : ''}`}>
-            <div className={styles.stepCircle}>
-              {step > 1 ? <CheckCircle size={20} /> : '1'}
-            </div>
-            <div className={styles.stepLine}></div>
-          </div>
-          <div className={`${styles.step} ${step >= 2 ? styles.completed : ''} ${step === 2 ? styles.active : ''}`}>
-            <div className={styles.stepCircle}>
-              {step > 2 ? <CheckCircle size={20} /> : '2'}
-            </div>
-            <div className={styles.stepLine}></div>
-          </div>
-          <div className={`${styles.step} ${step >= 3 ? styles.completed : ''} ${step === 3 ? styles.active : ''}`}>
-            <div className={styles.stepCircle}>
-              {step > 3 ? <CheckCircle size={20} /> : '3'}
-            </div>
+    <section className={styles.orderPage}>
+      <div className={styles.container}>
+        {/* 🔹 Page Header */}
+        <div className={styles.pageHeader}>
+          <button className={styles.backButton} onClick={() => navigate(-1)}>
+            <ArrowLeft />
+          </button>
+          <div className={styles.headerContent}>
+            <h1 className={styles.pageTitle}>{currentCategory.name}</h1>
+            <p className={styles.pageSubtitle}>
+              {currentCategory.subtitle ||
+                (category === 'property_insurance'
+                  ? 'Yaşayış və qeyri-yaşayış binaları, mənzillər və tikililər üçün sığorta'
+                  : 'Sığorta məlumatlarını doldurun')}
+            </p>
           </div>
         </div>
-      </div>
 
-      {/* 🔹 Əsas forma hissəsi */}
-      <main className={styles.main}>
-        <div className={styles.formCard}>
-          {error && <p className={styles.error}>{error}</p>}
-
-          {/* 🔹 Addım 1: Şəxsi məlumatlar */}
-          {step === 1 && (
-            <>
-              <div className={styles.sectionHeader}>
-                <User className={styles.sectionIcon} />
-                <h3 className={styles.sectionTitle}>{t('common.ownerInfo')}</h3>
+        {/* 🔹 Progress Indicator */}
+        <div className={styles.progressContainer}>
+          <div className={styles.progressSteps}>
+            <div className={`${styles.step} ${step >= 1 ? styles.completed : ''} ${step === 1 ? styles.active : ''}`}>
+              <div className={styles.stepCircle}>
+                {step > 1 ? <CheckCircle size={20} /> : '1'}
               </div>
-
-              <div className={styles.radioGroup}>
-                <label className={styles.radioLabel}>
-                  <input
-                    type="radio"
-                    name="userType"
-                    checked={isSelf}
-                    onChange={() => setIsSelf(true)}
-                  />
-                  <span>{t('common.forSelf')}</span>
-                </label>
-                <label className={styles.radioLabel}>
-                  <input
-                    type="radio"
-                    name="userType"
-                    checked={!isSelf}
-                    onChange={() => setIsSelf(false)}
-                  />
-                  <span>{t('common.forOther')}</span>
-                </label>
+              <div className={styles.stepLine}></div>
+            </div>
+            <div className={`${styles.step} ${step >= 2 ? styles.completed : ''} ${step === 2 ? styles.active : ''}`}>
+              <div className={styles.stepCircle}>
+                {step > 2 ? <CheckCircle size={20} /> : '2'}
               </div>
+              <div className={styles.stepLine}></div>
+            </div>
+            <div className={`${styles.step} ${step >= 3 ? styles.completed : ''} ${step === 3 ? styles.active : ''}`}>
+              <div className={styles.stepCircle}>
+                {step > 3 ? <CheckCircle size={20} /> : '3'}
+              </div>
+            </div>
+          </div>
+        </div>
 
-              {loading ? (
-                <p>{t('common.loading')}</p>
-              ) : (
-                <div className={styles.formFields}>
-                  {/* Full Name - Full Width */}
-                  {currentCategory.fields.personal.find(f => f.name === 'fullName') && (
-                    <div className={styles.formGroup}>
-                      {(() => {
-                        const field = currentCategory.fields.personal.find(f => f.name === 'fullName');
-                        return (
-                          <>
-                            <label className={styles.label}>
-                              {translateField(field).label}
-                              {field.required && <span className={styles.required}>*</span>}
-                            </label>
-                            {renderField(translateField(field))}
-                          </>
-                        );
-                      })()}
-                    </div>
-                  )}
+        {/* 🔹 Əsas forma hissəsi */}
+        <main className={styles.main}>
+          <div className={styles.formCard}>
+            {error && <p className={styles.error}>{error}</p>}
 
-                  {/* FIN/VOEN - Two Columns (if both exist) */}
-                  {currentCategory.fields.personal.find(f => f.name === 'finCode') && currentCategory.fields.personal.find(f => f.name === 'voen') && (
-                    <div className={styles.twoColumnLayout}>
-                      {(() => {
-                        const finField = currentCategory.fields.personal.find(f => f.name === 'finCode');
-                        const voenField = currentCategory.fields.personal.find(f => f.name === 'voen');
-                        return (
-                          <>
-                            <div className={styles.formGroup}>
-                              <label className={styles.label}>
-                                {translateField(finField).label}
-                                {finField.required && <span className={styles.required}>*</span>}
-                              </label>
-                              {renderField(translateField(finField))}
-                            </div>
-                            <div className={styles.formGroup}>
-                              <label className={styles.label}>
-                                {translateField(voenField).label}
-                                {voenField.required && <span className={styles.required}>*</span>}
-                              </label>
-                              {renderField(translateField(voenField))}
-                            </div>
-                          </>
-                        );
-                      })()}
-                    </div>
-                  )}
-
-                  {/* Single FIN field if VOEN doesn't exist */}
-                  {currentCategory.fields.personal.find(f => f.name === 'finCode') && !currentCategory.fields.personal.find(f => f.name === 'voen') && (
-                    <div className={styles.formGroup}>
-                      {(() => {
-                        const field = currentCategory.fields.personal.find(f => f.name === 'finCode');
-                        return (
-                          <>
-                            <label className={styles.label}>
-                              {translateField(field).label}
-                              {field.required && <span className={styles.required}>*</span>}
-                            </label>
-                            {renderField(translateField(field))}
-                          </>
-                        );
-                      })()}
-                    </div>
-                  )}
-
-                  {/* Phone and Email - Two Columns */}
-                  {currentCategory.fields.personal.find(f => f.name === 'phone') && currentCategory.fields.personal.find(f => f.name === 'email') && (
-                    <div className={styles.twoColumnLayout}>
-                      {(() => {
-                        const phoneField = currentCategory.fields.personal.find(f => f.name === 'phone');
-                        const emailField = currentCategory.fields.personal.find(f => f.name === 'email');
-                        return (
-                          <>
-                            <div className={styles.formGroup}>
-                              <label className={styles.label}>
-                                {translateField(phoneField).label}
-                                {phoneField.required && <span className={styles.required}>*</span>}
-                              </label>
-                              {renderField(translateField(phoneField))}
-                            </div>
-                            <div className={styles.formGroup}>
-                              <label className={styles.label}>
-                                {translateField(emailField).label}
-                                {emailField.required && <span className={styles.required}>*</span>}
-                              </label>
-                              {renderField(translateField(emailField))}
-                            </div>
-                          </>
-                        );
-                      })()}
-                    </div>
-                  )}
-
-                  {/* Birth Date - Full Width (if exists, for life and medical categories) */}
-                  {currentCategory.fields.personal.find(f => f.name === 'birthDate') && (
-                    <div className={styles.formGroup}>
-                      {(() => {
-                        const field = currentCategory.fields.personal.find(f => f.name === 'birthDate');
-                        return (
-                          <>
-                            <label className={styles.label}>
-                              {translateField(field).label}
-                              {field.required && <span className={styles.required}>*</span>}
-                            </label>
-                            {renderField(translateField(field))}
-                          </>
-                        );
-                      })()}
-                    </div>
-                  )}
-
-                  {/* Address - Full Width (if exists) */}
-                  {currentCategory.fields.personal.find(f => f.name === 'address') && (
-                    <div className={styles.formGroup}>
-                      {(() => {
-                        const field = currentCategory.fields.personal.find(f => f.name === 'address');
-                        return (
-                          <>
-                            <label className={styles.label}>
-                              {translateField(field).label}
-                              {field.required && <span className={styles.required}>*</span>}
-                            </label>
-                            {renderField(translateField(field))}
-                          </>
-                        );
-                      })()}
-                    </div>
-                  )}
+            {/* 🔹 Addım 1: Şəxsi məlumatlar */}
+            {step === 1 && (
+              <>
+                <div className={styles.sectionHeader}>
+                  <User className={styles.sectionIcon} />
+                  <h3 className={styles.sectionTitle}>{t('common.ownerInfo')}</h3>
                 </div>
-              )}
-            </>
-          )}
 
-          {/* 🔹 Addım 2: Sığorta məlumatları */}
-          {step === 2 && (
-            <div className={styles.formFields}>
-              <div className={styles.sectionHeader}>
-                <CategoryIcon className={styles.sectionIcon} />
-                <h3 className={styles.sectionTitle}>
-                  {t('order.specificInfo')}
-                </h3>
-              </div>
-              <div className={styles.twoColumnLayout}>
-                {currentCategory.fields.specific.map((field, i) => {
-                  const translatedField = translateField(field);
-                  return (
-                    <div key={i} className={styles.formGroup}>
-                      <label className={styles.label}>
-                        {translatedField.label}
-                        {field.required && <span className={styles.required}>*</span>}
-                      </label>
-                      {renderField(translatedField)}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
+                <div className={styles.radioGroup}>
+                  <label className={styles.radioLabel}>
+                    <input
+                      type="radio"
+                      name="userType"
+                      checked={isSelf}
+                      onChange={() => setIsSelf(true)}
+                    />
+                    <span>{t('common.forSelf')}</span>
+                  </label>
+                  <label className={styles.radioLabel}>
+                    <input
+                      type="radio"
+                      name="userType"
+                      checked={!isSelf}
+                      onChange={() => setIsSelf(false)}
+                    />
+                    <span>{t('common.forOther')}</span>
+                  </label>
+                </div>
 
-          {/* 🔹 Addım 3: Əlaqə məlumatları */}
-          {step === 3 && (
-            <div className={styles.formFields}>
-              <h3 className={styles.sectionTitle}>{t('order.contactInfo')}</h3>
-              <div className={styles.formGroup}>
-                <label className={styles.label}>
-                  {t('order.phone')} <span className={styles.required}>*</span>
-                </label>
-                <input
-                  type="text"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleChange}
-                  placeholder={t('order.phonePlaceholder')}
-                  className={styles.input}
-                // Remove disabled={isSelf}
-                />
-              </div>
-              <div className={styles.formGroup}>
-                <label className={styles.label}>
-                  {t('order.email')} <span className={styles.required}>*</span>
-                </label>
-                <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  placeholder="example@mail.com"
-                  className={styles.input}
-                // Remove disabled={isSelf}
-                />
-              </div>
-            </div>
-          )}
+                {loading ? (
+                  <p>{t('common.loading')}</p>
+                ) : (
+                  <div className={styles.formFields}>
+                    {/* Full Name - Full Width */}
+                    {currentCategory.fields.personal.find(f => f.name === 'fullName') && (
+                      <div className={styles.formGroup}>
+                        {(() => {
+                          const field = currentCategory.fields.personal.find(f => f.name === 'fullName');
+                          return (
+                            <>
+                              <label className={styles.label}>
+                                {translateField(field).label}
+                                {field.required && <span className={styles.required}>*</span>}
+                              </label>
+                              {renderField(translateField(field))}
+                            </>
+                          );
+                        })()}
+                      </div>
+                    )}
 
-        </div>
-      </main>
+                    {/* FIN/VOEN - Two Columns (if both exist) */}
+                    {currentCategory.fields.personal.find(f => f.name === 'finCode') && currentCategory.fields.personal.find(f => f.name === 'voen') && (
+                      <div className={styles.twoColumnLayout}>
+                        {(() => {
+                          const finField = currentCategory.fields.personal.find(f => f.name === 'finCode');
+                          const voenField = currentCategory.fields.personal.find(f => f.name === 'voen');
+                          return (
+                            <>
+                              <div className={styles.formGroup}>
+                                <label className={styles.label}>
+                                  {translateField(finField).label}
+                                  {finField.required && <span className={styles.required}>*</span>}
+                                </label>
+                                {renderField(translateField(finField))}
+                              </div>
+                              <div className={styles.formGroup}>
+                                <label className={styles.label}>
+                                  {translateField(voenField).label}
+                                  {voenField.required && <span className={styles.required}>*</span>}
+                                </label>
+                                {renderField(translateField(voenField))}
+                              </div>
+                            </>
+                          );
+                        })()}
+                      </div>
+                    )}
 
-      {/* 🔹 Addım idarə düymələri */}
-      {step <= 3 && (
-        <div className={styles.formActions}>
-          <button
-            className={styles.prevButton}
-            onClick={handleBack}
-            disabled={step === 1}
-          >
-            {t('common.previous')}
-          </button>
-          <button
-            className={styles.nextButton}
-            onClick={handleNext}
-            disabled={loading}
-          >
-            {t('common.next')}
-          </button>
-        </div>
-      )}
-    </div>
+                    {/* Single FIN field if VOEN doesn't exist */}
+                    {currentCategory.fields.personal.find(f => f.name === 'finCode') && !currentCategory.fields.personal.find(f => f.name === 'voen') && (
+                      <div className={styles.formGroup}>
+                        {(() => {
+                          const field = currentCategory.fields.personal.find(f => f.name === 'finCode');
+                          return (
+                            <>
+                              <label className={styles.label}>
+                                {translateField(field).label}
+                                {field.required && <span className={styles.required}>*</span>}
+                              </label>
+                              {renderField(translateField(field))}
+                            </>
+                          );
+                        })()}
+                      </div>
+                    )}
+
+                    {/* Phone and Email - Two Columns */}
+                    {currentCategory.fields.personal.find(f => f.name === 'phone') && currentCategory.fields.personal.find(f => f.name === 'email') && (
+                      <div className={styles.twoColumnLayout}>
+                        {(() => {
+                          const phoneField = currentCategory.fields.personal.find(f => f.name === 'phone');
+                          const emailField = currentCategory.fields.personal.find(f => f.name === 'email');
+                          return (
+                            <>
+                              <div className={styles.formGroup}>
+                                <label className={styles.label}>
+                                  {translateField(phoneField).label}
+                                  {phoneField.required && <span className={styles.required}>*</span>}
+                                </label>
+                                {renderField(translateField(phoneField))}
+                              </div>
+                              <div className={styles.formGroup}>
+                                <label className={styles.label}>
+                                  {translateField(emailField).label}
+                                  {emailField.required && <span className={styles.required}>*</span>}
+                                </label>
+                                {renderField(translateField(emailField))}
+                              </div>
+                            </>
+                          );
+                        })()}
+                      </div>
+                    )}
+
+                    {/* Birth Date - Full Width (if exists, for life and medical categories) */}
+                    {currentCategory.fields.personal.find(f => f.name === 'birthDate') && (
+                      <div className={styles.formGroup}>
+                        {(() => {
+                          const field = currentCategory.fields.personal.find(f => f.name === 'birthDate');
+                          return (
+                            <>
+                              <label className={styles.label}>
+                                {translateField(field).label}
+                                {field.required && <span className={styles.required}>*</span>}
+                              </label>
+                              {renderField(translateField(field))}
+                            </>
+                          );
+                        })()}
+                      </div>
+                    )}
+
+                    {/* Address - Full Width (if exists) */}
+                    {currentCategory.fields.personal.find(f => f.name === 'address') && (
+                      <div className={styles.formGroup}>
+                        {(() => {
+                          const field = currentCategory.fields.personal.find(f => f.name === 'address');
+                          return (
+                            <>
+                              <label className={styles.label}>
+                                {translateField(field).label}
+                                {field.required && <span className={styles.required}>*</span>}
+                              </label>
+                              {renderField(translateField(field))}
+                            </>
+                          );
+                        })()}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </>
+            )}
+
+            {/* 🔹 Addım 2: Sığorta məlumatları */}
+            {step === 2 && (
+              <div className={styles.formFields}>
+                <div className={styles.sectionHeader}>
+                  <CategoryIcon className={styles.sectionIcon} />
+                  <h3 className={styles.sectionTitle}>
+                    {t('order.specificInfo')}
+                  </h3>
+                </div>
+                <div className={styles.twoColumnLayout}>
+                  {currentCategory.fields.specific.map((field, i) => {
+                    const translatedField = translateField(field);
+                    return (
+                      <div key={i} className={styles.formGroup}>
+                        <label className={styles.label}>
+                          {translatedField.label}
+                          {field.required && <span className={styles.required}>*</span>}
+                        </label>
+                        {renderField(translatedField)}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* 🔹 Addım 3: Əlaqə məlumatları */}
+            {step === 3 && (
+              <div className={styles.formFields}>
+                <h3 className={styles.sectionTitle}>{t('order.contactInfo')}</h3>
+                <div className={styles.formGroup}>
+                  <label className={styles.label}>
+                    {t('order.phone')} <span className={styles.required}>*</span>
+                  </label>
+                  <input
+                    type="text"
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleChange}
+                    placeholder={t('order.phonePlaceholder')}
+                    className={styles.input}
+                  // Remove disabled={isSelf}
+                  />
+                </div>
+                <div className={styles.formGroup}>
+                  <label className={styles.label}>
+                    {t('order.email')} <span className={styles.required}>*</span>
+                  </label>
+                  <input
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    placeholder="example@mail.com"
+                    className={styles.input}
+                  // Remove disabled={isSelf}
+                  />
+                </div>
+              </div>
+            )}
+
+          </div>
+        </main>
+
+        {/* 🔹 Addım idarə düymələri */}
+        {step <= 3 && (
+          <div className={styles.formActions}>
+            <button
+              className={styles.prevButton}
+              onClick={handleBack}
+              disabled={step === 1}
+            >
+              {t('common.previous')}
+            </button>
+            <button
+              className={styles.nextButton}
+              onClick={handleNext}
+              disabled={loading}
+            >
+              {t('common.next')}
+            </button>
+          </div>
+        )}
+      </div>
+    </section>
   );
 }
 
