@@ -308,6 +308,7 @@ function Order() {
   };
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({}); // Track which fields have errors
   const [category, setCategory] = useState("");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userId, setUserId] = useState(null);
@@ -439,82 +440,474 @@ function Order() {
     }
   }, [isSelf, id, userProfile, currentCategory]);
 
-  // 🔹 Dəyişiklikləri idarə edir 
-  const handleChange = (e) => {
-    // Remove the blocking condition to allow editing even when isSelf is true
-    // if (isSelf && currentCategory.fields.personal.some(field => field.name === e.target.name)) { 
-    //   return; // Şəxsi məlumatları dəyişmə 
-    // } 
-
-    const value = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
-    setFormData({
-      ...formData,
-      [e.target.name]: value
-    });
+  // 🔹 Rəqəmsal inputlar üçün klaviatura məhdudiyyəti (menfi, elmi notation və s. bloklamaq)
+  const handleNumberKeyDown = (e) => {
+    if (["e", "E", "+", "-"].includes(e.key)) {
+      e.preventDefault();
+    }
   };
 
-  // 🔹 Addım yoxlanışı 
+  // 🔹 Field-specific value processing
+  const processFieldValue = (fieldName, value, fieldType) => {
+    if (fieldType === 'number') {
+      if (value === '' || value === '-') return '';
+      
+      const numValue = parseFloat(value);
+      if (isNaN(numValue)) return '';
+      
+      // Field-specific processing
+      switch (fieldName) {
+        case 'manufactureYear':
+        case 'constructionYear':
+          // İl: 1900-dən böyük, indiki ildən kiçik və ya bərabər
+          const currentYear = new Date().getFullYear();
+          if (numValue < 1900) return '';
+          if (numValue > currentYear) return currentYear.toString();
+          return Math.floor(numValue).toString();
+        
+        case 'duration':
+        case 'employeeCount':
+        case 'vehicleCount':
+        case 'travelerCount':
+          // Minimum 1
+          if (numValue < 1) return '';
+          return Math.floor(numValue).toString();
+        
+        case 'area':
+        case 'totalArea':
+        case 'engineVolume':
+        case 'totalFloors':
+        case 'floorLocation':
+        case 'seatCount':
+        case 'maxPassengers':
+        case 'visitorFlow':
+        case 'averageSalary':
+        case 'coverageAmount':
+        case 'propertyValue':
+        case 'vehicleValue':
+          // Müsbət rəqəm
+          if (numValue <= 0) return '';
+          return numValue.toString();
+        
+        case 'familyMembers':
+          // 0 və ya müsbət
+          if (numValue < 0) return '';
+          return Math.floor(numValue).toString();
+        
+        default:
+          // Ümumi: mənfi ola bilməz
+          return numValue < 0 ? '' : numValue.toString();
+      }
+    }
+    
+    if (fieldType === 'date') {
+      if (!value) return '';
+      const selectedDate = new Date(value);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      switch (fieldName) {
+        case 'endDate':
+          // Bitmə tarixi başlama tarixindən sonra olmalıdır
+          if (formData.startDate) {
+            const startDate = new Date(formData.startDate);
+            if (selectedDate <= startDate) return '';
+          }
+          break;
+        
+        case 'birthDate':
+          // Doğum tarixi keçmişdə olmalıdır və 120 ildən çox keçmiş ola bilməz
+          const maxAge = new Date();
+          maxAge.setFullYear(maxAge.getFullYear() - 120);
+          if (selectedDate > today || selectedDate < maxAge) return '';
+          break;
+      }
+    }
+    
+    return value;
+  };
+
+  // 🔹 Dəyişiklikləri idarə edir 
+  const handleChange = (e) => {
+    const { name, value, type } = e.target;
+    
+    let processedValue = value;
+    
+    if (type === "checkbox") {
+      setFormData({
+        ...formData,
+        [name]: e.target.checked
+      });
+      return;
+    }
+    
+    // Field konfiqurasiyasını tap
+    const field = [...(currentCategory?.fields?.personal || []), ...(currentCategory?.fields?.specific || [])]
+      .find(f => f.name === name);
+    
+    // Field type-ə görə value-ni emal et
+    if (field?.type === 'number' || type === 'number') {
+      processedValue = processFieldValue(name, value, 'number');
+    } else if (field?.type === 'date' || type === 'date') {
+      processedValue = processFieldValue(name, value, 'date');
+    }
+    
+    setFormData({
+      ...formData,
+      [name]: processedValue
+    });
+
+    // Clear error for this field when user starts typing
+    if (fieldErrors[name]) {
+      setFieldErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[name];
+        return newErrors;
+      });
+      // Clear general error message when user fixes fields
+      setError("");
+    }
+  };
+
+  // 🔹 Field-specific validation rules
+  const validateFieldValue = (fieldName, value, fieldType) => {
+    if (!value && value !== 0) return false;
+    
+    if (fieldType === 'number') {
+      const numValue = parseFloat(value);
+      if (isNaN(numValue)) return false;
+      
+      // Field-specific validations
+      switch (fieldName) {
+        case 'manufactureYear':
+        case 'constructionYear':
+          return numValue >= 1900 && numValue <= new Date().getFullYear();
+        
+        case 'duration':
+        case 'employeeCount':
+        case 'vehicleCount':
+        case 'travelerCount':
+          return numValue >= 1;
+        
+        case 'area':
+        case 'totalArea':
+        case 'engineVolume':
+        case 'totalFloors':
+        case 'floorLocation':
+        case 'seatCount':
+        case 'maxPassengers':
+        case 'visitorFlow':
+        case 'averageSalary':
+        case 'coverageAmount':
+        case 'propertyValue':
+        case 'vehicleValue':
+          return numValue > 0;
+        
+        case 'familyMembers':
+          return numValue >= 0;
+        
+        default:
+          return numValue >= 0;
+      }
+    }
+    
+    if (fieldType === 'date') {
+      const dateValue = new Date(value);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      switch (fieldName) {
+        case 'startDate':
+          return true; // Keçmiş və ya gələcək ola bilər
+        case 'endDate':
+          if (formData.startDate) {
+            const startDate = new Date(formData.startDate);
+            return dateValue > startDate;
+          }
+          return true;
+        case 'birthDate':
+          const maxAge = new Date();
+          maxAge.setFullYear(maxAge.getFullYear() - 120);
+          return dateValue <= today && dateValue >= maxAge;
+        default:
+          return true;
+      }
+    }
+    
+    // String validation
+    if (typeof value === 'string') {
+      return value.trim().length > 0;
+    }
+    
+    return true;
+  };
+
+  // 🔹 Cross-field validations
+  const validateCrossFields = () => {
+    // maxPassengers should not exceed seatCount
+    if (formData.maxPassengers && formData.seatCount) {
+      if (parseFloat(formData.maxPassengers) > parseFloat(formData.seatCount)) {
+        setError("Maksimal sərnişin sayı oturacaq sayından çox ola bilməz.");
+        return false;
+      }
+    }
+    
+    // floorLocation should not exceed totalFloors
+    if (formData.floorLocation && formData.totalFloors) {
+      if (parseFloat(formData.floorLocation) > parseFloat(formData.totalFloors)) {
+        setError("Yerləşdiyi mərtəbə mərtəbə sayından çox ola bilməz.");
+        return false;
+      }
+    }
+    
+    // coverageAmount should not exceed propertyValue
+    if (formData.coverageAmount && formData.propertyValue) {
+      if (parseFloat(formData.coverageAmount) > parseFloat(formData.propertyValue)) {
+        setError("Təminat məbləği əmlakın dəyərindən çox ola bilməz.");
+        return false;
+      }
+    }
+    
+    return true;
+  };
+
+  // 🔹 Field validation with specific error messages
+  const validateFieldWithMessage = (fieldName, value, fieldType, fieldLabel) => {
+    if (!value && value !== 0) {
+      return `${fieldLabel} sahəsi boş ola bilməz.`;
+    }
+
+    if (fieldType === 'number') {
+      const numValue = parseFloat(value);
+      if (isNaN(numValue)) {
+        return `${fieldLabel} sahəsində düzgün rəqəm daxil edin.`;
+      }
+
+      // Field-specific validations
+      switch (fieldName) {
+        case 'manufactureYear':
+        case 'constructionYear':
+          if (numValue < 1900) {
+            return `${fieldLabel} 1900-ci ildən böyük olmalıdır.`;
+          }
+          if (numValue > new Date().getFullYear()) {
+            return `${fieldLabel} gələcək il ola bilməz.`;
+          }
+          break;
+
+        case 'duration':
+          if (numValue < 1) {
+            return `${fieldLabel} minimum 1 il olmalıdır.`;
+          }
+          break;
+
+        case 'employeeCount':
+          if (numValue < 1) {
+            return `${fieldLabel} minimum 1 işçi olmalıdır.`;
+          }
+          break;
+
+        case 'vehicleCount':
+        case 'travelerCount':
+          if (numValue < 1) {
+            return `${fieldLabel} minimum 1 ədəd olmalıdır.`;
+          }
+          break;
+
+        case 'area':
+        case 'totalArea':
+          if (numValue <= 0) {
+            return `${fieldLabel} müsbət rəqəm olmalıdır.`;
+          }
+          break;
+
+        case 'engineVolume':
+        case 'totalFloors':
+        case 'floorLocation':
+        case 'seatCount':
+        case 'maxPassengers':
+        case 'visitorFlow':
+        case 'averageSalary':
+        case 'coverageAmount':
+        case 'propertyValue':
+        case 'vehicleValue':
+          if (numValue <= 0) {
+            return `${fieldLabel} müsbət rəqəm olmalıdır.`;
+          }
+          break;
+
+        case 'familyMembers':
+          if (numValue < 0) {
+            return `${fieldLabel} 0 və ya müsbət rəqəm olmalıdır.`;
+          }
+          break;
+      }
+    }
+
+    if (fieldType === 'date') {
+      const dateValue = new Date(value);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      switch (fieldName) {
+        case 'birthDate':
+          const maxAge = new Date();
+          maxAge.setFullYear(maxAge.getFullYear() - 120);
+          if (dateValue > today) {
+            return `${fieldLabel} gələcək tarix ola bilməz.`;
+          }
+          if (dateValue < maxAge) {
+            return `${fieldLabel} çox qədim tarix ola bilməz.`;
+          }
+          break;
+
+        case 'endDate':
+          if (formData.startDate) {
+            const startDate = new Date(formData.startDate);
+            if (dateValue <= startDate) {
+              return `${fieldLabel} başlama tarixindən sonra olmalıdır.`;
+            }
+          }
+          break;
+      }
+    }
+
+    // String validation
+    if (typeof value === 'string') {
+      if (!value.trim()) {
+        return `${fieldLabel} sahəsi boş ola bilməz.`;
+      }
+    }
+
+    return null; // No error
+  };
+
+  // 🔹 Addım yoxlanışı
   const validateStep = () => {
+    const newFieldErrors = {}; // Track field-specific errors
+
     if (step === 1) {
       if (!currentCategory || !currentCategory.fields || !currentCategory.fields.personal) {
         setError("Kateqoriya məlumatları yüklənmədi.");
+        setFieldErrors({});
         return false;
       }
       const requiredFields = currentCategory.fields.personal
         .filter(field => field.required)
         .map(field => field.name);
 
-      console.log("Required fields:", requiredFields);
-      console.log("Form data:", formData);
+      let hasError = false;
+      for (const fieldName of requiredFields) {
+        const field = currentCategory.fields.personal.find(f => f.name === fieldName);
+        const value = formData[fieldName];
+        const fieldLabel = field?.label || fieldName;
 
-      for (const field of requiredFields) {
-        const value = formData[field];
-        // Check if value exists and is not empty (handle string, number, date types)
-        if (value === undefined || value === null || value === "" || (typeof value === 'string' && !value.trim())) {
-          console.log(`Missing field: ${field}, value:`, value);
-          setError("Zəhmət olmasa bütün şəxsi məlumatları doldurun.");
-          return false;
+        const errorMessage = validateFieldWithMessage(fieldName, value, field?.type, fieldLabel);
+        if (errorMessage) {
+          newFieldErrors[fieldName] = errorMessage;
+          hasError = true;
         }
       }
+
+      // Email format validation for step 1
+      if (formData.email) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(formData.email.trim())) {
+          newFieldErrors.email = "Email ünvanı düzgün formatda deyil.";
+          hasError = true;
+        }
+      }
+
+      if (hasError) {
+        setFieldErrors(newFieldErrors);
+        setError("Boş sahələri doldurun.");
+        return false;
+      }
     }
+
     if (step === 2) {
       if (!currentCategory || !currentCategory.fields || !currentCategory.fields.specific) {
         setError("Kateqoriya məlumatları yüklənmədi.");
+        setFieldErrors({});
         return false;
       }
       const requiredSpecificFields = currentCategory.fields.specific
         .filter(field => field.required)
         .map(field => field.name);
 
-      for (const field of requiredSpecificFields) {
-        const value = formData[field];
-        // Check if value exists and is not empty (handle string, number, date types)
-        if (value === undefined || value === null || value === "" || (typeof value === 'string' && !value.trim())) {
-          console.log(`Missing specific field: ${field}, value:`, value);
-          setError("Zəhmət olmasa bütün tələb olunan sığorta məlumatlarını doldurun.");
-          return false;
+      let hasError = false;
+      for (const fieldName of requiredSpecificFields) {
+        const field = currentCategory.fields.specific.find(f => f.name === fieldName);
+        const value = formData[fieldName];
+        const fieldLabel = field?.label || fieldName;
+
+        const errorMessage = validateFieldWithMessage(fieldName, value, field?.type, fieldLabel);
+        if (errorMessage) {
+          newFieldErrors[fieldName] = errorMessage;
+          hasError = true;
         }
       }
-    }
-    if (step === 3) {
-      if (!formData.phone?.trim() || !formData.email?.trim()) {
-        setError("Zəhmət olmasa telefon və email məlumatlarını daxil edin.");
+
+      // Cross-field validations
+      if (!validateCrossFields()) {
+        hasError = true;
+      }
+
+      if (hasError) {
+        setFieldErrors(newFieldErrors);
+        setError("Boş sahələri doldurun.");
         return false;
       }
     }
+
+    if (step === 3) {
+      let hasError = false;
+
+      if (!formData.phone?.trim()) {
+        newFieldErrors.phone = "Əlaqə nömrəsi sahəsi boş ola bilməz.";
+        hasError = true;
+      }
+
+      if (!formData.email?.trim()) {
+        newFieldErrors.email = "Email sahəsi boş ola bilməz.";
+        hasError = true;
+      }
+
+      // Email format validation
+      if (formData.email && !(/^[^\s@]+@[^\s@]+\.[^\s@]+$/).test(formData.email.trim())) {
+        newFieldErrors.email = "Email ünvanı düzgün formatda deyil.";
+        hasError = true;
+      }
+
+      // Phone validation (basic)
+      if (formData.phone && !(/[\d\s\+\-\(\)]+/).test(formData.phone.trim())) {
+        newFieldErrors.phone = "Əlaqə nömrəsi düzgün formatda deyil.";
+        hasError = true;
+      }
+
+      if (hasError) {
+        setFieldErrors(newFieldErrors);
+        setError("Boş sahələri doldurun.");
+        return false;
+      }
+    }
+
+    setFieldErrors({});
     setError("");
     return true;
   };
 
-  // 🔹 Field komponenti 
+  // 🔹 Field komponenti
   const renderField = (field) => {
     if (field.options) {
+      const isEmpty = !formData[field.name] || formData[field.name] === "";
+      const hasError = fieldErrors[field.name];
       return (
         <select
           name={field.name}
           value={formData[field.name] || ""}
           onChange={handleChange}
-          className={styles.input}
+          className={`${styles.input} ${isEmpty ? styles.emptySelect : ''} ${hasError ? styles.errorField : ''}`}
         >
           <option value="">{field.placeholder || "Seçin"}</option>
           {field.options.map(option => (
@@ -538,13 +931,88 @@ function Order() {
       );
     }
 
+    // Number input with validation
+    if (field.type === 'number') {
+      let min = 0;
+      let step = 1;
+      const isEmpty = !formData[field.name] || formData[field.name] === "";
+      const hasError = fieldErrors[field.name];
+
+      // Field-specific min values
+      if (['duration', 'employeeCount', 'vehicleCount', 'travelerCount'].includes(field.name)) {
+        min = 1;
+      }
+
+      // Step for decimal fields
+      if (field.name.includes('Volume')) {
+        step = 0.1;
+      }
+
+      // Max for year fields
+      let max;
+      if (field.name === 'manufactureYear' || field.name === 'constructionYear') {
+        max = new Date().getFullYear();
+      }
+
+      return (
+        <input
+          type="number"
+          name={field.name}
+          value={formData[field.name] || ""}
+          onChange={handleChange}
+          onKeyDown={handleNumberKeyDown}
+          className={`${styles.input} ${isEmpty ? styles.emptyInput : ''} ${hasError ? styles.errorField : ''}`}
+          placeholder={field.placeholder || ""}
+          min={min}
+          max={max}
+          step={step}
+        />
+      );
+    }
+
+    // Date input with validation
+    if (field.type === 'date') {
+      let maxDate, minDate;
+      const isEmpty = !formData[field.name] || formData[field.name] === "";
+      const hasError = fieldErrors[field.name];
+
+      if (field.name === 'birthDate') {
+        maxDate = new Date().toISOString().split('T')[0];
+        const maxAge = new Date();
+        maxAge.setFullYear(maxAge.getFullYear() - 120);
+        minDate = maxAge.toISOString().split('T')[0];
+      } else if (field.name === 'endDate') {
+        // endDate startDate-dən sonra olmalıdır
+        if (formData.startDate) {
+          const startDate = new Date(formData.startDate);
+          startDate.setDate(startDate.getDate() + 1);
+          minDate = startDate.toISOString().split('T')[0];
+        }
+      }
+
+      return (
+        <input
+          type="date"
+          name={field.name}
+          value={formData[field.name] || ""}
+          onChange={handleChange}
+          className={`${styles.input} ${isEmpty ? styles.emptyInput : ''} ${hasError ? styles.errorField : ''}`}
+          placeholder={field.placeholder || ""}
+          max={maxDate}
+          min={minDate}
+        />
+      );
+    }
+
+    const isEmpty = !formData[field.name] || formData[field.name] === "";
+    const hasError = fieldErrors[field.name];
     return (
       <input
         type={field.type || "text"}
         name={field.name}
         value={formData[field.name] || ""}
         onChange={handleChange}
-        className={styles.input}
+        className={`${styles.input} ${isEmpty ? styles.emptyInput : ''} ${hasError ? styles.errorField : ''}`}
         placeholder={field.placeholder || ""}
       />
     );

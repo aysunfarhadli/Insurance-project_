@@ -3,41 +3,40 @@
 }
 
 .container {
-  max-width: 1200px;
+  max-width: 1100px;
   margin: 0 auto;
   min-height: 100vh;
   background-color: #f5f5f5;
-  padding-bottom: 100px;
-  padding-top: 100px; // Header üçün boşluq
+  padding-bottom: 80px;
+  padding-top: 80px; // Header üçün boşluq
 }
 
 // Page Header
 .pageHeader {
-  padding: 24px 20px;
+  padding: 18px 16px;
   background-color: #f5f5f5;
-  border-bottom: 1px solid #e5e7eb;
 
   .backButton {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 40px;
-    height: 40px;
+    width: 36px;
+    height: 36px;
     border: none;
     background: transparent;
     cursor: pointer;
     border-radius: 8px;
     transition: all 0.2s ease;
     color: #333;
-    margin-bottom: 16px;
+    margin-bottom: 12px;
 
     &:hover {
       background-color: #f3f4f6;
     }
 
     svg {
-      width: 24px;
-      height: 24px;
+      width: 20px;
+      height: 20px;
     }
   }
 
@@ -51,32 +50,32 @@
     .titleSection {
       display: flex;
       align-items: center;
-      gap: 16px;
+      gap: 12px;
 
       .icon {
-        width: 56px;
-        height: 56px;
+        width: 40px;
+        height: 40px;
         border-radius: 6px;
         background: linear-gradient(135deg, #ff6b35 0%, #f97316 100%);
         display: flex;
         align-items: center;
         justify-content: center;
         color: white;
-        font-size: 24px;
+        font-size: 18px;
         flex-shrink: 0;
         box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
       }
 
       .text {
         .pageTitle {
-          font-size: 28px;
+          font-size: 20px;
           font-weight: 700;
           color: #1a1a1a;
-          margin: 0 0 4px 0;
+          margin: 0 0 2px 0;
         }
 
         .pageSubtitle {
-          font-size: 14px;
+          font-size: 12px;
           color: #666;
           margin: 0;
         }
@@ -86,12 +85,12 @@
     .filterButton {
       display: inline-flex;
       align-items: center;
-      gap: 8px;
+      gap: 5px;
       font-weight: 600;
-      font-size: 14px;
+      font-size: 12px;
       cursor: pointer;
       border-radius: 6px;
-      padding: 10px 18px;
+      padding: 6px 12px;
       background-color: #ffffff;
       color: #333;
       border: 2px solid #d1d5db;
@@ -99,7 +98,7 @@
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 
       svg {
-        font-size: 16px;
+        font-size: 14px;
         color: #4b5563;
       }
 
@@ -116,8 +115,8 @@
 // Tab Navigation
 .tabNavigation {
   display: flex;
-  gap: 8px;
-  padding: 0 20px 24px 20px;
+  gap: 6px;
+  padding: 0 16px 18px 16px;
   background-color: #f5f5f5;
   overflow-x: auto;
   scrollbar-width: none;
@@ -128,12 +127,12 @@
   }
 
   .tab {
-    padding: 10px 20px;
+    padding: 6px 12px;
     background-color: #ffffff;
     border: 1px solid #e5e7eb;
     border-radius: 6px;
     font-weight: 600;
-    font-size: 14px;
+    font-size: 12px;
     cursor: pointer;
     white-space: nowrap;
     transition: all 0.3s ease;
@@ -159,18 +158,19 @@
 }
 
 .main {
-  max-width: 1200px;
+  max-width: 1100px;
   margin: 0 auto;
-  padding: 0 20px;
+  padding: 0 16px;
 }
 
 .companiesGrid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 20px;
+  gap: 15px;
 
   @media (max-width: 968px) {
     grid-template-columns: 1fr;
+    gap: 12px;
   }
 }
 
@@ -180,7 +180,7 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   overflow: hidden;
   transition: all 0.3s ease;
-  border: 1px solid #e5e7eb;
+  border: none;
 
   &:hover {
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
@@ -192,24 +192,26 @@
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    padding: 20px;
+    padding: 15px;
 
     .companyInfo {
       display: flex;
-      gap: 12px;
+      gap: 10px;
       flex: 1;
 
       .companyIcon {
-        width: 48px;
-        height: 48px;
+        width: 40px;
+        height: 40px;
         border-radius: 25%;
         display: flex;
         align-items: center;
         justify-content: center;
-        color: white;
-        font-size: 20px;
+        color: rgb(0, 0, 0);
+        font-size: 22px;
+        font-weight: 100;
         flex-shrink: 0;
-        box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
+        background-color: rgba(255, 255, 255, 0.15);
+        // box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
       }
 
       .companyText {
@@ -218,12 +220,12 @@
         .companyNameRow {
           display: flex;
           align-items: center;
-          gap: 8px;
+          gap: 6px;
           flex-wrap: wrap;
-          margin-bottom: 6px;
+          margin-bottom: 4px;
 
           h4 {
-            font-size: 18px;
+            font-size: 16px;
             font-weight: 700;
             color: #1a1a1a;
             margin: 0;
@@ -235,14 +237,14 @@
       .rating {
         display: flex;
         align-items: center;
-        gap: 4px;
+        gap: 3px;
         color: #666;
-        font-size: 13px;
+        font-size: 12px;
         font-weight: 500;
 
         svg {
           color: #fbbf24;
-          font-size: 14px;
+          font-size: 13px;
         }
       }
     }
@@ -250,19 +252,19 @@
     .companyBadges {
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 4px;
       color: black;
       align-items: flex-end;
       margin-left: auto;
-      margin-right: 12px;
+      margin-right: 10px;
 
       .popularBadge {
         background-color: #dddfe2;
         // color: white;
-        font-size: 10px;
+        font-size: 9px;
         font-weight: 750;
-        padding: 4px 10px;
-        border-radius: 8px;
+        padding: 3px 8px;
+        border-radius: 6px;
         text-transform: uppercase;
         letter-spacing: 0.5px;
         box-shadow: 0 2px 4px rgba(156, 163, 175, 0.3);
@@ -272,10 +274,10 @@
       .fastBadge {
         background-color: #9ca3af;
         color: white;
-        font-size: 10px;
+        font-size: 9px;
         font-weight: 900;
-        padding: 4px 10px;
-        border-radius: 12px;
+        padding: 3px 8px;
+        border-radius: 10px;
         text-transform: uppercase;
         letter-spacing: 0.5px;
         box-shadow: 0 2px 4px rgba(156, 163, 175, 0.3);
@@ -298,14 +300,14 @@
   }
 
   .cardBody {
-    padding: 20px;
+    padding: 15px;
 
     .detailsGrid {
       display: flex;
       flex-direction: column;
-      gap: 10px;
-      margin-bottom: 20px;
-      padding-bottom: 20px;
+      gap: 8px;
+      margin-bottom: 15px;
+      padding-bottom: 15px;
 
       .detailItem {
         display: flex;
@@ -313,14 +315,14 @@
         gap: 4px;
 
         h5 {
-          font-size: 12px;
+          font-size: 11px;
           color: #999;
           font-weight: 500;
           margin: 0;
         }
 
         p {
-          font-size: 14px;
+          font-size: 13px;
           font-weight: 700;
           color: #1a1a1a;
           margin: 0;
@@ -328,17 +330,17 @@
 
           &.priceValue {
             color: #2563eb;
-            font-size: 18px;
+            font-size: 16px;
           }
 
           &.timeValue {
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 5px;
             color: #1a1a1a;
 
             svg {
-              font-size: 16px;
+              font-size: 14px;
               color: #666;
             }
           }
@@ -350,9 +352,9 @@
       margin-bottom: 0;
 
       h5 {
-        font-size: 12px;
+        font-size: 11px;
         font-weight: 600;
-        margin-bottom: 12px;
+        margin-bottom: 10px;
         color: #999;
         // text-transform: uppercase;
       }
@@ -360,15 +362,15 @@
       .featuresList {
         display: flex;
         flex-wrap: wrap;
-        gap: 8px;
+        gap: 6px;
 
         .featureTag {
           background-color: #f9fafb;
           color: #374151;
-          font-size: 12px;
+          font-size: 11px;
           font-weight: 500;
-          padding: 7px 14px;
-          border-radius: 10px;
+          padding: 5px 10px;
+          border-radius: 8px;
           border: 1px solid #e5e7eb;
           transition: all 0.2s ease;
 
@@ -384,15 +386,15 @@
   .cardFooter {
     display: flex;
     justify-content: center;
-    gap: 8px;
-    padding: 15px 0;
+    gap: 6px;
+    padding: 12px 0;
 
     button {
-      padding: 5px 105px;
+      padding: 4px 7rem;
       border: none;
       border-radius: 5px;
       font-weight: 700;
-      font-size: 14px;
+      font-size: 13px;
       cursor: pointer;
       transition: all 0.3s ease;
       position: relative;
@@ -447,9 +449,9 @@
 .loading,
 .error {
   text-align: center;
-  padding: 40px;
+  padding: 30px;
   color: #666;
-  font-size: 16px;
+  font-size: 14px;
 }
 
 .error {
@@ -459,10 +461,10 @@
 // Filter Panel
 .filterPanel {
   background: white;
-  border-radius: 12px;
+  border-radius: 10px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-  margin: 0 20px 20px 20px;
-  padding: 24px;
+  margin: 0 16px 16px 16px;
+  padding: 18px;
   border: 1px solid #e5e7eb;
   animation: slideDown 0.3s ease;
 
@@ -482,12 +484,12 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 24px;
-    padding-bottom: 16px;
+    margin-bottom: 18px;
+    padding-bottom: 12px;
     border-bottom: 1px solid #e5e7eb;
 
     h3 {
-      font-size: 18px;
+      font-size: 16px;
       font-weight: 700;
       color: #1a1a1a;
       margin: 0;
@@ -496,12 +498,12 @@
     button {
       background: none;
       border: none;
-      font-size: 24px;
+      font-size: 20px;
       color: #666;
       cursor: pointer;
       padding: 0;
-      width: 32px;
-      height: 32px;
+      width: 28px;
+      height: 28px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -518,24 +520,24 @@
   .filterContent {
     display: flex;
     flex-direction: column;
-    gap: 24px;
+    gap: 18px;
 
     .filterGroup {
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 6px;
 
       label {
-        font-size: 14px;
+        font-size: 13px;
         font-weight: 600;
         color: #374151;
       }
 
       input {
-        padding: 10px 14px;
+        padding: 8px 12px;
         border: 1px solid #d1d5db;
         border-radius: 6px;
-        font-size: 14px;
+        font-size: 13px;
         transition: all 0.2s ease;
 
         &:focus {
@@ -548,7 +550,7 @@
       .rangeInputs {
         display: flex;
         align-items: center;
-        gap: 12px;
+        gap: 10px;
 
         input {
           flex: 1;
@@ -564,18 +566,18 @@
 
   .filterActions {
     display: flex;
-    gap: 12px;
-    margin-top: 24px;
-    padding-top: 20px;
+    gap: 10px;
+    margin-top: 18px;
+    padding-top: 16px;
     border-top: 1px solid #e5e7eb;
 
     button {
       flex: 1;
-      padding: 12px 24px;
+      padding: 10px 20px;
       border: none;
       border-radius: 6px;
       font-weight: 600;
-      font-size: 14px;
+      font-size: 13px;
       cursor: pointer;
       transition: all 0.2s ease;
 

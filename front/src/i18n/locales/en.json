@@ -46,7 +46,6 @@
   "insurance": {
     "mandatory": "Mandatory Insurance",
     "voluntary": "Voluntary Insurance",
-    "categories": "Categories",
     "companies": "Companies",
     "orders": "Orders",
     "campaigns": {
@@ -194,7 +193,7 @@
     "rating": "Rating",
     "price": "Price",
     "processingTime": "Processing Time",
-    "select": "Select",
+    "select": "Order",
     "noPrice": "No price",
     "noCoverage": "No coverage",
     "priceLabel": "Price (AZN/month)",

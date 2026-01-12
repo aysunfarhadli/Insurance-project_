@@ -245,15 +245,18 @@ $shadow-hover: 0 8px 15px rgba(0, 0, 0, 0.2);
     .kampaniya-carousel {
       position: relative;
       margin-bottom: 20px;
+      width: 100%;
 
       .carousel-container {
         position: relative;
         overflow: hidden;
         border-radius: 15px;
+        width: 100%;
 
         .carousel-wrapper {
           overflow: hidden;
           border-radius: 15px;
+          width: 100%;
         }
 
         .carousel-slides {
@@ -263,32 +266,36 @@ $shadow-hover: 0 8px 15px rgba(0, 0, 0, 0.2);
 
           .kampaniya.slide {
             min-width: 100%;
-            padding: 25px;
+            width: 100%;
+            padding: 0;
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 0;
             border-radius: 15px;
             box-sizing: border-box;
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
             position: relative;
-            min-height: 200px;
+            min-height: 600px;
+            height: 600px;
             @include hover-lift;
 
             .slide-overlay {
-              position: relative;
+              position: absolute;
+              bottom: 0;
+              left: 0;
+              right: 0;
               z-index: 2;
-              background: rgba(0, 0, 0, 0.4);
-              padding: 20px;
-              border-radius: 12px;
-              backdrop-filter: blur(2px);
+              background: rgba(0, 0, 0, 0.5);
+              padding: 30px;
+              border-radius: 0 0 15px 15px;
+              backdrop-filter: blur(4px);
               color: white;
               display: flex;
               flex-direction: column;
               gap: 15px;
-              height: 100%;
-              justify-content: center;
+              justify-content: flex-end;
 
               h3 {
                 color: white;
@@ -890,11 +897,16 @@ button:focus {
       .carousel-container {
         .carousel-slides {
           .kampaniya.slide {
-            padding: 20px;
-            min-height: 250px;
+            padding: 0;
+            min-height: 400px;
+            height: 400px;
 
             .slide-overlay {
-              padding: 15px;
+              padding: 20px;
+              position: absolute;
+              bottom: 0;
+              left: 0;
+              right: 0;
 
               h3 {
                 font-size: 1.2rem;

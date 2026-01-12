@@ -765,8 +765,8 @@ $transition: all 0.3s ease;
           margin-bottom: 20px;
           display: flex;
           flex-wrap: wrap;
-          margin-left: -15px;
-          margin-right: -15px;
+          // margin-left: -15px;
+          // margin-right: -15px;
         }
 
         .formGroup {
@@ -869,6 +869,8 @@ $transition: all 0.3s ease;
 
         .address-input {
           // Same styles as formGroup, but full width
+          width: 100%;
+          
         }
       }
     }

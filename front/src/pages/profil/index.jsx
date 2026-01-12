@@ -94,7 +94,7 @@ const Profile = () => {
   // ✅ Save updated user info
   const handleSave = () => {
 
-    const { _id,__v, ...updatedData } = userData;
+    const { _id, __v, ...updatedData } = userData;
 
 
     const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://insurance-project-e1xh.onrender.com';
@@ -212,28 +212,30 @@ const Profile = () => {
                         </div>
                       )}
                     </div>
+
                   ))}
+                  <div className='formGroup address-input col-12'>
+                    {isEditing ? (
+                      <>
+                        <Input
+                          type='text'
+                          name="address"
+                          value={userData.address || ""}
+                          onChange={handleInputChange}
+                          placeholder=" "
+                        />
+                        <Label className='label'>{t('order.address')}</Label>
+                      </>
+                    ) : (
+                      <div className='value-display'>
+                        <Label className='label-display'>{t('order.address')}</Label>
+                        <div>{userData.address}</div>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
-                <div className='formGroup address-input col-12'>
-                  {isEditing ? (
-                    <>
-                      <Input
-                        type='text'
-                        name="address"
-                        value={userData.address || ""}
-                        onChange={handleInputChange}
-                        placeholder=" "
-                      />
-                      <Label className='label'>{t('order.address')}</Label>
-                    </>
-                  ) : (
-                    <div className='value-display'>
-                      <Label className='label-display'>{t('order.address')}</Label>
-                      <div>{userData.address}</div>
-                    </div>
-                  )}
-                </div>
+
               </div>
             </div>
 

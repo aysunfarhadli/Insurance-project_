@@ -237,8 +237,20 @@
     box-sizing: border-box;
     color: rgba(0, 0, 0, 0.88);
 
-    &:hover {
+    // Empty inputs (placeholder shown) - gray appearance
+    &:placeholder-shown {
+      background-color: #f8f9fa;
+      border-color: #e9ecef;
+      color: rgba(0, 0, 0, 0.4);
+    }
+
+    &:hover:not(:placeholder-shown) {
       border-color: #4096ff;
+    }
+
+    &:hover:placeholder-shown {
+      border-color: #dee2e6;
+      background-color: #f8f9fa;
     }
 
     &:focus {
@@ -246,6 +258,7 @@
       border-color: #4096ff;
       background-color: #ffffff;
       box-shadow: 0 0 0 2px rgba(5, 145, 255, 0.1);
+      color: rgba(0, 0, 0, 0.88);
     }
 
     &::placeholder {
@@ -257,6 +270,29 @@
       border-color: #d9d9d9;
       cursor: not-allowed;
       color: rgba(0, 0, 0, 0.25);
+    }
+
+    // Empty inputs - will be styled via className in React (for date inputs)
+    &.emptyInput {
+      background-color: #f8f9fa;
+      border-color: #e9ecef;
+      color: rgba(0, 0, 0, 0.4);
+    }
+
+    // Error inputs - red border for validation errors
+    &.errorField {
+      border-color: #ef4444 !important;
+      box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.1) !important;
+      background-color: #ffffff !important;
+
+      &:focus {
+        border-color: #ef4444 !important;
+        box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.1) !important;
+      }
+
+      &:hover {
+        border-color: #ef4444 !important;
+      }
     }
   }
 
@@ -278,6 +314,29 @@
 
   select.input {
     cursor: pointer;
+
+    // Empty selects - will be styled via className in React
+    &.emptySelect {
+      background-color: #f8f9fa;
+      border-color: #e9ecef;
+      color: rgba(0, 0, 0, 0.4);
+    }
+
+    // Error selects - red border for validation errors
+    &.errorField {
+      border-color: #ef4444 !important;
+      box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.1) !important;
+      background-color: #ffffff !important;
+
+      &:focus {
+        border-color: #ef4444 !important;
+        box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.1) !important;
+      }
+
+      &:hover {
+        border-color: #ef4444 !important;
+      }
+    }
   }
 }
 

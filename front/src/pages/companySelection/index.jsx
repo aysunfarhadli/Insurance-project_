@@ -7,6 +7,8 @@ import { TbStarFilled, TbClock, TbFilter } from "react-icons/tb";
 import { Car } from "lucide-react";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import styles from "./index.module.scss";
+import { LuShield } from "react-icons/lu";
+
 
 axios.defaults.withCredentials = true;
 
@@ -74,7 +76,7 @@ function CompanySelection() {
                 badge: ct.badge,
                 features: ct.features || [],
                 reviews: ct.reviews_count || 0,
-                iconColor: ["#9333ea", "#10b981", "#3b82f6", "#f59e0b"][companyMap.size % 4]
+                iconColor: ["rgba(175, 113, 236, 0.3)", "rgba(93, 226, 173, 0.3)", "rgba(147, 197, 253, 0.3)", "rgba(252, 211, 77, 0.3)"][companyMap.size % 4]
               });
             }
           }
@@ -388,7 +390,8 @@ function CompanySelection() {
                   <div className={styles.cardHeader}>
                     <div className={styles.companyInfo}>
                       <div className={styles.companyIcon} style={{ backgroundColor: company.iconColor }}>
-                        <Car />
+                      <LuShield />
+
                       </div>
                       <div className={styles.companyText}>
                         <div className={styles.companyNameRow}>
