@@ -19,7 +19,7 @@ const categoryConfig = {
       personal: [
         { name: "fullName", label: "Sahibkarın tam adı", placeholder: "Ad və soyadınızı daxil edin", required: true },
         { name: "finCode", label: "FİN / Şəxsiyyət vəsiqəsi nömrəsi", placeholder: "AZE1234567", required: true },
-        { name: "voen", label: "VÖEN (hüquqi şəxs üçün)", placeholder: "1234567890", required: false },
+        { name: "voen", label: "VÖEN", placeholder: "1234567890", required: true },
         { name: "phone", label: "Əlaqə nömrəsi", placeholder: "+994 XX XXX XX XX", required: true },
         { name: "email", label: "Email", placeholder: "email@example.com", required: true },
         { name: "address", label: "Qeydiyyat ünvanı", placeholder: "Tam ünvanınızı daxil edin", required: false },
@@ -30,11 +30,11 @@ const categoryConfig = {
         { name: "vin", label: "VIN (şassi nömrəsi)", placeholder: "VIN nömrəsini daxil edin", required: true },
         { name: "brandModel", label: "Marka/Model", placeholder: "Toyota Camry", required: true },
         { name: "manufactureYear", label: "Buraxılış ili", type: "number", placeholder: "2020", required: true },
-        { name: "engineVolume", label: "Mühərrik həcmi", type: "number", placeholder: "2.5" },
-        { name: "fuelType", label: "Yanacaq növü", options: ["benzin", "dizel", "qaz", "elektrik", "hibrid"] },
+        { name: "engineVolume", label: "Mühərrik həcmi", type: "number", placeholder: "2.5", required: true },
+        { name: "fuelType", label: "Yanacaq növü", required: true, options: ["benzin", "dizel", "qaz", "elektrik", "hibrid"] },
         { name: "usagePurpose", label: "İstifadə təyinatı", placeholder: "Təyinatı seçin", required: true, options: ["şəxsi", "taksi", "kommersiya", "korporativ"] },
-        { name: "ownershipType", label: "Sahiblik növü", options: ["fərdi", "hüquqi", "lizinq"] },
-        { name: "previousPolicy", label: "Keçmiş polis nömrəsi (bonus-malus üçün)", placeholder: "POL-123456" },
+        { name: "ownershipType", label: "Sahiblik növü", required: true, options: ["fərdi", "hüquqi", "lizinq"] },
+        { name: "previousPolicy", label: "Keçmiş polis nömrəsi (bonus-malus üçün)", placeholder: "POL-123456", required: true },
         { name: "startDate", label: "Başlama tarixi", type: "date", required: true },
         { name: "duration", label: "Müddət (il)", type: "number", placeholder: "1", required: true },
       ]
@@ -48,20 +48,20 @@ const categoryConfig = {
       personal: [
         { name: "fullName", label: "Sahibi tam adı", placeholder: "Ad və soyadınızı daxil edin", required: true },
         { name: "finCode", label: "FİN / Şəxsiyyət vəsiqəsi nömrəsi", placeholder: "AZE1234567", required: true },
-        { name: "voen", label: "VÖEN (hüquqi şəxs üçün)", placeholder: "1234567890", required: false },
+        { name: "voen", label: "VÖEN", placeholder: "1234567890", required: true },
         { name: "phone", label: "Əlaqə nömrəsi", placeholder: "+994 XX XXX XX XX", required: true },
         { name: "email", label: "Email", placeholder: "email@example.com", required: true },
-        { name: "address", label: "Qeydiyyat ünvanı", placeholder: "Tam ünvanınızı daxil edin", required: false },
+        { name: "address", label: "Qeydiyyat ünvanı", placeholder: "Tam ünvanınızı daxil edin", required: true },
       ],
       specific: [
         { name: "propertyAddress", label: "Əmlakın ünvanı (küçə, bina/mənzil, şəhər/rayon)", placeholder: "Tam ünvanı daxil edin", required: true },
         { name: "propertyType", label: "Əmlak tipi", placeholder: "Əmlak tipini seçin", required: true, options: ["mənzil", "ev", "ofis", "ticarət", "anbar"] },
         { name: "area", label: "Sahə (m²)", type: "number", placeholder: "120", required: true },
-        { name: "totalFloors", label: "Mərtəbə sayı", type: "number", placeholder: "9" },
-        { name: "floorLocation", label: "Yerləşdiyi mərtəbə", type: "number", placeholder: "5" },
-        { name: "wallMaterial", label: "Divar materialı", placeholder: "Material seçin", options: ["kərpic", "beton", "ağac", "digər"] },
-        { name: "constructionYear", label: "Tikinti ili", type: "number", placeholder: "2015" },
-        { name: "propertyDocument", label: "Mülkiyyət sənədi nömrəsi (çıxarış/kupça)", placeholder: "Sənəd nömrəsi" },
+        { name: "totalFloors", label: "Mərtəbə sayı", type: "number", placeholder: "9", required: true },
+        { name: "floorLocation", label: "Yerləşdiyi mərtəbə", type: "number", placeholder: "5", required: true },
+        { name: "wallMaterial", label: "Divar materialı", placeholder: "Material seçin", required: true, options: ["kərpic", "beton", "ağac", "digər"] },
+        { name: "constructionYear", label: "Tikinti ili", type: "number", placeholder: "2015", required: true },
+        { name: "propertyDocument", label: "Mülkiyyət sənədi nömrəsi (çıxarış/kupça)", placeholder: "Sənəd nömrəsi", required: true },
         { name: "startDate", label: "Başlama tarixi", type: "date", required: true },
         { name: "duration", label: "Müddət (il)", type: "number", placeholder: "1", required: true },
       ]
@@ -75,15 +75,15 @@ const categoryConfig = {
       personal: [
         { name: "fullName", label: "İstismarçının adı", placeholder: "Ad və soyadınızı daxil edin", required: true },
         { name: "finCode", label: "FİN / Şəxsiyyət vəsiqəsi nömrəsi", placeholder: "AZE1234567", required: true },
-        { name: "voen", label: "VÖEN (hüquqi şəxs üçün)", placeholder: "1234567890", required: false },
+        { name: "voen", label: "VÖEN", placeholder: "1234567890", required: true },
         { name: "phone", label: "Əlaqə nömrəsi", placeholder: "+994 XX XXX XX XX", required: true },
         { name: "email", label: "Email", placeholder: "email@example.com", required: true },
       ],
       specific: [
         { name: "objectAddress", label: "Obyektin ünvanı", placeholder: "Tam ünvanı daxil edin", required: true },
         { name: "objectPurpose", label: "Obyektin təyinatı", placeholder: "Təyinatı seçin", required: true, options: ["ticarət mərkəzi", "ofis", "yaşayış", "sənaye", "ictimai"] },
-        { name: "totalArea", label: "Ümumi sahə (m²)", type: "number", placeholder: "500" },
-        { name: "visitorFlow", label: "Təxmini gündəlik insan axını", type: "number", placeholder: "100" },
+        { name: "totalArea", label: "Ümumi sahə (m²)", type: "number", placeholder: "500", required: true },
+        { name: "visitorFlow", label: "Təxmini gündəlik insan axını", type: "number", placeholder: "100", required: true },
         { name: "fireSafety", label: "Yanğın təhlükəsizliyi sertifikatı var", type: "checkbox" },
         { name: "startDate", label: "Başlama tarixi", type: "date", required: true },
         { name: "duration", label: "Müddət (il)", type: "number", placeholder: "1", required: true },
@@ -106,7 +106,7 @@ const categoryConfig = {
       specific: [
         { name: "activityField", label: "Fəaliyyət sahəsi (NACE/OKED kodu və ya təsvir)", placeholder: "Fəaliyyət sahəsini daxil edin", required: true },
         { name: "employeeCount", label: "İşçi sayı", type: "number", placeholder: "50", required: true },
-        { name: "averageSalary", label: "Orta aylıq əməkhaqqı fondu", type: "number", placeholder: "5000" },
+        { name: "averageSalary", label: "Orta aylıq əməkhaqqı fondu", type: "number", placeholder: "5000", required: true },
         { name: "startDate", label: "Başlama tarixi", type: "date", required: true },
         { name: "duration", label: "Müddət (il)", type: "number", placeholder: "1", required: true },
       ]
@@ -120,15 +120,15 @@ const categoryConfig = {
       personal: [
         { name: "fullName", label: "Daşıyıcının adı", placeholder: "Daşıyıcının tam adını daxil edin", required: true },
         { name: "finCode", label: "FİN / Şəxsiyyət vəsiqəsi nömrəsi", placeholder: "AZE1234567", required: true },
-        { name: "voen", label: "VÖEN (hüquqi şəxs üçün)", placeholder: "1234567890", required: false },
+        { name: "voen", label: "VÖEN (hüquqi şəxs üçün)", placeholder: "1234567890", required: true },
         { name: "phone", label: "Əlaqə nömrəsi", placeholder: "+994 XX XXX XX XX", required: true },
         { name: "email", label: "Email", placeholder: "email@example.com", required: true },
       ],
       specific: [
         { name: "routeType", label: "Marşrut və fəaliyyət növü", placeholder: "Fəaliyyət növünü seçin", required: true, options: ["şəhəriçi", "şəhərlərarası", "daxili rayon", "beynəlxalq", "dəniz", "hava"] },
-        { name: "vehicleCount", label: "Nəqliyyat vasitələrinin sayı", type: "number", placeholder: "5" },
-        { name: "seatCount", label: "Oturacaq sayı", type: "number", placeholder: "50" },
-        { name: "maxPassengers", label: "Maksimal sərnişin sayı", type: "number", placeholder: "50" },
+        { name: "vehicleCount", label: "Nəqliyyat vasitələrinin sayı", type: "number", placeholder: "5", required: true },
+        { name: "seatCount", label: "Oturacaq sayı", type: "number", placeholder: "50", required: true },
+        { name: "maxPassengers", label: "Maksimal sərnişin sayı", type: "number", placeholder: "50", required: true },
         { name: "startDate", label: "Başlama tarixi", type: "date", required: true },
         { name: "duration", label: "Müddət (il)", type: "number", placeholder: "1", required: true },
       ]
@@ -142,16 +142,16 @@ const categoryConfig = {
       personal: [
         { name: "fullName", label: "Subyektin adı", placeholder: "Subyektin tam adını daxil edin", required: true },
         { name: "finCode", label: "FİN / Şəxsiyyət vəsiqəsi nömrəsi", placeholder: "AZE1234567", required: true },
-        { name: "voen", label: "VÖEN (hüquqi şəxs üçün)", placeholder: "1234567890", required: false },
+        { name: "voen", label: "VÖEN", placeholder: "1234567890", required: true },
         { name: "phone", label: "Əlaqə nömrəsi", placeholder: "+994 XX XXX XX XX", required: true },
         { name: "email", label: "Email", placeholder: "email@example.com", required: true },
       ],
       specific: [
         { name: "objectType", label: "Obyektin tipi", placeholder: "Obyekt tipini seçin", required: true, options: ["kimyəvi", "partlayış", "yanğın", "radioaktiv", "digər"] },
         { name: "objectAddress", label: "Obyektin tipi və ünvanı", placeholder: "Tam ünvanı daxil edin", required: true },
-        { name: "dangerClass", label: "Təhlükə sinfi / Lisenziyalar (uyğunluq sənədləri)", placeholder: "Təhlükə sinfini daxil edin" },
-        { name: "employeeCount", label: "İşçi sayı", type: "number", placeholder: "20" },
-        { name: "operationVolume", label: "Əməliyyat həcmi", placeholder: "Əməliyyat həcmini daxil edin" },
+        { name: "dangerClass", label: "Təhlükə sinfi / Lisenziyalar (uyğunluq sənədləri)", placeholder: "Təhlükə sinfini daxil edin", required: true },
+        { name: "employeeCount", label: "İşçi sayı", type: "number", placeholder: "20", required: true },
+        { name: "operationVolume", label: "Əməliyyat həcmi", placeholder: "Əməliyyat həcmini daxil edin", required: true },
         { name: "startDate", label: "Başlama tarixi", type: "date", required: true },
         { name: "duration", label: "Müddət (il)", type: "number", placeholder: "1", required: true },
       ]
@@ -168,16 +168,16 @@ const categoryConfig = {
         { name: "finCode", label: "FİN / Şəxsiyyət vəsiqəsi nömrəsi", placeholder: "AZE1234567", required: true },
         { name: "phone", label: "Əlaqə nömrəsi", placeholder: "+994 XX XXX XX XX", required: true },
         { name: "email", label: "Email", placeholder: "email@example.com", required: true },
-        { name: "address", label: "Qeydiyyat ünvanı", placeholder: "Tam ünvanınızı daxil edin", required: false },
+        { name: "address", label: "Qeydiyyat ünvanı", placeholder: "Tam ünvanınızı daxil edin", required: true },
       ],
       specific: [
         { name: "destination", label: "Təyinat ölkəsi/şəhər", placeholder: "Təyinatı daxil edin", required: true },
         { name: "travelType", label: "Səyahət növü", placeholder: "Səyahət növünü seçin", required: true, options: ["beynəlxalq", "daxili", "hər ikisi"] },
-        { name: "travelPurpose", label: "Səyahət məqsədi", placeholder: "Məqsədi seçin", options: ["turizm", "iş", "təhsil", "sağlamlıq", "digər"] },
+        { name: "travelPurpose", label: "Səyahət məqsədi", placeholder: "Məqsədi seçin", required: true, options: ["turizm", "iş", "təhsil", "sağlamlıq", "digər"] },
         { name: "startDate", label: "Səyahət başlama tarixi", type: "date", required: true },
         { name: "endDate", label: "Səyahət bitmə tarixi", type: "date", required: true },
         { name: "travelerCount", label: "Səyahətçi sayı", type: "number", placeholder: "1", required: true },
-        { name: "coverageAmount", label: "Təminat məbləği (USD)", type: "number", placeholder: "50000" },
+        { name: "coverageAmount", label: "Təminat məbləği (USD)", type: "number", placeholder: "50000", required: true },
       ]
     }
   },
@@ -233,7 +233,7 @@ const categoryConfig = {
       personal: [
         { name: "fullName", label: "Sahibkarın tam adı", placeholder: "Ad və soyadınızı daxil edin", required: true },
         { name: "finCode", label: "FİN / Şəxsiyyət vəsiqəsi nömrəsi", placeholder: "AZE1234567", required: true },
-        { name: "voen", label: "VÖEN (hüquqi şəxs üçün)", placeholder: "1234567890", required: false },
+        { name: "voen", label: "VÖEN", placeholder: "1234567890", required: true },
         { name: "phone", label: "Əlaqə nömrəsi", placeholder: "+994 XX XXX XX XX", required: true },
         { name: "email", label: "Email", placeholder: "email@example.com", required: true },
         { name: "address", label: "Qeydiyyat ünvanı", placeholder: "Tam ünvanınızı daxil edin", required: false },
@@ -257,7 +257,7 @@ const categoryConfig = {
       personal: [
         { name: "fullName", label: "Sahibkarın tam adı", placeholder: "Ad və soyadınızı daxil edin", required: true },
         { name: "finCode", label: "FİN / Şəxsiyyət vəsiqəsi nömrəsi", placeholder: "AZE1234567", required: true },
-        { name: "voen", label: "VÖEN (hüquqi şəxs üçün)", placeholder: "1234567890", required: false },
+        { name: "voen", label: "VÖEN", placeholder: "1234567890", required: true },
         { name: "phone", label: "Əlaqə nömrəsi", placeholder: "+994 XX XXX XX XX", required: true },
         { name: "email", label: "Email", placeholder: "email@example.com", required: true },
         { name: "address", label: "Qeydiyyat ünvanı", placeholder: "Tam ünvanınızı daxil edin", required: false },
@@ -459,11 +459,8 @@ function Order() {
       switch (fieldName) {
         case 'manufactureYear':
         case 'constructionYear':
-          // İl: 1900-dən böyük, indiki ildən kiçik və ya bərabər
-          const currentYear = new Date().getFullYear();
-          if (numValue < 1900) return '';
-          if (numValue > currentYear) return currentYear.toString();
-          return Math.floor(numValue).toString();
+          // No processing - allow free typing and validation on submit
+          return value;
         
         case 'duration':
         case 'employeeCount':
@@ -948,11 +945,10 @@ function Order() {
         step = 0.1;
       }
 
-      // Max for year fields
+      // For year fields, don't set min/max attributes to allow typing freely
+      // Validation will happen only on form submission
       let max;
-      if (field.name === 'manufactureYear' || field.name === 'constructionYear') {
-        max = new Date().getFullYear();
-      }
+      // All year validations happen only on form submission
 
       return (
         <input
