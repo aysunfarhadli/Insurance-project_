@@ -242,10 +242,12 @@ $shadow-hover: 0 8px 15px rgba(0, 0, 0, 0.2);
   padding-top: 120px; // Header üçün boşluq
 
   .box1 {
+    
     .kampaniya-carousel {
       position: relative;
       margin-bottom: 20px;
       width: 100%;
+      margin: 0 auto;
 
       .carousel-container {
         position: relative;
@@ -277,8 +279,8 @@ $shadow-hover: 0 8px 15px rgba(0, 0, 0, 0.2);
             background-position: center;
             background-repeat: no-repeat;
             position: relative;
-            min-height: 600px;
-            height: 600px;
+            min-height: 300px;
+            height: 400px;
             @include hover-lift;
 
             .slide-overlay {
@@ -465,12 +467,15 @@ $shadow-hover: 0 8px 15px rgba(0, 0, 0, 0.2);
     .sig {
       display: flex;
       flex-wrap: wrap;
+      
       align-items: stretch;
 
       .sam {
         display: flex;
         flex-direction: column;
-        padding: 25px 30px;
+        justify-content: center;
+        align-items: center;
+        padding: 40px 30px;
         // gap: 1.2rem;
         color: white;
         border-radius: 12px;
@@ -488,6 +493,7 @@ $shadow-hover: 0 8px 15px rgba(0, 0, 0, 0.2);
         }
 
         &::before {
+
           content: '';
           position: absolute;
           top: 0;
@@ -518,7 +524,7 @@ $shadow-hover: 0 8px 15px rgba(0, 0, 0, 0.2);
           background-color: rgba(255, 255, 255, 0.25);
           transition: all $transition-speed ease;
           flex-shrink: 0;
-          align-self: flex-start;
+          // align-self: flex-start;
         }
 
         .par {
@@ -898,8 +904,8 @@ button:focus {
         .carousel-slides {
           .kampaniya.slide {
             padding: 0;
-            min-height: 400px;
-            height: 400px;
+            min-height: 300px;
+            height: 300px;
 
             .slide-overlay {
               padding: 20px;

@@ -239,7 +239,8 @@
 
     // Empty inputs (placeholder shown) - gray appearance
     &:placeholder-shown {
-      background-color: #f8f9fa;
+      // background-color: #f8f9fa;
+      background-color: white;
       border-color: #e9ecef;
       color: rgba(0, 0, 0, 0.4);
     }
@@ -250,7 +251,8 @@
 
     &:hover:placeholder-shown {
       border-color: #dee2e6;
-      background-color: #f8f9fa;
+      // background-color: #f8f9fa;
+      background-color: white;
     }
 
     &:focus {
@@ -274,7 +276,8 @@
 
     // Empty inputs - will be styled via className in React (for date inputs)
     &.emptyInput {
-      background-color: #f8f9fa;
+      // background-color: #f8f9fa;
+      background-color: white;
       border-color: #e9ecef;
       color: rgba(0, 0, 0, 0.4);
     }
@@ -317,7 +320,8 @@
 
     // Empty selects - will be styled via className in React
     &.emptySelect {
-      background-color: #f8f9fa;
+      // background-color: #f8f9fa;
+      background-color: white;
       border-color: #e9ecef;
       color: rgba(0, 0, 0, 0.4);
     }

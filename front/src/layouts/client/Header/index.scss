@@ -61,6 +61,11 @@ header {
       align-items: center;
       gap: 25px;
 
+      .icon{
+        display: flex;
+        align-items: center;
+      }
+
       svg {
         font-size: 22px;
         color: #555;
@@ -75,6 +80,8 @@ header {
 
     .language-switcher {
       position: relative;
+      display: flex;
+      align-items: center;
 
       .lang-button {
         display: flex;

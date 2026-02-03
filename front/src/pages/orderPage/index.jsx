@@ -451,17 +451,17 @@ function Order() {
   const processFieldValue = (fieldName, value, fieldType) => {
     if (fieldType === 'number') {
       if (value === '' || value === '-') return '';
-      
+
       const numValue = parseFloat(value);
       if (isNaN(numValue)) return '';
-      
+
       // Field-specific processing
       switch (fieldName) {
         case 'manufactureYear':
         case 'constructionYear':
           // No processing - allow free typing and validation on submit
           return value;
-        
+
         case 'duration':
         case 'employeeCount':
         case 'vehicleCount':
@@ -469,7 +469,7 @@ function Order() {
           // Minimum 1
           if (numValue < 1) return '';
           return Math.floor(numValue).toString();
-        
+
         case 'area':
         case 'totalArea':
         case 'engineVolume':
@@ -485,24 +485,24 @@ function Order() {
           // Müsbət rəqəm
           if (numValue <= 0) return '';
           return numValue.toString();
-        
+
         case 'familyMembers':
           // 0 və ya müsbət
           if (numValue < 0) return '';
           return Math.floor(numValue).toString();
-        
+
         default:
           // Ümumi: mənfi ola bilməz
           return numValue < 0 ? '' : numValue.toString();
       }
     }
-    
+
     if (fieldType === 'date') {
       if (!value) return '';
       const selectedDate = new Date(value);
       const today = new Date();
       today.setHours(0, 0, 0, 0);
-      
+
       switch (fieldName) {
         case 'endDate':
           // Bitmə tarixi başlama tarixindən sonra olmalıdır
@@ -511,7 +511,7 @@ function Order() {
             if (selectedDate <= startDate) return '';
           }
           break;
-        
+
         case 'birthDate':
           // Doğum tarixi keçmişdə olmalıdır və 120 ildən çox keçmiş ola bilməz
           const maxAge = new Date();
@@ -520,16 +520,16 @@ function Order() {
           break;
       }
     }
-    
+
     return value;
   };
 
   // 🔹 Dəyişiklikləri idarə edir 
   const handleChange = (e) => {
     const { name, value, type } = e.target;
-    
+
     let processedValue = value;
-    
+
     if (type === "checkbox") {
       setFormData({
         ...formData,
@@ -537,18 +537,18 @@ function Order() {
       });
       return;
     }
-    
+
     // Field konfiqurasiyasını tap
     const field = [...(currentCategory?.fields?.personal || []), ...(currentCategory?.fields?.specific || [])]
       .find(f => f.name === name);
-    
+
     // Field type-ə görə value-ni emal et
     if (field?.type === 'number' || type === 'number') {
       processedValue = processFieldValue(name, value, 'number');
     } else if (field?.type === 'date' || type === 'date') {
       processedValue = processFieldValue(name, value, 'date');
     }
-    
+
     setFormData({
       ...formData,
       [name]: processedValue
@@ -569,23 +569,23 @@ function Order() {
   // 🔹 Field-specific validation rules
   const validateFieldValue = (fieldName, value, fieldType) => {
     if (!value && value !== 0) return false;
-    
+
     if (fieldType === 'number') {
       const numValue = parseFloat(value);
       if (isNaN(numValue)) return false;
-      
+
       // Field-specific validations
       switch (fieldName) {
         case 'manufactureYear':
         case 'constructionYear':
           return numValue >= 1900 && numValue <= new Date().getFullYear();
-        
+
         case 'duration':
         case 'employeeCount':
         case 'vehicleCount':
         case 'travelerCount':
           return numValue >= 1;
-        
+
         case 'area':
         case 'totalArea':
         case 'engineVolume':
@@ -599,20 +599,20 @@ function Order() {
         case 'propertyValue':
         case 'vehicleValue':
           return numValue > 0;
-        
+
         case 'familyMembers':
           return numValue >= 0;
-        
+
         default:
           return numValue >= 0;
       }
     }
-    
+
     if (fieldType === 'date') {
       const dateValue = new Date(value);
       const today = new Date();
       today.setHours(0, 0, 0, 0);
-      
+
       switch (fieldName) {
         case 'startDate':
           return true; // Keçmiş və ya gələcək ola bilər
@@ -630,12 +630,12 @@ function Order() {
           return true;
       }
     }
-    
+
     // String validation
     if (typeof value === 'string') {
       return value.trim().length > 0;
     }
-    
+
     return true;
   };
 
@@ -648,7 +648,7 @@ function Order() {
         return false;
       }
     }
-    
+
     // floorLocation should not exceed totalFloors
     if (formData.floorLocation && formData.totalFloors) {
       if (parseFloat(formData.floorLocation) > parseFloat(formData.totalFloors)) {
@@ -656,7 +656,7 @@ function Order() {
         return false;
       }
     }
-    
+
     // coverageAmount should not exceed propertyValue
     if (formData.coverageAmount && formData.propertyValue) {
       if (parseFloat(formData.coverageAmount) > parseFloat(formData.propertyValue)) {
@@ -664,7 +664,7 @@ function Order() {
         return false;
       }
     }
-    
+
     return true;
   };
 
@@ -790,7 +790,7 @@ function Order() {
         return false;
       }
       const requiredFields = currentCategory.fields.personal
-        .filter(field => field.required)
+        .filter(field => field.required && field.name !== "finCode")
         .map(field => field.name);
 
       let hasError = false;
@@ -1106,7 +1106,7 @@ function Order() {
                   <h3 className={styles.sectionTitle}>{t('common.ownerInfo')}</h3>
                 </div>
 
-                <div className={styles.radioGroup}>
+                {/* <div className={styles.radioGroup}>
                   <label className={styles.radioLabel}>
                     <input
                       type="radio"
@@ -1125,7 +1125,7 @@ function Order() {
                     />
                     <span>{t('common.forOther')}</span>
                   </label>
-                </div>
+                </div> */}
 
                 {loading ? (
                   <p>{t('common.loading')}</p>
@@ -1178,7 +1178,7 @@ function Order() {
                     )}
 
                     {/* Single FIN field if VOEN doesn't exist */}
-                    {currentCategory.fields.personal.find(f => f.name === 'finCode') && !currentCategory.fields.personal.find(f => f.name === 'voen') && (
+                    {/* {currentCategory.fields.personal.find(f => f.name === 'finCode') && !currentCategory.fields.personal.find(f => f.name === 'voen') && (
                       <div className={styles.formGroup}>
                         {(() => {
                           const field = currentCategory.fields.personal.find(f => f.name === 'finCode');
@@ -1193,7 +1193,7 @@ function Order() {
                           );
                         })()}
                       </div>
-                    )}
+                    )} */}
 
                     {/* Phone and Email - Two Columns */}
                     {currentCategory.fields.personal.find(f => f.name === 'phone') && currentCategory.fields.personal.find(f => f.name === 'email') && (
