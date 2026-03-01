@@ -353,26 +353,32 @@ function Order() {
 
   useEffect(() => {
     const checkAuthAndGetProfile = async () => {
+      const API_BASE = import.meta.env.VITE_API_BASE_URL || "https://insurance-project-e1xh.onrender.com";
+
       try {
         setLoading(true);
-        setIsAuthenticated(true);
-        setUserId("test_user_id");
-        setUserProfile({
-          name: "Test",
-          surname: "User",
-          email: "test@example.com",
-          phone: "+994501234567",
-          finCode: "AZE1234"
-        });
-        setLoading(false);
-        return;
+        setError("");
+
+        const res = await axios.get(`${API_BASE}/authUser/profile`, { withCredentials: true });
+        const user = res.data?.user || res.data;
+
+        if (user && user.email) {
+          setIsAuthenticated(true);
+          setUserId(user._id);
+          setUserProfile(user);
+        } else {
+          setIsAuthenticated(false);
+          navigate("/login");
+        }
       } catch (err) {
         console.error("Authentication check failed:", err);
+        setIsAuthenticated(false);
+        navigate("/login");
+      } finally {
         setLoading(false);
-        setIsAuthenticated(true);
-        setUserId("test_user_id");
       }
     };
+
     checkAuthAndGetProfile();
   }, [navigate]);
 

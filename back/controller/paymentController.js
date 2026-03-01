@@ -2,23 +2,25 @@
   const https = require('https');
   const fs = require('fs');
   const path = require('path');
-  // const { getBrowserDetailsFromRequest } = require('../browserDetails/index.js');
+  const { getBrowserDetailsFromRequest } = require('../browserDetails/index.js');
   require("dotenv").config();
   const Order = require("../models/cibpay");
 
-  // Configuration
-  const username = "cibpay";
-  const password = "gxIO8aH6N3j13FREp2";
+  // Configuration - use environment variables so credentials aren't hardcoded.
+  const CIBPAY_USER = process.env.CIBPAY_USER || process.env.CIBPAY_USERNAME || "cibpay";
+  const CIBPAY_PASS = process.env.CIBPAY_PASS || process.env.CIBPAY_PASSWORD || "gxIO8aH6N3j13FREp2";
+  const BASE_URL = process.env.CIBPAY_API_URL || "https://api-preprod.cibpay.co"; // sandbox default
 
-  // Basic Auth üçün Base64 encode
-  const auth = Buffer.from(`${username}:${password}`).toString("base64");
+  // Basic Auth header value
+  const auth = Buffer.from(`${CIBPAY_USER}:${CIBPAY_PASS}`).toString("base64");
 
-
-
+  // HTTPS agent for pfx certificate (optional) and strict mode depending on env
+  const pfxPath = process.env.CIBPAY_PFX_PATH || "./cert/api-cibpay.p12";
   const agent = new https.Agent({
-    pfx: fs.readFileSync("./cert/api-cibpay.p12"),
+    pfx: fs.existsSync(pfxPath) ? fs.readFileSync(pfxPath) : undefined,
     passphrase: process.env.CIBPAY_PFX_PASSPHRASE,
-    rejectUnauthorized: false
+    // in production we should validate the cert, this flag can be toggled via env
+    rejectUnauthorized: process.env.NODE_ENV === "production"
   });
   /**
    * Authorize - Kartla ödəniş yaratmaq
@@ -69,9 +71,9 @@ const cibpayWebhook = async (req, res) => {
       .toString("utf-8")
       .split(":");
 
-    // if (user !== process.env.CIBPAY_WEBHOOK_USER || pass !== process.env.CIBPAY_WEBHOOK_PASS) {
-    //   return res.status(403).json({ error: "Forbidden" });
-    // }
+    if (user !== process.env.CIBPAY_WEBHOOK_USER || pass !== process.env.CIBPAY_WEBHOOK_PASS) {
+      return res.status(403).json({ error: "Forbidden" });
+    }
 
     const { orders } = req.body;
     if (!orders || !Array.isArray(orders)) {
@@ -106,76 +108,113 @@ const cibpayWebhook = async (req, res) => {
 
 
 
-  // Authorize Payment Controller
+  // Authorize Payment Controller (Direct API with browserInfo)
   const authorizePayment = async (req, res) => {
-    try {
-      const { orderId, amount, pan, card, client, options, location, browserDetails } = req.body;
+  try {
+    let { orderId, merchant_order_id, amount, pan, card, client, options, location, browserInfo } = req.body;
+    // allow either field name
+    orderId = orderId || merchant_order_id;
 
-      if (!orderId) {
-        return res.status(400).json({
-          success: false,
-          error: "Order ID is required"
-        });
+    if (!orderId) {
+      return res.status(400).json({
+        success: false,
+        error: "Order ID is required"
+      });
+    }
+
+    if (!amount || isNaN(amount) || parseFloat(amount) <= 0) {
+      return res.status(400).json({ success: false, error: "Valid amount is required" });
+    }
+    if (!pan || typeof pan !== "string" || pan.length < 12) {
+      return res.status(400).json({ success: false, error: "Valid card PAN is required" });
+    }
+    if (!card || !card.cvv || !card.expiration_month || !card.expiration_year) {
+      return res.status(400).json({ success: false, error: "Card details (cvv and expiry) are required" });
+    }
+
+    // ✅ BrowserInfo – əvvəlcə body-dən, yoxdursa request header-lərindən toplayırıq
+    const rawBrowser =
+      (browserInfo && Object.keys(browserInfo).length > 0 && browserInfo) ||
+      (() => {
+        const fallback = getBrowserDetailsFromRequest(req);
+        // getBrowserDetailsFromRequest snake_case qaytarır, onu browserInfo camelCase-ə map edək
+        return {
+          acceptHeader: fallback.accept_header,
+          javaEnabled: fallback.java_enabled,
+          javascriptEnabled: fallback.javascript_enabled,
+          language: fallback.language,
+          colorDepth: fallback.color_depth,
+          screenHeight: fallback.screen_height,
+          screenWidth: fallback.screen_width,
+          timeZone: fallback.time_zone_offset,
+          userAgent: fallback.user_agent
+        };
+      })();
+
+    const finalBrowserInfo = {
+      acceptHeader: rawBrowser.acceptHeader || "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+      javaEnabled: rawBrowser.javaEnabled ?? false,
+      javascriptEnabled: rawBrowser.javascriptEnabled ?? true,
+      language: rawBrowser.language || "az-AZ",
+      colorDepth: rawBrowser.colorDepth || 24,
+      screenHeight: rawBrowser.screenHeight || 1080,
+      screenWidth: rawBrowser.screenWidth || 1920,
+      timeZone: rawBrowser.timeZone ?? new Date().getTimezoneOffset(),
+      userAgent: rawBrowser.userAgent || req.headers["user-agent"] || "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+    };
+
+    // sanity check: ensure none of the required browser fields are missing
+    const missing = [];
+    ["acceptHeader","javaEnabled","javascriptEnabled","language","colorDepth","screenHeight","screenWidth","timeZone","userAgent"].forEach(k => {
+      if (finalBrowserInfo[k] === undefined || finalBrowserInfo[k] === "") missing.push(k);
+    });
+    if (missing.length) {
+      console.warn("authorizePayment: missing browserInfo fields", missing);
+      // still continue; CIBPay may accept defaults, but log for debugging
+    }
+
+
+    // Cibpay authorize endpoint - Direct API browserInfo obyekti ilə
+    const clientIp = (location && location.ip) || req.ip || req.headers["x-forwarded-for"] || "93.88.94.130";
+
+    const authData = {
+      order_id: orderId, // Cibpay API-də order_id body-də göndərilir
+      amount: String(amount),
+      pan,
+      card: {
+        cvv: card.cvv,
+        expiration_month: Number(card.expiration_month),
+        expiration_year: Number(card.expiration_year),
+        holder: card.holder || ""
+      },
+      client: {
+        name: client?.name || "Test",
+        email: client?.email || "test@mail.com"
+      },
+      options: {
+        force3d: options?.force3d || 1
+      },
+      browserInfo: finalBrowserInfo,
+      device: {
+        browser: finalBrowserInfo,
+        ipAddress: clientIp
+      },
+      // ✅ Cibpay validation üçün ayrıca location.ip də veririk
+      location: {
+        ip: clientIp
       }
-
-      // Validate and format browser details for 3-D Secure 2.0
-      if (!browserDetails || Object.keys(browserDetails).length === 0) {
-        return res.status(400).json({
-          success: false,
-          error: "Browser details are required for 3-D Secure 2.0"
-        });
-      }
-
-      // Convert browser details to snake_case format (Cibpay API requirement)
-      // Cibpay API browser details-i root level-də gözləyir
-      const formattedBrowserDetails = {
-        accept_header: browserDetails.acceptHeader || browserDetails.accept_header || "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-        java_enabled: browserDetails.javaEnabled !== undefined ? browserDetails.javaEnabled : (browserDetails.java_enabled !== undefined ? browserDetails.java_enabled : false),
-        javascript_enabled: browserDetails.javascriptEnabled !== undefined ? browserDetails.javascriptEnabled : (browserDetails.javascript_enabled !== undefined ? browserDetails.javascript_enabled : true),
-        language: browserDetails.language || "az-AZ",
-        color_depth: browserDetails.colorDepth || browserDetails.color_depth || 24,
-        screen_height: browserDetails.screenHeight || browserDetails.screen_height || 1080,
-        screen_width: browserDetails.screenWidth || browserDetails.screen_width || 1920,
-        time_zone_offset: browserDetails.timeZoneOffset !== undefined ? browserDetails.timeZoneOffset : (browserDetails.time_zone_offset !== undefined ? browserDetails.time_zone_offset : new Date().getTimezoneOffset()),
-        user_agent: browserDetails.userAgent || browserDetails.user_agent || "",
-        challenge_window_size: browserDetails.challengeWindowSize || browserDetails.challenge_window_size || "full-screen"
-      };
-
-      // Cibpay authorize endpoint - orderId body-də göndərilməlidir
-      // Browser details root level-də göndərilir (Cibpay API tələbi)
-      const authData = {
-        order_id: orderId, // Cibpay API-də order_id body-də göndərilir
-        amount,
-        pan,
-        card: {
-          cvv: card.cvv,
-          expiration_month: Number(card.expiration_month),
-          expiration_year: Number(card.expiration_year),
-          holder: card.holder || ""
-        },
-        client: {
-          name: client?.name || "Test",
-          email: client?.email || "test@mail.com"
-        },
-        options: {
-          force3d: options?.force3d || 1
-        },
-        browser: formattedBrowserDetails, // Browser details root level-də göndərilir
-        location: {
-          ip: location?.ip || "93.88.94.130"
-        }
-      };
+    };
 
       console.log("Sending to CIBPAY authorize:", JSON.stringify(authData, null, 2));
       console.log("Order ID for authorize:", orderId);
 
       // Cibpay authorize endpoint - orderId body-də göndərilir
       const response = await axios.post(
-        `https://api-preprod.cibpay.co/orders/authorize`,
+        `${BASE_URL}/orders/authorize`,
         authData,
         {
           headers: {
-            "Authorization": `Basic ${auth}`,
+            Authorization: `Basic ${auth}`,
             "Content-Type": "application/json"
           },
           httpsAgent: agent
@@ -187,12 +226,13 @@ const cibpayWebhook = async (req, res) => {
         ? pan.substring(pan.length - 4).padStart(pan.length, '*')
         : pan;
       
+      // persist/update local order record using the merchant order id the client supplied
       await Order.findOneAndUpdate(
-        { orderId: req.body.merchant_order_id || orderId },
+        { orderId: orderId },
         {
           transactionId: response.data.id || orderId,
-          status: response.data.status === "AUTHORIZED" || response.data.status === "CHARGED" 
-            ? response.data.status 
+          status: ["AUTHORIZED","CHARGED"].includes(response.data.status)
+            ? response.data.status
             : "AUTHORIZED",
           pan: response.data.pan || maskedPan,
           rawResponse: response.data,
@@ -235,9 +275,9 @@ const cibpayWebhook = async (req, res) => {
    */
   const getOrders = async (req, res) => {
     try {
-      const response = await axios.get(`https://api-preprod.cibpay.co/orders/`, {
+      const response = await axios.get(`${BASE_URL}/orders/`, {
           headers: {
-            "Authorization": `Basic ${auth}`,
+            Authorization: `Basic ${auth}`,
             "Content-Type": "application/json"
           },
           httpsAgent: agent
@@ -259,9 +299,9 @@ const cibpayWebhook = async (req, res) => {
   const getOrderById = async (req, res) => {
     try {
       const { orderId } = req.params;
-      const response = await axios.get(`https://api-preprod.cibpay.co/orders/${orderId}`,  {
+      const response = await axios.get(`${BASE_URL}/orders/${orderId}`,  {
           headers: {
-            "Authorization": `Basic ${auth}`,
+            Authorization: `Basic ${auth}`,
             "Content-Type": "application/json"
           },
           httpsAgent: agent
@@ -308,7 +348,7 @@ const cibpayWebhook = async (req, res) => {
     };
 
     const orderData = {
-      amount: parseFloat(req.body.amount),
+      amount: String(parseFloat(req.body.amount)),
       currency: req.body.currency || "AZN",
       merchant_order_id: String(req.body.merchant_order_id),
       options: options,
@@ -321,7 +361,7 @@ const cibpayWebhook = async (req, res) => {
     console.log("Creating order with data:", JSON.stringify(orderData, null, 2));
 
     const response = await axios.post(
-      "https://api-preprod.cibpay.co/orders/create",
+      `${BASE_URL}/orders/create`,
       orderData,
       {
         headers: {
@@ -372,7 +412,7 @@ const cibpayWebhook = async (req, res) => {
   const createOrderMKRecurring = async (req, res) => {
     try {
       const orderData = {
-        amount: req.body.amount,
+        amount: String(req.body.amount),
         currency: req.body.currency || 'AZN',
         extra_fields: {
           invoice_id: req.body.extra_fields?.invoice_id || '001',
@@ -413,9 +453,9 @@ const cibpayWebhook = async (req, res) => {
         }
       };
 
-      const response = await axios.post(`https://api-preprod.cibpay.co/orders/create`, orderData,  {
+      const response = await axios.post(`${BASE_URL}/orders/create`, orderData,  {
           headers: {
-            "Authorization": `Basic ${auth}`,
+            Authorization: `Basic ${auth}`,
             "Content-Type": "application/json"
           },
           httpsAgent: agent
@@ -445,9 +485,12 @@ const cibpayWebhook = async (req, res) => {
         });
       }
 
-      const response = await axios.put(`https://api-preprod.cibpay.co/orders/${orderId}/charge`, {},  {
+      // charge may include amount (string) so that partial captures are possible
+      const chargeBody = {};
+      if (req.body.amount != null) chargeBody.amount = String(req.body.amount);
+      const response = await axios.put(`${BASE_URL}/orders/${orderId}/charge`, chargeBody,  {
           headers: {
-            "Authorization": `Basic ${auth}`,
+            Authorization: `Basic ${auth}`,
             "Content-Type": "application/json"
           },
           httpsAgent: agent
@@ -488,14 +531,28 @@ const cibpayWebhook = async (req, res) => {
   const reversePayment = async (req, res) => {
     try {
       const { orderId } = req.body;
-      const response = await axios.put(`https://api-preprod.cibpay.co/orders/${orderId}/reverse`, {},  {
+      if (!orderId) {
+        return res.status(400).json({ error: "Order ID is required" });
+      }
+      const response = await axios.put(`${BASE_URL}/orders/${orderId}/reverse`, {},  {
           headers: {
-            "Authorization": `Basic ${auth}`,
+            Authorization: `Basic ${auth}`,
             "Content-Type": "application/json"
           },
           httpsAgent: agent
         });
       
+      // update local order status for traceability
+      await Order.findOneAndUpdate(
+        { orderId },
+        {
+          status: response.data.status || "CANCELED",
+          rawResponse: response.data,
+          updatedAt: new Date()
+        },
+        { upsert: true }
+      );
+
       res.json(response.data);
     } catch (error) {
       console.error('Error reversing payment:', error.response?.data || error.message);
@@ -511,20 +568,78 @@ const cibpayWebhook = async (req, res) => {
    */
   const refundPayment = async (req, res) => {
     try {
-      const { orderId } = req.body;
-      const response = await axios.put(`https://api-preprod.cibpay.co/orders/${orderId}/refund`, {},  {
+      const { orderId, amount } = req.body;
+      if (!orderId) {
+        return res.status(400).json({ error: "Order ID is required" });
+      }
+      // refund amount is recommended to be provided
+      const refundBody = {};
+      if (amount != null) {
+        refundBody.amount = String(amount);
+      }
+      const response = await axios.put(`${BASE_URL}/orders/${orderId}/refund`, refundBody,  {
           headers: {
-            "Authorization": `Basic ${auth}`,
+            Authorization: `Basic ${auth}`,
             "Content-Type": "application/json"
           },
           httpsAgent: agent
         });
       
+      // update DB
+      await Order.findOneAndUpdate(
+        { orderId },
+        {
+          status: response.data.status || "REFUNDED",
+          rawResponse: response.data,
+          updatedAt: new Date()
+        },
+        { upsert: true }
+      );
+
       res.json(response.data);
     } catch (error) {
       console.error('Error refunding payment:', error.response?.data || error.message);
       res.status(error.response?.status || 500).json({
         error: 'Failed to refund payment',
+        details: error.response?.data || error.message
+      });
+    }
+  };
+
+  /**
+   * Cancel order (void) – sets status to CANCELED server‑side
+   */
+  const cancelPayment = async (req, res) => {
+    try {
+      const { orderId } = req.body;
+      if (!orderId) {
+        return res.status(400).json({ error: "Order ID is required" });
+      }
+
+      const response = await axios.put(`${BASE_URL}/orders/${orderId}/cancel`, {}, {
+        headers: {
+          Authorization: `Basic ${auth}`,
+          "Content-Type": "application/json"
+        },
+        httpsAgent: agent
+      });
+
+      // update local record
+      await Order.findOneAndUpdate(
+        { orderId },
+        {
+          status: response.data.status || "CANCELED",
+          rawResponse: response.data,
+          updatedAt: new Date()
+        },
+        { upsert: true }
+      );
+
+      res.json(response.data);
+    } catch (error) {
+      console.error('Error cancelling order:', error.response?.data || error.message);
+      res.status(error.response?.status || 500).json({
+        error: 'Failed to cancel order',
         details: error.response?.data || error.message
       });
     }
@@ -546,9 +661,9 @@ const cibpayWebhook = async (req, res) => {
         }
       };
 
-      const response = await axios.post(`https://api-preprod.cibpay.co/orders/${id}/credit`, creditData,  {
+      const response = await axios.post(`${BASE_URL}/orders/${id}/credit`, creditData,  {
           headers: {
-            "Authorization": `Basic ${auth}`,
+            Authorization: `Basic ${auth}`,
             "Content-Type": "application/json"
           },
           httpsAgent: agent
@@ -579,9 +694,9 @@ const cibpayWebhook = async (req, res) => {
         }
       };
 
-      const response = await axios.post(`https://api-preprod.cibpay.co/orders/credit`, creditData,  {
+      const response = await axios.post(`${BASE_URL}/orders/credit`, creditData,  {
           headers: {
-            "Authorization": `Basic ${auth}`,
+            Authorization: `Basic ${auth}`,
             "Content-Type": "application/json"
           },
           httpsAgent: agent
@@ -615,9 +730,9 @@ const cibpayWebhook = async (req, res) => {
         }
       };
 
-      const response = await axios.post(`https://api-preprod.cibpay.co/orders/credit`, creditData, {
+      const response = await axios.post(`${BASE_URL}/orders/credit`, creditData, {
           headers: {
-            "Authorization": `Basic ${auth}`,
+            Authorization: `Basic ${auth}`,
             "Content-Type": "application/json"
           },
           httpsAgent: agent
@@ -633,49 +748,6 @@ const cibpayWebhook = async (req, res) => {
     }
   };
 
-  /**
- * CIBPAY Webhook Controller
- * Tranzaksiyaların status dəyişikliyi barədə məlumatları qəbul edir
- */
-// const cibpayWebhook = async (req, res) => {
-//   try {
-//     // Authorization yoxlanışı
-//     const authHeader = req.headers['authorization'];
-//     if (!authHeader || !authHeader.startsWith('Basic ')) {
-//       return res.status(401).json({ error: 'Unauthorized' });
-//     }
-
-//     // Base64 aç və username/password yoxla
-//     const base64Credentials = authHeader.split(' ')[1];
-//     const credentials = Buffer.from(base64Credentials, 'base64').toString('utf-8').split(':');
-//     const [username, password] = credentials;
-
-//     if (username !== process.env.CIBPAY_WEBHOOK_USER || password !== process.env.CIBPAY_WEBHOOK_PASS) {
-//       return res.status(403).json({ error: 'Forbidden' });
-//     }
-
-//     // Webhook gövdəsi
-//     const { order_id, status } = req.body;
-
-//     console.log(`Webhook received: Order ID: ${order_id}, Status: ${status}`);
-
-//     // Burada statusa görə DB update və ya Get order by ID ilə təsdiqləmə edə bilərsən
-//     // Məsələn:
-//     // const response = await axios.get(`https://api-preprod.cibpay.co/orders/${order_id}`, {
-//     //   headers: {
-//     //     "Authorization": `Basic ${Buffer.from(`${process.env.CIBPAY_USER}:${process.env.CIBPAY_PASS}`).toString('base64')}`,
-//     //     "Content-Type": "application/json"
-//     //   },
-//     //   httpsAgent: agent
-//     // });
-
-//     res.json({ success: true });
-//   } catch (error) {
-//     console.error('Webhook error:', error.message);
-//     res.status(500).json({ error: 'Internal server error' });
-//   }
-// };
-
 
   // Export all functions
 module.exports = {
@@ -687,6 +759,7 @@ module.exports = {
   chargePayment,
   reversePayment,
   refundPayment,
+  cancelPayment,
   octCreditById,
   octCredit,
   octCreditSRN,
@@ -694,3 +767,4 @@ module.exports = {
   cibpayWebhook
   // cibpayWebhook  // ← burada əlavə etdik
 };
+

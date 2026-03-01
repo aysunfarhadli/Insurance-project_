@@ -12,6 +12,7 @@ const {
   chargePayment,
   reversePayment,
   refundPayment,
+  cancelPayment,
   octCreditById,
   octCredit,
   octCreditSRN,
@@ -42,8 +43,11 @@ router.post("/orders/charge", chargePayment);
 // Reverse (void) payment - requires orderId in body
 router.post("/orders/reverse", reversePayment);
 
-// Refund (OCT) - requires orderId in body
-router.post("/refund", refundPayment);
+// Cancel order - requires orderId in body
+router.post("/orders/cancel", cancelPayment);
+
+// Refund (OCT) - requires orderId and optionally amount in body
+router.post("/orders/refund", refundPayment);
 
 // OCT Credit by ID
 router.post("/oct/:id", octCreditById);

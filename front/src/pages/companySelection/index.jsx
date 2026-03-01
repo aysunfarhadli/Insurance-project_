@@ -115,24 +115,15 @@ function CompanySelection() {
 
       const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://insurance-project-e1xh.onrender.com';
 
-      // Get user ID and finCode
-      // COMMENTED OUT FOR TESTING - Uncomment to enable authentication
-      // Mock user data for testing
-      const userId = 'test_user_123';
-      const finCode = formData.finCode || '1234567'; // Use formData finCode or default test value
-      console.log("👤 Mock User ID:", userId);
-      console.log("🔑 FIN Code:", finCode);
-
-      /* UNCOMMENT BELOW TO ENABLE AUTHENTICATION
-      const userRes = await axios.get(`${API_BASE}/authUser/profile`);
+      // Get user ID and finCode from real authenticated user
+      const userRes = await axios.get(`${API_BASE}/authUser/profile`, { withCredentials: true });
       const user = userRes.data.user || userRes.data;
       console.log("👤 User Profile:", user);
-      const userId = user._id || 'mock_user_123';
-      
+      const userId = user._id;
+
       // finCode formData-dan gəlir, yoxdursa user profilindən götür
       const finCode = formData.finCode || user.finCode;
       console.log("🔑 FIN Code:", finCode);
-      */
 
       if (!finCode || finCode.trim() === '') {
         alert('FİN kodu tapılmadı. Zəhmət olmasa formu yenidən doldurun və FİN kodunu daxil edin.');

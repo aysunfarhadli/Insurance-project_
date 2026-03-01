@@ -151,8 +151,8 @@ function Payment() {
       setLoading(true);
       const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://insurance-project-e1xh.onrender.com';
 
-      // Get browser details for 3D Secure 2.0 (Cibpay API requires snake_case format)
-      const browserDetails = {
+      // Get browser details for 3D Secure 2.0 (Cibpay Direct API - browserInfo schema)
+      const browserInfo = {
         acceptHeader: navigator.acceptHeader || "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
         javaEnabled: navigator.javaEnabled ? navigator.javaEnabled() : false,
         javascriptEnabled: true,
@@ -160,8 +160,7 @@ function Payment() {
         colorDepth: screen.colorDepth || 24,
         screenHeight: screen.height || 1080,
         screenWidth: screen.width || 1920,
-        timeZoneOffset: new Date().getTimezoneOffset(),
-        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || "Asia/Baku",
+        timeZone: new Date().getTimezoneOffset(),
         userAgent: navigator.userAgent || ""
       };
 
@@ -221,13 +220,12 @@ function Payment() {
           email: orderData.email || "test@email.com"
         },
         options: {
-          force3d: 1,
-          browser: browserDetails
+          force3d: 1
         },
         location: {
           ip: "93.88.94.130"
         },
-        browserDetails
+        browserInfo
       });
 
       // Check if authorization was successful
@@ -239,7 +237,8 @@ function Payment() {
       try {
         const chargeRes = await axios.post(`${API_BASE}/api/payment/orders/charge`, {
           orderId: cibpayOrderId,
-          merchant_order_id: orderData.orderId || orderId
+          merchant_order_id: orderData.orderId || orderId,
+          amount: amount // send capture amount (matches authorization)
         });
         
         // Check payment status
