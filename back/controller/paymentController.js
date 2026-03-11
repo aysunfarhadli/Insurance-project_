@@ -2,6 +2,8 @@
   const https = require('https');
   const fs = require('fs');
   const path = require('path');
+const tls = require('tls');
+const crypto = require('crypto');
   const { getBrowserDetailsFromRequest } = require('../browserDetails/index.js');
   require("dotenv").config();
   const Order = require("../models/cibpay");
@@ -16,12 +18,32 @@
 
   // HTTPS agent for pfx certificate (optional) and strict mode depending on env
   const pfxPath = process.env.CIBPAY_PFX_PATH || "./cert/api-cibpay.p12";
-  const agent = new https.Agent({
-    pfx: fs.existsSync(pfxPath) ? fs.readFileSync(pfxPath) : undefined,
-    passphrase: process.env.CIBPAY_PFX_PASSPHRASE,
-    // in production we should validate the cert, this flag can be toggled via env
-    rejectUnauthorized: process.env.NODE_ENV === "production"
-  });
+const usePfx =
+  String(process.env.CIBPAY_USE_PFX ?? (process.env.NODE_ENV === "production" ? "true" : "false"))
+    .toLowerCase() === "true";
+
+let pfxBuffer;
+if (usePfx && fs.existsSync(pfxPath)) {
+  pfxBuffer = fs.readFileSync(pfxPath);
+  const passphrase = process.env.CIBPAY_PFX_PASSPHRASE;
+  try {
+    // Fail fast with a clear error if the .p12/.pfx can't be opened
+    tls.createSecureContext({ pfx: pfxBuffer, passphrase });
+  } catch (e) {
+    const hint =
+      "Invalid CIBPAY PFX or passphrase. Fix CIBPAY_PFX_PASSPHRASE, replace the .p12 file, " +
+      "or disable certificate usage with CIBPAY_USE_PFX=false (recommended for sandbox unless required).";
+    e.message = `${e.message} | ${hint}`;
+    throw e;
+  }
+}
+
+const agent = new https.Agent({
+  pfx: pfxBuffer,
+  passphrase: process.env.CIBPAY_PFX_PASSPHRASE,
+  // in production we should validate the cert, this flag can be toggled via env
+  rejectUnauthorized: process.env.NODE_ENV === "production"
+});
   /**
    * Authorize - Kartla ödəniş yaratmaq
    */
@@ -192,7 +214,8 @@ const cibpayWebhook = async (req, res) => {
         email: client?.email || "test@mail.com"
       },
       options: {
-        force3d: options?.force3d || 1
+        force3d: options?.force3d || 1,
+        ...(options?.terminal ? { terminal: String(options.terminal) } : {})
       },
       browserInfo: finalBrowserInfo,
       device: {
@@ -215,7 +238,8 @@ const cibpayWebhook = async (req, res) => {
         {
           headers: {
             Authorization: `Basic ${auth}`,
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            Accept: "application/json"
           },
           httpsAgent: agent
         }
@@ -318,6 +342,42 @@ const cibpayWebhook = async (req, res) => {
   };
 
   /**
+   * Get order by Merchant Order ID (CIBPay API)
+   * GET /orders/?merchant_order_id={merchant_order_id}
+   */
+  const getOrderByMerchantId = async (req, res) => {
+    try {
+      const { merchantOrderId } = req.params;
+      if (!merchantOrderId) {
+        return res.status(400).json({ success: false, error: "merchantOrderId is required" });
+      }
+
+      const response = await axios.get(`${BASE_URL}/orders/`, {
+        params: { merchant_order_id: merchantOrderId },
+        headers: {
+          Authorization: `Basic ${auth}`,
+          Accept: "application/json"
+        },
+        httpsAgent: agent
+      });
+
+      const order =
+        Array.isArray(response.data?.orders) && response.data.orders.length > 0
+          ? response.data.orders[0]
+          : null;
+
+      return res.json({ success: true, data: response.data, order });
+    } catch (error) {
+      console.error("Error fetching order by merchant id:", error.response?.data || error.message);
+      return res.status(error.response?.status || 500).json({
+        success: false,
+        error: "Failed to fetch order by merchant id",
+        details: error.response?.data || error.message
+      });
+    }
+  };
+
+  /**
    * Create order
    */
   const createOrder = async (req, res) => {
@@ -343,22 +403,39 @@ const cibpayWebhook = async (req, res) => {
       expiration_timeout: req.body.options?.expiration_timeout || "30m", // 30 dəqiqə (4320m çox böyükdür)
       force3d: req.body.options?.force3d || 1,
       language: req.body.options?.language || "az",
-      return_url: req.body.options?.return_url || "https://cibpay.az"
-      // terminal parametri tamamilə silindi - Cibpay API-də bu parametr validation xətası verir
+      return_url: req.body.options?.return_url || "https://cibpay.az",
+      // Some test cards require a specific terminal (per CIBPay integration doc).
+      // If omitted, CIBPay uses the merchant's default terminal.
+      ...(req.body.options?.terminal ? { terminal: String(req.body.options.terminal) } : {})
     };
 
     const orderData = {
-      amount: String(parseFloat(req.body.amount)),
+      amount: Number.parseFloat(req.body.amount).toFixed(2),
       currency: req.body.currency || "AZN",
       merchant_order_id: String(req.body.merchant_order_id),
       options: options,
+      // Bank-side validation often expects these fields; provide safe defaults.
+      custom_fields: {
+        home_phone_country_code: req.body.custom_fields?.home_phone_country_code || "994",
+        home_phone_subscriber: req.body.custom_fields?.home_phone_subscriber || "129998877",
+        mobile_phone_country_code: req.body.custom_fields?.mobile_phone_country_code || "055",
+        mobile_phone_subscriber: req.body.custom_fields?.mobile_phone_subscriber || "5554433",
+        work_phone_country_code: req.body.custom_fields?.work_phone_country_code || "010",
+        work_phone_subscriber: req.body.custom_fields?.work_phone_subscriber || "2223344"
+      },
       client: {
         name: req.body.client?.name || "Test",
-        email: req.body.client?.email || "test@mail.com"
+        email: req.body.client?.email || "test@mail.com",
+        phone: req.body.client?.phone || "99455555555",
+        city: req.body.client?.city || "Baku",
+        country: req.body.client?.country || "AZE",
+        address: req.body.client?.address || "1, Azerbaijan ave.",
+        zip: req.body.client?.zip || "1000"
       }
     };
 
     console.log("Creating order with data:", JSON.stringify(orderData, null, 2));
+    const requestId = req.headers["x-request-id"] || crypto.randomUUID();
 
     const response = await axios.post(
       `${BASE_URL}/orders/create`,
@@ -366,11 +443,27 @@ const cibpayWebhook = async (req, res) => {
       {
         headers: {
           Authorization: `Basic ${auth}`,
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          "X-Request-Id": requestId
         },
         httpsAgent: agent
       }
     );
+
+    // CIBPay typically returns { orders: [...] } for create order
+    const createdOrder =
+      Array.isArray(response.data?.orders) && response.data.orders.length > 0
+        ? response.data.orders[0]
+        : response.data;
+
+    // CIBPay may return the checkout link in the Location response header
+    const checkout_url =
+      response.headers?.location ||
+      response.headers?.Location ||
+      createdOrder?.checkout_url ||
+      createdOrder?.checkoutUrl ||
+      null;
 
     // Save to MongoDB
     await Order.findOneAndUpdate(
@@ -379,13 +472,15 @@ const cibpayWebhook = async (req, res) => {
         orderId: orderData.merchant_order_id,
         amount: orderData.amount,
         currency: orderData.currency,
-        status: response.data.status || "NEW",
-        rawResponse: response.data
+        status: createdOrder?.status || "new",
+        transactionId: createdOrder?.id || undefined,
+        rawResponse: response.data,
+        checkoutUrl: checkout_url || undefined
       },
       { upsert: true, new: true }
     );
 
-    res.json({ success: true, data: response.data });
+    res.json({ success: true, data: response.data, order: createdOrder, checkout_url });
   } catch (error) {
     console.error("Error creating order:", error.response?.data || error.message);
     
@@ -754,6 +849,7 @@ module.exports = {
   authorizePayment,
   getOrders,
   getOrderById,
+  getOrderByMerchantId,
   createOrder,
   createOrderMKRecurring,
   chargePayment,

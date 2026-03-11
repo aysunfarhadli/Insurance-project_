@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { Eye, EyeOff } from "lucide-react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import logo from "../../assets/cib pay logo png.png";
@@ -11,8 +10,6 @@ import mastercardSecurecode from "../../assets/mastercard-securecode.webp";
 import pciDss from "../../assets/pci-dss-compliant-logo-vector.png";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import { Button } from "../../components/ui/button";
-import { Input } from "../../components/ui/input";
-import { Label } from "../../components/ui/label";
 import styles from "./index.module.scss";
 
 axios.defaults.withCredentials = true;
@@ -25,16 +22,9 @@ function Payment() {
   const [pageLoading, setPageLoading] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [showCvv, setShowCvv] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [orderData, setOrderData] = useState({});
-  const [cardData, setCardData] = useState({
-    pan: "",
-    cvv: "",
-    expiration_month: "",
-    expiration_year: "",
-    holder: ""
-  });
+  const [terminal, setTerminal] = useState("kapital");
 
   useEffect(() => {
     // Check authentication and load order data
@@ -70,6 +60,7 @@ function Payment() {
         // Load order data
         const data = location.state?.orderData || JSON.parse(sessionStorage.getItem('paymentOrderData') || '{}');
         setOrderData(data);
+        if (data?.terminal) setTerminal(String(data.terminal));
         
         // Check if order data exists
         if (!orderId && !data.orderId) {
@@ -93,76 +84,13 @@ function Payment() {
     checkAuthAndLoadData();
   }, [orderId, location.state, navigate]);
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-
-    // Format card number (no spaces - as per cibpay requirement)
-    if (name === 'pan') {
-      const cleaned = value.replace(/\s/g, '');
-      if (cleaned.length <= 16 && /^\d*$/.test(cleaned)) {
-        setCardData(prev => ({ ...prev, [name]: cleaned }));
-      }
-    }
-    // Format CVV (max 3 digits)
-    else if (name === 'cvv') {
-      if (value.length <= 3 && /^\d*$/.test(value)) {
-        setCardData(prev => ({ ...prev, [name]: value }));
-      }
-    }
-    // Format expiration month (01-12)
-    else if (name === 'expiration_month') {
-      if (value.length <= 2 && /^\d*$/.test(value)) {
-        const month = parseInt(value) || 0;
-        if (month <= 12) {
-          setCardData(prev => ({ ...prev, [name]: value.padStart(2, '0') }));
-        }
-      }
-    }
-    // Format expiration year (2 digits)
-    else if (name === 'expiration_year') {
-      if (value.length <= 2 && /^\d*$/.test(value)) {
-        setCardData(prev => ({ ...prev, [name]: value }));
-      }
-    }
-    else {
-      setCardData(prev => ({ ...prev, [name]: value }));
-    }
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
 
-    // Validate card data
-    if (!cardData.pan || cardData.pan.length < 16) {
-      setError("Kart nömrəsi düzgün deyil");
-      return;
-    }
-    if (!cardData.cvv || cardData.cvv.length < 3) {
-      setError("CVV düzgün deyil");
-      return;
-    }
-    if (!cardData.expiration_month || !cardData.expiration_year) {
-      setError("Kartın son istifadə tarixi düzgün deyil");
-      return;
-    }
-
     try {
       setLoading(true);
       const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://insurance-project-e1xh.onrender.com';
-
-      // Get browser details for 3D Secure 2.0 (Cibpay Direct API - browserInfo schema)
-      const browserInfo = {
-        acceptHeader: navigator.acceptHeader || "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-        javaEnabled: navigator.javaEnabled ? navigator.javaEnabled() : false,
-        javascriptEnabled: true,
-        language: navigator.language || "az-AZ",
-        colorDepth: screen.colorDepth || 24,
-        screenHeight: screen.height || 1080,
-        screenWidth: screen.width || 1920,
-        timeZone: new Date().getTimezoneOffset(),
-        userAgent: navigator.userAgent || ""
-      };
 
       // Validate order data before creating payment
       const merchantOrderId = orderData.orderId || orderId;
@@ -175,16 +103,25 @@ function Payment() {
         throw new Error("Məbləğ düzgün deyil");
       }
 
-      // Create payment order (with auto_charge: false to manually control the flow)
+      // Hosted checkout flow:
+      // Create order and redirect user to CIBPay checkout page (no card data handled by us).
+      const force3dByTerminal = {
+        kapital: 1,
+        millikart_test: 0,
+        atb: 0,
+        tamkart: 1
+      };
+
       const createOrderRes = await axios.post(`${API_BASE}/api/payment/orders/create`, {
         amount: amount,
         currency: orderData.currency || "AZN",
         merchant_order_id: String(merchantOrderId),
         options: {
-          auto_charge: false, // Manual authorize and charge
-          force3d: 1,
+          auto_charge: true,
+          force3d: force3dByTerminal[terminal] ?? 1,
           language: "az",
-          return_url: `${window.location.origin}/payment/success/${merchantOrderId}`
+          return_url: `${window.location.origin}/payment/success/${merchantOrderId}`,
+          ...(terminal ? { terminal: String(terminal) } : {})
         },
         client: {
           name: orderData.fullName || "Test User",
@@ -192,72 +129,20 @@ function Payment() {
         }
       });
 
-      // Cibpay API orders array qaytarır, ilk order-in id-sini götür
-      const cibpayOrderId = createOrderRes.data?.data?.orders?.[0]?.id || 
-                           createOrderRes.data?.data?.id;
+      const checkoutUrl =
+        createOrderRes.data?.checkout_url ||
+        createOrderRes.data?.order?.checkout_url ||
+        createOrderRes.data?.data?.orders?.[0]?.checkout_url ||
+        createOrderRes.data?.data?.orders?.[0]?.checkoutUrl;
 
-      if (!cibpayOrderId) {
-        console.error("Order response:", createOrderRes.data);
-        throw new Error("Ödəniş sifarişi yaradıla bilmədi - Order ID tapılmadı");
+      if (!checkoutUrl) {
+        console.error("Create order response:", createOrderRes.data);
+        throw new Error("Checkout link tapılmadı (checkout_url).");
       }
 
-      console.log("✅ Cibpay Order ID:", cibpayOrderId);
-
-      // Authorize payment with orderId
-      const authRes = await axios.post(`${API_BASE}/api/payment/authorize`, {
-        orderId: cibpayOrderId,
-        merchant_order_id: orderData.orderId || orderId,
-        amount: orderData.total_amount || 150.00,
-        pan: cardData.pan,
-        card: {
-          cvv: cardData.cvv,
-          expiration_month: parseInt(cardData.expiration_month),
-          expiration_year: 2000 + parseInt(cardData.expiration_year),
-          holder: cardData.holder || ""
-        },
-        client: {
-          name: orderData.fullName || "Test User",
-          email: orderData.email || "test@email.com"
-        },
-        options: {
-          force3d: 1
-        },
-        location: {
-          ip: "93.88.94.130"
-        },
-        browserInfo
-      });
-
-      // Check if authorization was successful
-      if (!authRes.data?.success) {
-        throw new Error(authRes.data?.error || "Ödəniş autorizasiyası uğursuz oldu");
-      }
-
-      // Charge payment after successful authorization
-      try {
-        const chargeRes = await axios.post(`${API_BASE}/api/payment/orders/charge`, {
-          orderId: cibpayOrderId,
-          merchant_order_id: orderData.orderId || orderId,
-          amount: amount // send capture amount (matches authorization)
-        });
-        
-        // Check payment status
-        const paymentStatus = chargeRes.data?.data?.status || chargeRes.data?.status;
-        if (paymentStatus === "PAID" || paymentStatus === "ISSUED" || paymentStatus === "CHARGED") {
-          console.log("Payment successful:", chargeRes.data);
-        } else if (paymentStatus === "DECLINED" || paymentStatus === "FAILED") {
-          const errorMsg = chargeRes.data?.data?.failure_message || chargeRes.data?.failure_message || "Ödəniş rədd edildi";
-          throw new Error(errorMsg);
-        } else {
-          console.log("Payment status:", paymentStatus);
-        }
-      } catch (chargeErr) {
-        console.error("Charge error:", chargeErr.response?.data || chargeErr.message);
-        // If charge fails, check if payment was already processed
-        if (chargeErr.response?.status !== 400 && chargeErr.response?.status !== 409) {
-          throw new Error(chargeErr.response?.data?.error || chargeErr.message || "Ödəniş zamanı xəta baş verdi");
-        }
-      }
+      // Redirect to CIBPay payment page
+      window.location.assign(checkoutUrl);
+      return;
 
       // Save payment data for success page
       const paymentSuccessData = {
@@ -341,6 +226,32 @@ function Payment() {
           </button>
         </div>
 
+        <div className={styles.formGroup}>
+          <label style={{ display: "block", marginBottom: 8, fontWeight: 600 }}>
+            Ödəniş metodu (test üçün terminal)
+          </label>
+          <select
+            value={terminal}
+            onChange={(e) => setTerminal(e.target.value)}
+            style={{
+              width: "100%",
+              padding: "10px 12px",
+              borderRadius: 10,
+              border: "1px solid rgba(0,0,0,0.15)",
+              background: "white"
+            }}
+            disabled={loading}
+          >
+            <option value="kapital">KapitalBank (Ecom)</option>
+            <option value="millikart_test">MilliKart (Ecom)</option>
+            <option value="atb">ATB (Ecom)</option>
+            <option value="tamkart">ABB Tamkart (Installment)</option>
+          </select>
+          <div style={{ marginTop: 8, fontSize: 12, opacity: 0.75 }}>
+            Qeyd: test kartlar terminala bağlıdır. “Tamkart” seçsəniz OTP adətən <b>1111</b> olur.
+          </div>
+        </div>
+
         {/* Card Brand Logos */}
         <div className={styles.cardBrands}>
           <img src={mastercard} alt="Mastercard" className={styles.brandLogo} />
@@ -353,92 +264,8 @@ function Payment() {
         <form className={styles.paymentForm} onSubmit={handleSubmit}>
           {error && <div className={styles.error}>{error}</div>}
 
-          <div className={styles.formGroup}>
-            <Label>Kart nömrəsi</Label>
-            <div>
-              <Input
-                type="text"
-                name="pan"
-                value={cardData.pan}
-                onChange={handleInputChange}
-                placeholder="Rəqəmləri boşluq olmadan doldurun"
-                maxLength="16"
-                required
-              />
-              <span className={styles.hint}>Rəqəmləri boşluq olmadan doldurun</span>
-
-            </div>
-          </div>
-
-          <div className={styles.formGroup}>
-            <Label>Etibarlıdır:</Label>
-            <div className={styles.expiryInputs}>
-              <select
-                name="expiration_month"
-                value={cardData.expiration_month}
-                onChange={handleInputChange}
-                required
-              >
-                <option value="">Ay</option>
-                {Array.from({ length: 12 }, (_, i) => {
-                  const month = String(i + 1).padStart(2, '0');
-                  return <option key={month} value={month}>{month}</option>;
-                })}
-              </select>
-              <select
-                name="expiration_year"
-                value={cardData.expiration_year}
-                onChange={handleInputChange}
-                required
-              >
-                <option value="">İl</option>
-                {Array.from({ length: 10 }, (_, i) => {
-                  const year = String(new Date().getFullYear() % 100 + i).padStart(2, '0');
-                  return <option key={year} value={year}>{year}</option>;
-                })}
-              </select>
-            </div>
-          </div>
-
-          <div className={styles.formGroup}>
-            <Label>CVV</Label>
-            <div className={styles.cvvInputWrapper}>
-              <Input
-                type={showCvv ? "text" : "password"}
-                name="cvv"
-                value={cardData.cvv}
-                onChange={handleInputChange}
-                placeholder=""
-                maxLength="3"
-                required
-              />
-              <button
-                type="button"
-                className={styles.eyeButton}
-                onClick={() => setShowCvv(!showCvv)}
-              >
-                {showCvv ? <EyeOff size={18} /> : <Eye size={18} />}
-              </button>
-              <span className={styles.hint}>Kartın arxasındakı son 3 rəqəm</span>
-            </div>
-          </div>
-
-          <div className={styles.formGroup}>
-            <Label>Kart sahibi</Label>
-            <div>
-              <Input
-                type="text"
-                name="holder"
-                value={cardData.holder}
-                onChange={handleInputChange}
-                placeholder=""
-              />
-              <span className={styles.hint}>Kartda ad yoxdursa boş saxlayın</span>
-            </div>
-          </div>
-
           <Button type="submit" className={styles.submitButton} disabled={loading} style={{ width: '100%' }}>
-            {loading ? "Ödəniş edilir..." : "Ödə"}
+            {loading ? "CIBPay səhifəsi açılır..." : "Ödəniş səhifəsinə keç"}
           </Button>
         </form>
 

@@ -201,7 +201,9 @@
 .formGroup {
   display: flex;
   gap: 12px;
+  flex-direction: column;
   align-items: flex-start;
+  padding: 2rem;
   
   label {
     font-size: 14px;

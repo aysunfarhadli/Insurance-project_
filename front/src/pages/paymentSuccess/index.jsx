@@ -1,35 +1,89 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Download, Home, HelpCircle, Shield, Check } from "lucide-react";
+import axios from "axios";
 import styles from "./index.module.scss";
 
 function PaymentSuccess() {
   const { orderId } = useParams();
   const navigate = useNavigate();
   const [paymentData, setPaymentData] = useState(null);
+  const [status, setStatus] = useState({ loading: true, ok: false, message: "" });
 
   useEffect(() => {
-    // Get payment data from sessionStorage
-    const savedData = sessionStorage.getItem('paymentSuccessData');
-    if (savedData) {
-      const data = JSON.parse(savedData);
-      // Format orderId as insurance policy number
-      if (data.orderId && !data.orderId.startsWith('POL-')) {
-        data.orderId = `POL-${data.orderId}`;
+    const run = async () => {
+      try {
+        setStatus({ loading: true, ok: false, message: "" });
+        const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://insurance-project-e1xh.onrender.com';
+
+        // Verify payment status from CIBPay using merchant order id (our internal orderId)
+        const verifyRes = await axios.get(`${API_BASE}/api/payment/orders/merchant/${orderId}`);
+        const cibOrder = verifyRes.data?.order;
+        const cibStatus = cibOrder?.status;
+
+        if (cibStatus !== "charged") {
+          const msg = cibOrder?.failure_message || cibOrder?.failure_type || `Payment not successful (status: ${cibStatus || "unknown"})`;
+          setStatus({ loading: false, ok: false, message: msg });
+          return;
+        }
+
+        // Create local order only AFTER successful charge
+        const pendingStr = sessionStorage.getItem("pendingOrder");
+        if (!pendingStr) {
+          setStatus({ loading: false, ok: true, message: "Payment verified, but pending order data not found." });
+          return;
+        }
+        const pending = JSON.parse(pendingStr);
+
+        const orderRes = await axios.post(`${API_BASE}/api/orders`, {
+          finCode: pending.finCode,
+          category_id: pending.category_id,
+          userId: pending.userId,
+          status: "paid",
+          start_date: pending.start_date,
+          end_date: pending.end_date,
+          currency: pending.currency,
+          total_amount: pending.total_amount
+        });
+
+        const createdOrderId = orderRes.data?.data?.orderId;
+        if (!createdOrderId) {
+          setStatus({ loading: false, ok: true, message: "Payment verified, but local order ID not returned." });
+          return;
+        }
+
+        // Save specific form now that order exists
+        if (pending.specificData && Object.keys(pending.specificData).length > 0) {
+          await axios.post(`${API_BASE}/api/order-form-specific`, {
+            order_id: createdOrderId,
+            category_code: pending.category_code,
+            details: pending.specificData
+          });
+        }
+
+        // Build success view data
+        const paymentOrderData = JSON.parse(sessionStorage.getItem('paymentOrderData') || '{}');
+        setPaymentData({
+          orderId: `POL-${createdOrderId}`,
+          insuranceType: paymentOrderData.insuranceType || "Sığorta",
+          amount: Number(pending.total_amount || 0),
+          currency: pending.currency || "AZN",
+          email: paymentOrderData.email || "example@email.com",
+          paymentDate: new Date().toISOString()
+        });
+
+        // Cleanup so refresh doesn't try again
+        sessionStorage.removeItem("pendingOrder");
+        sessionStorage.removeItem("paymentOrderData");
+
+        setStatus({ loading: false, ok: true, message: "" });
+      } catch (e) {
+        const msg = e.response?.data?.details?.failure_message || e.response?.data?.message || e.message || "Error";
+        setStatus({ loading: false, ok: false, message: msg });
       }
-      setPaymentData(data);
-    } else {
-      // Fallback data
-      const fallbackOrderId = orderId || `POL-${Date.now()}`;
-      setPaymentData({
-        orderId: fallbackOrderId.startsWith('POL-') ? fallbackOrderId : `POL-${fallbackOrderId}`,
-        insuranceType: "Avtomobil Məsuliyyət Sığortası",
-        amount: 150.00,
-        currency: "AZN",
-        email: "example@email.com",
-        paymentDate: new Date().toISOString()
-      });
-    }
+    };
+
+    run();
   }, [orderId]);
 
   const formatDate = (dateString) => {
@@ -45,6 +99,29 @@ function PaymentSuccess() {
     // In a real app, this would download the insurance document
     alert("Sığorta faylı yüklənir...");
   };
+
+  if (status.loading) {
+    return <div className={styles.container}>Yoxlanılır...</div>;
+  }
+
+  if (!status.ok) {
+    return (
+      <div className={styles.container}>
+        <div className={styles.successMessage}>
+          <h1>Ödəniş uğursuz oldu</h1>
+          <p>{status.message || "Ödəniş rədd edildi."}</p>
+        </div>
+        <div className={styles.actions}>
+          <button className={styles.secondaryButton} onClick={() => navigate(`/payment/${orderId}`)}>
+            Yenidən cəhd et
+          </button>
+          <button className={styles.secondaryButton} onClick={() => navigate('/umumiSig')}>
+            Əsas səhifəyə qayıt
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (!paymentData) {
     return <div className={styles.container}>Yüklənir...</div>;

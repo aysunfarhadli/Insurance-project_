@@ -132,28 +132,11 @@ function CompanySelection() {
         return;
       }
 
-      // Create order
-      const orderRes = await axios.post(`${API_BASE}/api/orders`, {
-        finCode: finCode,
-        category_id: id,
-        userId: userId,
-        company_id: company._id,
-        status: "pending",
-        start_date: new Date().toISOString(),
-        end_date: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
-        currency: "AZN",
-        total_amount: 100,
-      });
+      // Prepare data for later persistence AFTER successful payment
+      const merchantOrderId = `ORD${Date.now()}${Math.random().toString(36).slice(2, 6)}`;
 
-      const orderId = orderRes.data?.data?.orderId;
-
-      if (!orderId) {
-        throw new Error("Order ID alınmadı!");
-      }
-
-      // Save specific form data
-      const specificData = {};
       // Extract category-specific fields
+      const specificData = {};
       Object.keys(formData).forEach(key => {
         if (!['fullName', 'firstName', 'lastName', 'fatherName', 'passportNumber',
           'finCode', 'voen', 'birthDate', 'gender', 'phone', 'email', 'address',
@@ -162,15 +145,25 @@ function CompanySelection() {
         }
       });
 
-      await axios.post(`${API_BASE}/api/order-form-specific`, {
-        order_id: orderId,
+      const pendingOrder = {
+        merchantOrderId,
+        finCode,
+        category_id: id,
+        userId,
+        company_id: company._id,
+        status: "pending",
+        start_date: new Date().toISOString(),
+        end_date: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
+        currency: "AZN",
+        total_amount: 150.00,
         category_code: formData.category || category?.code,
-        details: specificData
-      });
+        specificData
+      };
+      sessionStorage.setItem("pendingOrder", JSON.stringify(pendingOrder));
 
       // Prepare payment data
       const paymentOrderData = {
-        orderId: orderId,
+        orderId: merchantOrderId,
         insuranceType: category?.name || "Avtomobil Məsuliyyət Sığortası",
         total_amount: 150.00, // You can get this from orderRes or company data
         currency: "AZN",
@@ -184,7 +177,7 @@ function CompanySelection() {
       sessionStorage.setItem('paymentOrderData', JSON.stringify(paymentOrderData));
 
       // Navigate to payment page
-      navigate(`/payment/${orderId}`);
+      navigate(`/payment/${merchantOrderId}`);
     } catch (err) {
       console.error("Göndərmə xətası:", err);
       const errorMessage = err.response?.data?.message || err.message || "Göndərmə zamanı xəta baş verdi.";
