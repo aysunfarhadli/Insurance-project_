@@ -21,8 +21,21 @@ function PaymentSuccess() {
         const cibOrder = verifyRes.data?.order;
         const cibStatus = cibOrder?.status;
 
-        if (cibStatus !== "charged") {
-          const msg = cibOrder?.failure_message || cibOrder?.failure_type || `Payment not successful (status: ${cibStatus || "unknown"})`;
+        // Debug log to help during integration
+        console.log("CIBPay order for merchant_order_id:", orderId, {
+          status: cibStatus,
+          failure_message: cibOrder?.failure_message,
+          failure_type: cibOrder?.failure_type
+        });
+
+        // Accept typical "success" statuses; everything else is treated as failure
+        const successStatuses = new Set(["charged", "CHARGED", "paid", "PAID", "issued", "ISSUED"]);
+
+        if (!successStatuses.has(cibStatus || "")) {
+          const msg =
+            cibOrder?.failure_message ||
+            cibOrder?.failure_type ||
+            `Ödəniş müvəffəqiyyətlə tamamlanmadı (status: ${cibStatus || "unknown"})`;
           setStatus({ loading: false, ok: false, message: msg });
           return;
         }
