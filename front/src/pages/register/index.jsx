@@ -141,7 +141,16 @@ const Register = () => {
               fontSize: '14px'
             }}>{message}</p>}
 
-            <p className="login-link">{t('common.haveAccount')} <a href="/login">{t('auth.login')}</a></p>
+            <p className="login-link">
+              {t('common.haveAccount')}{" "}
+              <button
+                type="button"
+                onClick={() => navigate("/login")}
+                style={{ background: "none", border: "none", padding: 0, color: "#2563eb", cursor: "pointer" }}
+              >
+                {t('auth.login')}
+              </button>
+            </p>
           </form>
         </CardContent>
       </Card>

@@ -97,7 +97,14 @@ const Login = () => {
               </Button>
 
               <p className="register-link">
-                {t('common.noAccount')} <a href="/register">{t('common.register')}</a>
+                {t('common.noAccount')}{" "}
+                <button
+                  type="button"
+                  onClick={() => navigate("/register")}
+                  style={{ background: "none", border: "none", padding: 0, color: "#2563eb", cursor: "pointer" }}
+                >
+                  {t('common.register')}
+                </button>
               </p>
             </form>
           </CardContent>
