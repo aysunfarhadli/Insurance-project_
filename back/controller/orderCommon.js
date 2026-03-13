@@ -1,12 +1,12 @@
 const OrderFormCommon = require("../models/orderCommon");
-const Order = require("../models/insurer");
+const InsuranceOrder = require("../models/insurer");
 
 // Create
 exports.createOrderFormCommon = async (req, res) => {
   try {
     const { order_id } = req.body;
 
-    const order = await Order.findById(order_id);
+    const order = await InsuranceOrder.findById(order_id);
     if (!order) return res.status(404).json({ message: "Order not found" });
 
     const exists = await OrderFormCommon.findOne({ order_id });

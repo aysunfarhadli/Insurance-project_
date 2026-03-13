@@ -1,12 +1,12 @@
 const Document = require("../models/document");
-const Order = require("../models/insurer");
+const InsuranceOrder = require("../models/insurer");
 
 // Create document
 exports.createDocument = async (req, res) => {
   try {
     const { order_id, type, file_url } = req.body;
 
-    const order = await Order.findById(order_id);
+    const order = await InsuranceOrder.findById(order_id);
     if (!order) return res.status(404).json({ message: "Order not found" });
 
     const document = new Document({ order_id, type, file_url });

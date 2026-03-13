@@ -1,5 +1,5 @@
 const OrderFormSpecific = require("../models/orderSpecific");
-const Order = require("../models/insurer");
+const InsuranceOrder = require("../models/insurer");
 
 // 🔹 Create
 exports.createOrderFormSpecific = async (req, res) => {
@@ -7,7 +7,7 @@ exports.createOrderFormSpecific = async (req, res) => {
     const { order_id, category_code, details } = req.body;
 
     // ✅ Find order by custom string orderId, not Mongo _id
-    const order = await Order.findOne({ orderId: order_id });
+    const order = await InsuranceOrder.findOne({ orderId: order_id });
     if (!order) {
       return res.status(404).json({ message: "Order not found" });
     }

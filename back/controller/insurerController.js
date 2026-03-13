@@ -1,4 +1,4 @@
-const Order = require("../models/insurer");
+const InsuranceOrder = require("../models/insurer");
 const User = require("../models/authUser");
 const Category = require("../models/insCategory");
 
@@ -35,7 +35,7 @@ exports.createOrder = async (req, res) => {
     }
 
     // ✅ Yeni order yarat
-    const order = new Order({
+    const order = new InsuranceOrder({
       finCode,
       category_id,
       status,
@@ -86,7 +86,7 @@ exports.calculatePrice = (req, res) => {
 // 🔹 Bütün order-ləri al (finCode ilə user məlumatı)
 exports.getOrders = async (req, res) => {
   try {
-    const orders = await Order.find()
+    const orders = await InsuranceOrder.find()
       .populate({ path: "category_id", select: "name code" })
     // .populate({ path: "product_id", select: "name code" });
 
@@ -107,7 +107,7 @@ exports.getOrders = async (req, res) => {
 // 🔹 Tək order
 exports.getOrderById = async (req, res) => {
   try {
-    const order = await Order.findById(req.params.id)
+    const order = await InsuranceOrder.findById(req.params.id)
       .populate({ path: "category_id", select: "name code" })
     // .populate({ path: "product_id", select: "name code" });
 
@@ -123,7 +123,7 @@ exports.getOrderById = async (req, res) => {
 // 🔹 Update
 exports.updateOrder = async (req, res) => {
   try {
-    const order = await Order.findByIdAndUpdate(req.params.id, req.body, { new: true })
+    const order = await InsuranceOrder.findByIdAndUpdate(req.params.id, req.body, { new: true })
       .populate({ path: "category_id", select: "name code" })
     // .populate({ path: "product_id", select: "name code" });
 
@@ -139,7 +139,7 @@ exports.updateOrder = async (req, res) => {
 // 🔹 Delete
 exports.deleteOrder = async (req, res) => {
   try {
-    const order = await Order.findByIdAndDelete(req.params.id);
+    const order = await InsuranceOrder.findByIdAndDelete(req.params.id);
     if (!order) return res.status(404).json({ message: "Order tapılmadı" });
     res.json({ message: "Order silindi" });
   } catch (err) {

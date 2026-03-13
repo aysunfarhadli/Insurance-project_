@@ -6,7 +6,7 @@ const tls = require('tls');
 const crypto = require('crypto');
   const { getBrowserDetailsFromRequest } = require('../browserDetails/index.js');
   require("dotenv").config();
-  const Order = require("../models/cibpay");
+  const CibpayOrder = require("../models/cibpay");
 
   // Configuration - use environment variables so credentials aren't hardcoded.
   const CIBPAY_USER = process.env.CIBPAY_USER || process.env.CIBPAY_USERNAME || "cibpay";
@@ -52,7 +52,7 @@ const agent = new https.Agent({
 const getOrderStatus = async (req, res) => {
   try {
     const { orderId } = req.params;
-    const order = await Order.findOne({ orderId });
+    const order = await CibpayOrder.findOne({ orderId });
 
     if (!order) {
       return res.status(404).json({ success: false, message: "Order not found" });
@@ -103,7 +103,7 @@ const cibpayWebhook = async (req, res) => {
     }
 
     for (const cibOrder of orders) {
-      await Order.findOneAndUpdate(
+      await CibpayOrder.findOneAndUpdate(
         { orderId: cibOrder.merchant_order_id },
         {
           transactionId: cibOrder.id,
@@ -251,7 +251,7 @@ const cibpayWebhook = async (req, res) => {
         : pan;
       
       // persist/update local order record using the merchant order id the client supplied
-      await Order.findOneAndUpdate(
+      await CibpayOrder.findOneAndUpdate(
         { orderId: orderId },
         {
           transactionId: response.data.id || orderId,
@@ -466,7 +466,7 @@ const cibpayWebhook = async (req, res) => {
       null;
 
     // Save to MongoDB
-    await Order.findOneAndUpdate(
+    await CibpayOrder.findOneAndUpdate(
       { orderId: orderData.merchant_order_id },
       {
         orderId: orderData.merchant_order_id,
@@ -593,7 +593,7 @@ const cibpayWebhook = async (req, res) => {
       
       // Update order status in database
       if (merchant_order_id || response.data.merchant_order_id) {
-        await Order.findOneAndUpdate(
+        await CibpayOrder.findOneAndUpdate(
           { orderId: merchant_order_id || response.data.merchant_order_id },
           {
             transactionId: response.data.id || orderId,
@@ -638,7 +638,7 @@ const cibpayWebhook = async (req, res) => {
         });
       
       // update local order status for traceability
-      await Order.findOneAndUpdate(
+      await CibpayOrder.findOneAndUpdate(
         { orderId },
         {
           status: response.data.status || "CANCELED",
@@ -681,7 +681,7 @@ const cibpayWebhook = async (req, res) => {
         });
       
       // update DB
-      await Order.findOneAndUpdate(
+      await CibpayOrder.findOneAndUpdate(
         { orderId },
         {
           status: response.data.status || "REFUNDED",
@@ -720,7 +720,7 @@ const cibpayWebhook = async (req, res) => {
       });
 
       // update local record
-      await Order.findOneAndUpdate(
+      await CibpayOrder.findOneAndUpdate(
         { orderId },
         {
           status: response.data.status || "CANCELED",

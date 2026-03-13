@@ -17,7 +17,7 @@ const orderSchema = new mongoose.Schema(
       required: true,
     },
 
-    // finCode: { type: String, ref: "User", required: true },
+    finCode: { type: String, required: true },
     category_id: { type: mongoose.Schema.Types.ObjectId, ref: "Category", required: true },
     status: {
       type: String,
@@ -32,7 +32,4 @@ const orderSchema = new mongoose.Schema(
   { timestamps: { createdAt: "created_at", updatedAt: "updated_at" } }
 );
 
-// ✅ Əvvəlki modeli silirik ki, OverwriteModelError olmasın
-delete mongoose.models.Order;
-
-module.exports = mongoose.model("Order", orderSchema);
+module.exports = mongoose.model("InsuranceOrder", orderSchema);
