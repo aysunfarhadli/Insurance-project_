@@ -39,6 +39,7 @@ const allowedOrigins = [
   "https://insurance-project-dsji.vercel.app"
 ];
 
+
 app.use(cors({
   origin: function (origin, callback) {
     // allow Postman / server-to-server requests
@@ -54,7 +55,6 @@ app.use(cors({
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"]
 }));
-
 // CORS middleware already handles OPTIONS preflight requests automatically
 
 /* -------------------- RATE LIMIT -------------------- */
