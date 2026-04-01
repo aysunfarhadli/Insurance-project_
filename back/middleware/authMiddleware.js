@@ -1,6 +1,16 @@
 const jwt = require("jsonwebtoken");
 
 const authMiddleware = (req, res, next) => {
+    // If login is disabled, skip authentication and set a test user
+    if (process.env.ENABLE_LOGIN === 'false') {
+        req.user = {
+            id: "test_user_id",
+            email: "test@example.com",
+            role: "admin"
+        };
+        return next();
+    }
+
     const token = req.cookies.token; // cookie-dən götürürük
 
     if (!token) {

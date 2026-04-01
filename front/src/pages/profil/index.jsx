@@ -36,10 +36,18 @@ const Profile = () => {
       const API_BASE =
         import.meta.env.VITE_API_BASE_URL ||
         "https://insurance-project-e1xh.onrender.com";
+      const enableLogin = import.meta.env.VITE_ENABLE_LOGIN !== 'false';
 
       try {
         setLoading(true);
         setError("");
+
+        // If login is disabled, skip authentication check
+        if (!enableLogin) {
+          setIsAuthenticated(true);
+          setLoading(false);
+          return;
+        }
 
         // Auth + Profile
         const authRes = await axios.get(`${API_BASE}/authUser/profile`, {

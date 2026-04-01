@@ -114,15 +114,22 @@ function CompanySelection() {
       setLoading(true);
 
       const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://insurance-project-e1xh.onrender.com';
+      const enableLogin = import.meta.env.VITE_ENABLE_LOGIN !== 'false';
 
-      // Get user ID and finCode from real authenticated user
-      const userRes = await axios.get(`${API_BASE}/authUser/profile`, { withCredentials: true });
-      const user = userRes.data.user || userRes.data;
-      console.log("👤 User Profile:", user);
-      const userId = user._id;
+      let userId = "test_user_id";
+      
+      // Only fetch user profile if login is enabled
+      if (enableLogin) {
+        const userRes = await axios.get(`${API_BASE}/authUser/profile`, { withCredentials: true });
+        const user = userRes.data.user || userRes.data;
+        console.log("👤 User Profile:", user);
+        userId = user._id;
+      } else {
+        console.log("✅ Login disabled - using test user");
+      }
 
       // finCode formData-dan gəlir, yoxdursa user profilindən götür
-      const finCode = formData.finCode || user.finCode;
+      const finCode = formData.finCode;
       console.log("🔑 FIN Code:", finCode);
 
       if (!finCode || finCode.trim() === '') {

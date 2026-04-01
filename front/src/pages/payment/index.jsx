@@ -28,34 +28,34 @@ function Payment() {
 
   useEffect(() => {
     // Check authentication and load order data
-    // COMMENTED OUT FOR TESTING - Uncomment to enable authentication
     const checkAuthAndLoadData = async () => {
       try {
         setPageLoading(true);
-        // Mock authentication for testing
-        setIsAuthenticated(true);
-        
-        /* UNCOMMENT BELOW TO ENABLE AUTHENTICATION
         const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://insurance-project-e1xh.onrender.com';
-        
+        const enableLogin = import.meta.env.VITE_ENABLE_LOGIN !== 'false';
+
         // Check authentication first
-        try {
-          const authRes = await axios.get(`${API_BASE}/authUser/profile`, { withCredentials: true });
-          const user = authRes.data.user || authRes.data;
-          if (user) {
-            setIsAuthenticated(true);
-          } else {
+        if (enableLogin) {
+          try {
+            const authRes = await axios.get(`${API_BASE}/authUser/profile`, { withCredentials: true });
+            const user = authRes.data.user || authRes.data;
+            if (user) {
+              setIsAuthenticated(true);
+            } else {
+              // Birbaşa login-ə yönləndir
+              navigate("/login");
+              return;
+            }
+          } catch (authErr) {
+            console.error("Authentication check failed:", authErr);
             // Birbaşa login-ə yönləndir
             navigate("/login");
             return;
           }
-        } catch (authErr) {
-          console.error("Authentication check failed:", authErr);
-          // Birbaşa login-ə yönləndir
-          navigate("/login");
-          return;
+        } else {
+          // If login is disabled, skip authentication
+          setIsAuthenticated(true);
         }
-        */
 
         // Load order data
         const data = location.state?.orderData || JSON.parse(sessionStorage.getItem('paymentOrderData') || '{}');
