@@ -154,6 +154,15 @@ const cibpayWebhook = async (req, res) => {
       return res.status(400).json({ success: false, error: "Card details (cvv and expiry) are required" });
     }
 
+    // ✅ CVV Validation - CVV should be 3-4 digits, numeric only
+    const cvvStr = String(card.cvv).trim();
+    if (!/^\d{3,4}$/.test(cvvStr)) {
+      return res.status(400).json({ 
+        success: false, 
+        error: "CVV must be 3 or 4 digits (numeric only)" 
+      });
+    }
+
     // ✅ BrowserInfo – əvvəlcə body-dən, yoxdursa request header-lərindən toplayırıq
     const rawBrowser =
       (browserInfo && Object.keys(browserInfo).length > 0 && browserInfo) ||
@@ -204,7 +213,7 @@ const cibpayWebhook = async (req, res) => {
       amount: String(amount),
       pan,
       card: {
-        cvv: card.cvv,
+        cvv: String(card.cvv).trim(), // ✅ Ensure CVV is a string, trimmed
         expiration_month: Number(card.expiration_month),
         expiration_year: Number(card.expiration_year),
         holder: card.holder || ""
@@ -228,7 +237,15 @@ const cibpayWebhook = async (req, res) => {
       }
     };
 
-      console.log("Sending to CIBPAY authorize:", JSON.stringify(authData, null, 2));
+      console.log("Sending to CIBPAY authorize:", JSON.stringify({
+        ...authData,
+        pan: authData.pan.slice(-4).padStart(authData.pan.length, '*'),
+        card: {
+          ...authData.card,
+          cvv: '***'
+        }
+      }, null, 2));
+      console.log("CVV Details - Length:", String(card.cvv).length, "Type:", typeof card.cvv, "Value (trimmed):", String(card.cvv).trim());
       console.log("Order ID for authorize:", orderId);
 
       // Cibpay authorize endpoint - orderId body-də göndərilir
@@ -268,6 +285,7 @@ const cibpayWebhook = async (req, res) => {
       res.json({ success: true, data: response.data });
     } catch (error) {
       console.error("Authorize error:", error.response?.status, error.response?.data || error.message);
+      console.error("CVV Debug Info - Length:", String(card?.cvv).length, "Type:", typeof card?.cvv, "Value:", String(card?.cvv).trim());
       console.error("Error details:", {
         status: error.response?.status,
         statusText: error.response?.statusText,
@@ -397,6 +415,14 @@ const cibpayWebhook = async (req, res) => {
       });
     }
 
+    // Validate currency is set
+    if (!req.body.currency) {
+      return res.status(400).json({
+        success: false,
+        error: "currency is required (e.g., AZN, USD, EUR)"
+      });
+    }
+
     // Build options object - terminal parametrini tamamilə sil
     const options = {
       auto_charge: req.body.options?.auto_charge ?? false,
@@ -451,19 +477,30 @@ const cibpayWebhook = async (req, res) => {
       }
     );
 
+    console.log("✅ CibPay create order response status:", response.status);
+    console.log("📦 CibPay full response:", JSON.stringify(response.data, null, 2));
+    console.log("📍 Response headers:", {
+      location: response.headers?.location,
+      Location: response.headers?.Location
+    });
+
     // CIBPay typically returns { orders: [...] } for create order
     const createdOrder =
       Array.isArray(response.data?.orders) && response.data.orders.length > 0
         ? response.data.orders[0]
         : response.data;
 
-    // CIBPay may return the checkout link in the Location response header
+    console.log("🔗 Created order object:", JSON.stringify(createdOrder, null, 2));
+
+    // CIBPay may return the checkout link in the Location response header or in the response body
     const checkout_url =
       response.headers?.location ||
       response.headers?.Location ||
       createdOrder?.checkout_url ||
       createdOrder?.checkoutUrl ||
-      null;
+      (createdOrder?.id ? `https://checkout-preprod.cibpay.co/pay/${createdOrder.id}` : null);
+
+    console.log("🌐 Final checkout_url:", checkout_url);
 
     // Save to MongoDB
     await CibpayOrder.findOneAndUpdate(
@@ -482,21 +519,37 @@ const cibpayWebhook = async (req, res) => {
 
     res.json({ success: true, data: response.data, order: createdOrder, checkout_url });
   } catch (error) {
-    console.error("Error creating order:", error.response?.data || error.message);
+    console.error("❌ Error creating order with CibPay:");
+    console.error("   Status:", error.response?.status);
+    console.error("   Message:", error.message);
+    console.error("   CibPay error:", JSON.stringify(error.response?.data, null, 2));
+    console.error("   Request was:", JSON.stringify(orderData, null, 2));
     
     // Cibpay API validation xətası
     if (error.response?.status === 422) {
       return res.status(422).json({
         success: false,
         error: "Validation failed",
-        details: error.response?.data || error.message
+        details: error.response?.data || error.message,
+        request_data: orderData
+      });
+    }
+
+    // 402 Payment Required from CibPay
+    if (error.response?.status === 402) {
+      return res.status(402).json({
+        success: false,
+        error: "Payment required - CibPay account issue or order already exists",
+        details: error.response?.data || error.message,
+        request_data: orderData
       });
     }
 
     res.status(error.response?.status || 500).json({
       success: false,
       error: "Failed to create order",
-      details: error.response?.data || error.message
+      details: error.response?.data || error.message,
+      request_data: orderData
     });
   }
 };
@@ -844,6 +897,61 @@ const cibpayWebhook = async (req, res) => {
   };
 
 
+  /**
+   * Save/Update InsuranceOrder when CibPay payment is successful
+   * Called from webhook when payment status changes
+   */
+  const saveOrderFromCibpay = async (cibOrder) => {
+    try {
+      const { merchant_order_id, status } = cibOrder;
+
+      if (!merchant_order_id) {
+        console.warn("CibPay webhook: merchant_order_id missing in payload");
+        return;
+      }
+
+      // Successful payment statuses
+      const successfulStatuses = ["AUTHORIZED", "CHARGED", "PAID", "ISSUED"];
+      const isSuccessful = successfulStatuses.includes(status);
+
+      console.log(`[CibPay Webhook] Processing order ${merchant_order_id}: status=${status}, successful=${isSuccessful}`);
+
+      if (isSuccessful) {
+        // Import InsuranceOrder model
+        const InsuranceOrder = require("../models/insurer");
+        
+        // ✅ Update existing order status to "paid"
+        const updatedOrder = await InsuranceOrder.findByIdAndUpdate(
+          merchant_order_id, // assuming merchant_order_id is the OrderId  
+          { status: "paid" },
+          { new: true }
+        );
+
+        if (updatedOrder) {
+          console.log(`✅ InsuranceOrder ${merchant_order_id} status updated to "paid"`);
+        } else {
+          // Try with orderId field instead
+          const updatedOrder2 = await InsuranceOrder.findOneAndUpdate(
+            { orderId: merchant_order_id },
+            { status: "paid" },
+            { new: true }
+          );
+
+          if (updatedOrder2) {
+            console.log(`✅ InsuranceOrder ${merchant_order_id} status updated to "paid" (via orderId)`);
+          } else {
+            console.warn(`⚠️  InsuranceOrder not found for merchant_order_id: ${merchant_order_id}. Webhook will only update CibPay status.`);
+          }
+        }
+      } else {
+        console.log(`[CibPay Webhook] Order ${merchant_order_id} payment unsuccessful: ${status}`);
+      }
+    } catch (error) {
+      console.error("saveOrderFromCibpay error:", error);
+    }
+  };
+
+
   // Export all functions
 module.exports = {
   authorizePayment,
@@ -860,7 +968,7 @@ module.exports = {
   octCredit,
   octCreditSRN,
   getOrderStatus,
-  cibpayWebhook
-  // cibpayWebhook  // ← burada əlavə etdik
+  cibpayWebhook,
+  saveOrderFromCibpay
 };
 

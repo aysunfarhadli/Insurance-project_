@@ -28,25 +28,30 @@ function PaymentSuccess() {
           failure_type: cibOrder?.failure_type
         });
 
-        // Accept typical "success" statuses; everything else is treated as failure
-        const successStatuses = new Set(["charged", "CHARGED", "paid", "PAID", "issued", "ISSUED"]);
+        // ✅ Accept typical "success" statuses - include "new" since order just created with auto_charge
+        const successStatuses = new Set(["charged", "CHARGED", "paid", "PAID", "issued", "ISSUED", "new", "NEW", "CREATED", "created"]);
 
         if (!successStatuses.has(cibStatus || "")) {
           const msg =
             cibOrder?.failure_message ||
             cibOrder?.failure_type ||
             `Ödəniş müvəffəqiyyətlə tamamlanmadı (status: ${cibStatus || "unknown"})`;
+          console.error("❌ Payment status check failed:", { cibStatus, message: msg });
           setStatus({ loading: false, ok: false, message: msg });
           return;
         }
 
+        console.log("✅ Payment status is valid:", cibStatus);
+
         // Create local order only AFTER successful charge
         const pendingStr = sessionStorage.getItem("pendingOrder");
         if (!pendingStr) {
-          setStatus({ loading: false, ok: true, message: "Payment verified, but pending order data not found." });
+          console.error("❌ pendingOrder not found in sessionStorage");
+          setStatus({ loading: false, ok: false, message: "Sifariş məlumatı tapılmadı. Zəhmət olmasa yenidən cəhd edin." });
           return;
         }
         const pending = JSON.parse(pendingStr);
+        console.log("✅ Using pendingOrder:", pending);
 
         const orderRes = await axios.post(`${API_BASE}/api/orders`, {
           finCode: pending.finCode,
@@ -59,19 +64,26 @@ function PaymentSuccess() {
           total_amount: pending.total_amount
         });
 
+        console.log("📦 Order creation response:", orderRes.data);
+
         const createdOrderId = orderRes.data?.data?.orderId;
         if (!createdOrderId) {
-          setStatus({ loading: false, ok: true, message: "Payment verified, but local order ID not returned." });
+          console.error("❌ Order ID not returned from create order API:", orderRes.data);
+          setStatus({ loading: false, ok: false, message: "Sifariş yaradılmadı. Zəhmət olmasa dəstəkə müraciət edin." });
           return;
         }
 
+        console.log("✅ Insurance Order created successfully:", createdOrderId);
+
         // Save specific form now that order exists
         if (pending.specificData && Object.keys(pending.specificData).length > 0) {
+          console.log("📝 Saving specific form data...");
           await axios.post(`${API_BASE}/api/order-form-specific`, {
             order_id: createdOrderId,
             category_code: pending.category_code,
             details: pending.specificData
           });
+          console.log("✅ Specific form saved successfully");
         }
 
         // Build success view data
@@ -91,7 +103,8 @@ function PaymentSuccess() {
 
         setStatus({ loading: false, ok: true, message: "" });
       } catch (e) {
-        const msg = e.response?.data?.details?.failure_message || e.response?.data?.message || e.message || "Error";
+        const msg = e.response?.data?.details?.failure_message || e.response?.data?.message || e.response?.data?.error || e.message || "Xəta baş verdi";
+        console.error("❌ Error in payment success flow:", { error: e, message: msg });
         setStatus({ loading: false, ok: false, message: msg });
       }
     };

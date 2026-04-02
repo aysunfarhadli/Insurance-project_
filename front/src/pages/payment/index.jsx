@@ -129,6 +129,9 @@ function Payment() {
         }
       });
 
+      console.log("✅ Order created successfully");
+      console.log("📦 Full response:", createOrderRes.data);
+
       const checkoutUrl =
         createOrderRes.data?.checkout_url ||
         createOrderRes.data?.order?.checkout_url ||
@@ -136,9 +139,22 @@ function Payment() {
         createOrderRes.data?.data?.orders?.[0]?.checkoutUrl;
 
       if (!checkoutUrl) {
-        console.error("Create order response:", createOrderRes.data);
+        console.error("❌ Checkout URL not found. Response data:", {
+          checkout_url: createOrderRes.data?.checkout_url,
+          order_checkout_url: createOrderRes.data?.order?.checkout_url,
+          data_orders: createOrderRes.data?.data?.orders?.[0],
+          full_response: createOrderRes.data
+        });
         throw new Error("Checkout link tapılmadı (checkout_url).");
       }
+
+      console.log("🔗 Redirecting to checkout URL:", checkoutUrl);
+      console.log("📋 Order details sent:", {
+        amount,
+        currency: orderData.currency,
+        terminal,
+        merchant_order_id: merchantOrderId
+      });
 
       // Redirect to CIBPay payment page
       window.location.assign(checkoutUrl);
@@ -159,10 +175,23 @@ function Payment() {
       // Navigate to success page
       navigate(`/payment/success/${orderData.orderId || orderId}`);
     } catch (err) {
-      console.error("Payment error:", err);
+      console.error("❌ Payment error:", err);
+      console.error("📋 Request details:", {
+        amount,
+        currency: orderData.currency,
+        merchant_order_id: orderData.orderId || orderId,
+        terminal
+      });
+      console.error("📦 Error response:", {
+        status: err.response?.status,
+        data: err.response?.data,
+        message: err.message
+      });
+      
       const errorMessage = err.response?.data?.error || 
                           err.response?.data?.details?.failure_message ||
                           err.response?.data?.details?.message ||
+                          err.response?.data?.details ||
                           err.message || 
                           "Ödəniş zamanı xəta baş verdi";
       setError(errorMessage);
